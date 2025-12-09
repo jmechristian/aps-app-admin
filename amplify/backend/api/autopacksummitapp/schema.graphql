@@ -1,0 +1,399 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+input AMPLIFY {
+  globalAuthRule: AuthRule = { allow: public }
+} # FOR TESTING ONLY!
+# Enum: CompanyType
+enum CompanyType {
+  OEMTIER1
+  SOLUTIONPROVIDER
+  SPONSOR
+}
+
+enum RegistrantType {
+  OEM
+  TIER1
+  SOLUTIONPROVIDER
+  SPONSOR
+  SPEAKER
+  STAFF
+}
+
+enum RegistrantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+# Main Event Type
+type APS @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  year: String!
+  codes: [String]
+  agenda: ApsAgenda @hasOne
+  Registrants: [ApsRegistrant] @hasMany(indexName: "byAPS")
+  Sponsors: [ApsSponsor] @hasMany(indexName: "byEvent")
+  Speakers: [APSSpeaker] @hasMany(indexName: "byEvent")
+  Companies: [APSCompany] @hasMany(indexName: "byEvent")
+  photos: [ApsAppUserPhoto] @hasMany(indexName: "byEvent")
+  exhibitors: [ApsAppExhibitorProfile] @hasMany(indexName: "byEvent")
+  messages: [ApsAppMessage] @hasMany(indexName: "byEvent")
+  exhibitorPromotions: [ApsAppExhibitorPromotion] @hasMany(indexName: "byEvent")
+  exhibitorDeals: [ApsAppExhibitorDeal] @hasMany(indexName: "byEvent")
+  exhibitorPhotos: [ApsAppExhibitorPhoto] @hasMany(indexName: "byEvent")
+  exhibitorHandouts: [ApsAppExhibitorHandout] @hasMany(indexName: "byEvent")
+  addOns: [ApsAddOn] @hasMany(indexName: "byEvent")
+}
+
+# Board Members
+type APSBoard @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  title: String
+  bio: String
+  company: String!
+  email: String!
+  linkedin: String
+  profilePic: String
+}
+
+# Agenda
+type ApsAgenda @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+  items: [ApsAppSession] @hasMany(indexName: "byAgenda")
+}
+
+# Registrants
+type ApsRegistrant @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  apsID: ID! @index(name: "byAPS")
+  aps: APS! @belongsTo(fields: ["apsID"])
+  firstName: String
+  lastName: String
+  email: String!
+  phone: String
+  companyId: ID @index(name: "byCompany")
+  company: APSCompany @belongsTo(fields: ["companyId"])
+  jobTitle: String
+  attendeeType: RegistrantType!
+  termsAccepted: Boolean
+  interests: [String]
+  otherInterest: String
+  speedNetworking: Boolean
+  speedNetworkingStatus: String
+  billingAddressFirstName: String
+  billingAddressLastName: String
+  billingAddressEmail: String
+  billingAddressPhone: String
+  billingAddressStreet: String
+  billingAddressCity: String
+  billingAddressState: String
+  billingAddressZip: String
+  sameAsAttendee: Boolean
+  speakerTopic: String
+  learningObjectives: String
+  totalAmount: Int
+  discountCode: String
+  status: RegistrantStatus!
+  morrisetteTransportation: String
+  morrisetteStatus: String
+  aristoTransportation: String
+  aristoStatus: String
+  magnaTransportation: String
+  magnaStatus: String
+  paymentConfirmation: String
+  registrationEmailSent: Boolean
+  registrationEmailSentDate: String
+  registrationEmailReceived: Boolean
+  registrationEmailReceivedDate: String
+  welcomeEmailSent: Boolean
+  welcomeEmailSentDate: String
+  welcomeEmailReceived: Boolean
+  welcomeEmailReceivedDate: String
+  paymentMethod: String
+  paymentLast4: String
+  approvedAt: String
+  headshot: String
+  presentation: String
+  presentationTitle: String
+  presentationSummary: String
+  bio: String
+  seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
+  appUser: ApsAppUser @hasOne
+  qrCode: String
+}
+
+# App User (for mobile app)
+type ApsAppUser @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  registrantId: ID! @index(name: "byRegistrant")
+  registrant: ApsRegistrant! @belongsTo(fields: ["registrantId"])
+  photos: [ApsAppUserPhoto] @hasMany(indexName: "byUser")
+  messages: [ApsAppMessage] @hasMany(indexName: "byUser")
+  sessionQuestions: [ApsAppSessionQuestion] @hasMany(indexName: "byUser")
+  exhibitorDeals: [ApsAppExhibitorDeal] @hasMany(indexName: "byUser")
+  profile: ApsAppUserProfile @hasOne
+}
+
+# App User Profile
+type ApsAppUserProfile @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: ID! @index(name: "byUser")
+  user: ApsAppUser! @belongsTo(fields: ["userId"])
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  company: String
+  jobTitle: String
+  attendeeType: RegistrantType
+  affiliates: [ProfileAffiliate] @hasMany(indexName: "byUser")
+  profilePicture: String
+  bio: String
+  linkedin: String
+  twitter: String
+  facebook: String
+  instagram: String
+  youtube: String
+  website: [String]
+  location: String
+  education: [ProfileEducation] @hasMany(indexName: "byUser")
+  interests: [ProfileInterest] @hasMany(indexName: "byUser")
+  resume: String
+}
+
+type ProfileAffiliate @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  profileId: ID! @index(name: "byUser")
+  profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
+  affiliate: String
+  role: String
+  startDate: String
+  endDate: String
+}
+
+type ProfileEducation @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  profileId: ID! @index(name: "byUser")
+  profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
+  school: String
+  degree: String
+  fieldOfStudy: String
+}
+
+type ProfileInterest @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  profileId: ID! @index(name: "byUser")
+  profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
+  interest: String
+}
+
+# App User Photos
+type ApsAppUserPhoto @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: ID @index(name: "byUser")
+  user: ApsAppUser @belongsTo(fields: ["userId"])
+  photo: String
+  caption: String
+  approved: Boolean
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Sessions
+type ApsAppSession @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  session: String
+  date: String
+  time: String
+  location: String
+  agendaId: ID @index(name: "byAgenda")
+  agenda: ApsAgenda @belongsTo(fields: ["agendaId"])
+  sessionQuestions: [ApsAppSessionQuestion] @hasMany(indexName: "bySession")
+}
+
+# Session Questions
+type ApsAppSessionQuestion @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  sessionId: ID! @index(name: "bySession")
+  session: ApsAppSession! @belongsTo(fields: ["sessionId"])
+  question: String
+  userId: ID! @index(name: "byUser")
+  user: ApsAppUser! @belongsTo(fields: ["userId"])
+}
+
+# Speakers
+type APSSpeaker @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  company: String!
+  title: String!
+  phone: String
+  linkedin: String
+  bio: String!
+  presentationTitle: String
+  presentationSummary: String
+  headshot: String!
+  mediaConsent: Boolean
+  privacyConsent: Boolean
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Sponsors
+type ApsSponsor @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  companyId: ID! @index(name: "byCompany")
+  company: APSCompany! @belongsTo(fields: ["companyId"])
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+  profile: ApsAppExhibitorProfile @hasOne
+}
+
+# Companies
+type APSCompany @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  email: String!
+  type: CompanyType
+  description: String
+  website: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  zip: String
+  country: String
+  logo: String
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+  registrants: [ApsRegistrant] @hasMany(indexName: "byCompany")
+  sponsors: [ApsSponsor] @hasMany(indexName: "byCompany")
+  exhibitorProfiles: [ApsAppExhibitorProfile] @hasMany(indexName: "byCompany")
+}
+
+# Exhibitor Profiles
+type ApsAppExhibitorProfile @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  companyId: ID! @index(name: "byCompany")
+  company: APSCompany! @belongsTo(fields: ["companyId"])
+  sponsorId: ID @index(name: "bySponsor")
+  sponsor: ApsSponsor @belongsTo(fields: ["sponsorId"])
+  title: String
+  phone: String
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+  deals: [ApsAppExhibitorDeal] @hasMany(indexName: "byExhibitor")
+  photos: [ApsAppExhibitorPhoto] @hasMany(indexName: "byExhibitor")
+  handouts: [ApsAppExhibitorHandout] @hasMany(indexName: "byExhibitor")
+  promotions: [ApsAppExhibitorPromotion] @hasMany(indexName: "byExhibitor")
+  video: String
+  videoCaption: String
+  boothNumber: String
+  visits: Int
+  views: Int
+  likes: Int
+  inquiries: [ApsAppMessage] @hasMany(indexName: "byExhibitor")
+}
+
+# Messages
+type ApsAppMessage @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  type: String
+  message: String
+  userId: ID @index(name: "byUser")
+  user: ApsAppUser @belongsTo(fields: ["userId"])
+  exhibitorId: ID @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile @belongsTo(fields: ["exhibitorId"])
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Exhibitor Promotions
+type ApsAppExhibitorPromotion @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  exhibitorId: ID! @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  promotion: String
+  link: String
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Exhibitor Deals
+type ApsAppExhibitorDeal @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  exhibitorId: ID! @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  deal: String
+  link: String
+  userId: ID @index(name: "byUser")
+  user: ApsAppUser @belongsTo(fields: ["userId"])
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Exhibitor Photos
+type ApsAppExhibitorPhoto @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  exhibitorId: ID! @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  photo: String
+  caption: String
+  approved: Boolean
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Exhibitor Handouts
+type ApsAppExhibitorHandout @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  exhibitorId: ID! @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  handout: String
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Add Ons
+type ApsAddOn @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  title: String!
+  description: String!
+  subheadline: String
+  location: String!
+  date: String!
+  time: String!
+  company: String!
+  altLink: String
+  type: String
+  limit: Int
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+}
+
+# Seating Charts
+type ApsSeatingChart @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  registrants: [ApsSeatingChartRegistrant] @hasMany(indexName: "bySeatingChart")
+}
+
+type ApsSeatingChartRegistrant @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  category: String
+  firstName: String
+  lastName: String
+  company: String
+  email: String
+  role: String
+  tableNumber: Int
+  notes: String
+  seatingChartID: ID! @index(name: "bySeatingChart")
+  seatingChart: ApsSeatingChart! @belongsTo(fields: ["seatingChartID"])
+  registrantID: ID! @index(name: "byRegistrant")
+  registrant: ApsRegistrant! @belongsTo(fields: ["registrantID"])
+}

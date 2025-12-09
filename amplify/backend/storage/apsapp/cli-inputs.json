@@ -1,0 +1,16 @@
+{
+  "resourceName": "apsapp",
+  "policyUUID": "8b70c4c1",
+  "bucketName": "autopacksummitapp94b14feadba64f23aff0ed8deae77b",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

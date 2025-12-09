@@ -1,0 +1,26 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-autopacksummitapp-dev-99bc6-authRole",
+      "UnauthRoleArn": "arn:aws:iam::552673436980:role/amplify-autopacksummitapp-dev-99bc6-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::552673436980:role/amplify-autopacksummitapp-dev-99bc6-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-autopacksummitapp-dev-99bc6-deployment",
+      "UnauthRoleName": "amplify-autopacksummitapp-dev-99bc6-unauthRole",
+      "StackName": "amplify-autopacksummitapp-dev-99bc6",
+      "StackId": "arn:aws:cloudformation:us-east-1:552673436980:stack/amplify-autopacksummitapp-dev-99bc6/20827dd0-d15a-11f0-b9e6-12a9a69f8c95",
+      "AmplifyAppId": "d2phqto5gd9n8m"
+    },
+    "categories": {
+      "auth": {
+        "autopacksummitappfefbe6f1": {}
+      },
+      "api": {
+        "autopacksummitapp": {}
+      },
+      "storage": {
+        "apsapp": {}
+      }
+    }
+  }
+}
