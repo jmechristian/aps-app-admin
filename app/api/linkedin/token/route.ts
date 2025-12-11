@@ -38,19 +38,22 @@ export async function POST(req: NextRequest) {
   console.log('Code length:', code.length);
   console.log('Code verifier length:', codeVerifier.length);
 
-  // Use URLSearchParams for proper encoding (like qs.stringify)
+  // Try using Basic Auth header instead of body parameter
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
+    'base64'
+  );
+
   const params = new URLSearchParams();
   params.append('grant_type', 'authorization_code');
-  params.append('code', code); // URLSearchParams will encode this
-  params.append('redirect_uri', redirectUri); // Must match auth request exactly
-  params.append('client_id', clientId);
-  params.append('client_secret', clientSecret);
+  params.append('code', code);
+  params.append('redirect_uri', redirectUri);
   params.append('code_verifier', codeVerifier);
+  // Note: NOT including client_id and client_secret in body when using Basic Auth
 
   const bodyString = params.toString();
 
-  console.log('=== Request Body (secret hidden) ===');
-  console.log(bodyString.replace(/client_secret=[^&]+/, 'client_secret=***'));
+  console.log('=== Request Body (using Basic Auth) ===');
+  console.log(bodyString);
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
@@ -58,6 +61,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${basicAuth}`,
       },
       body: bodyString,
     }
