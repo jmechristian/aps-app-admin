@@ -42,6 +42,16 @@ export async function POST(req: NextRequest) {
     code_verifier: codeVerifier,
   });
 
+  console.log('Request params being sent to LinkedIn:');
+  console.log('  redirect_uri:', redirectUri);
+  console.log('  client_id:', clientId);
+  console.log('  code length:', code.length);
+  console.log('  code_verifier length:', codeVerifier.length);
+  console.log(
+    '  Full params string:',
+    params.toString().replace(/client_secret=[^&]+/, 'client_secret=***')
+  ); // Hide secret in logs
+
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
     {
