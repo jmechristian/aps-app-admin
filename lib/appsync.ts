@@ -1,6 +1,22 @@
-import awsmobile from "@/src/aws-exports";
-
 type GraphQLError = { message: string };
+
+type AwsExports = {
+  aws_appsync_graphqlEndpoint?: string;
+  aws_appsync_apiKey?: string;
+};
+
+function loadAwsExports(): AwsExports {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require("@/src/aws-exports");
+    return (mod.default || mod) as AwsExports;
+  } catch (error) {
+    // If the file isn't present (e.g., not committed), fall back to env only.
+    return {};
+  }
+}
+
+const awsmobile = loadAwsExports();
 
 const endpoint =
   process.env.AWS_APPSYNC_GRAPHQL_ENDPOINT ||
