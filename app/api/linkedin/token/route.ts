@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
   }
 
   const clientId = process.env.LINKEDIN_CLIENT_ID;
+  const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
-  if (!clientId) {
+  if (!clientId || !clientSecret) {
     return NextResponse.json(
       { error: 'LinkedIn client credentials are not configured' },
       { status: 500 }
@@ -30,26 +31,33 @@ export async function POST(req: NextRequest) {
   const expectedRedirectUri =
     'https://aps-app-admin.vercel.app/api/linkedin/callback';
 
-  console.log('=== LinkedIn Token Exchange (PKCE - NO client_secret) ===');
+  console.log('=== LinkedIn Token Exchange (with client_secret) ===');
   console.log('Redirect URI received:', redirectUri);
   console.log('Expected redirect URI:', expectedRedirectUri);
   console.log('Match:', redirectUri === expectedRedirectUri);
   console.log('Code length:', code.length);
   console.log('Code verifier length:', codeVerifier.length);
+  console.log('Client ID:', clientId);
+  console.log('Client Secret length:', clientSecret.length);
+  console.log('Client Secret first 3:', clientSecret.substring(0, 3));
+  console.log(
+    'Client Secret last 3:',
+    clientSecret.substring(clientSecret.length - 3)
+  );
 
-  // PKCE flow: NO client_secret, only client_id + code_verifier
+  // LinkedIn requires client_secret in body (not Basic Auth) even with PKCE
   const params = new URLSearchParams();
   params.append('grant_type', 'authorization_code');
   params.append('code', code);
   params.append('redirect_uri', redirectUri);
   params.append('client_id', clientId);
+  params.append('client_secret', clientSecret);
   params.append('code_verifier', codeVerifier);
-  // NO client_secret for PKCE!
 
   const bodyString = params.toString();
 
-  console.log('=== Request Body (PKCE - no secret) ===');
-  console.log(bodyString);
+  console.log('=== Request Body (secret hidden) ===');
+  console.log(bodyString.replace(/client_secret=[^&]+/, 'client_secret=***'));
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
