@@ -20,11 +20,24 @@ export async function POST(req: NextRequest) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
-  // Add this logging:
+  // Comprehensive logging
+  console.log('=== LinkedIn Token Exchange Request ===');
   console.log('Client ID:', clientId);
   console.log('Client ID matches expected:', clientId === '777zbuyll96931');
   console.log('Client Secret exists:', !!clientSecret);
   console.log('Client Secret length:', clientSecret?.length);
+  console.log('Client Secret first 5 chars:', clientSecret?.substring(0, 5));
+  console.log(
+    'Client Secret last 5 chars:',
+    clientSecret?.substring((clientSecret?.length || 0) - 5)
+  );
+  console.log(
+    'Client Secret has whitespace:',
+    clientSecret?.includes(' ') ||
+      clientSecret?.includes('\n') ||
+      clientSecret?.includes('\t')
+  );
+  console.log('Client Secret (JSON):', JSON.stringify(clientSecret));
 
   if (!clientId || !clientSecret) {
     return NextResponse.json(
@@ -32,6 +45,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  // Log raw values before encoding
+  console.log('=== Raw values before encoding ===');
+  console.log('redirectUri (raw):', redirectUri);
+  console.log('redirectUri (JSON):', JSON.stringify(redirectUri));
+  console.log('redirectUri length:', redirectUri.length);
+  console.log('clientId (raw):', clientId);
+  console.log('clientSecret (raw):', clientSecret);
+  console.log('code length:', code.length);
+  console.log('codeVerifier (raw):', codeVerifier);
+  console.log('codeVerifier length:', codeVerifier.length);
 
   const params = new URLSearchParams({
     grant_type: 'authorization_code',
@@ -42,15 +66,24 @@ export async function POST(req: NextRequest) {
     code_verifier: codeVerifier,
   });
 
-  console.log('Request params being sent to LinkedIn:');
-  console.log('  redirect_uri:', redirectUri);
-  console.log('  client_id:', clientId);
-  console.log('  code length:', code.length);
-  console.log('  code_verifier length:', codeVerifier.length);
+  // Log URLSearchParams result
+  console.log('=== URLSearchParams result ===');
+  console.log('redirect_uri in params:', params.get('redirect_uri'));
+  console.log('client_id in params:', params.get('client_id'));
+  console.log('code_verifier in params:', params.get('code_verifier'));
   console.log(
-    '  Full params string:',
+    'Full body (secret hidden):',
     params.toString().replace(/client_secret=[^&]+/, 'client_secret=***')
-  ); // Hide secret in logs
+  );
+
+  // TEMPORARY: Log full params with secret for debugging (remove after!)
+  console.log('=== FULL PARAMS TO LINKEDIN (DEBUG) ===');
+  console.log('Full params string:', params.toString());
+
+  console.log('=== Sending request to LinkedIn ===');
+  console.log('URL: https://www.linkedin.com/oauth/v2/accessToken');
+  console.log('Method: POST');
+  console.log('Content-Type: application/x-www-form-urlencoded');
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
@@ -63,8 +96,28 @@ export async function POST(req: NextRequest) {
     }
   );
 
+  console.log('=== LinkedIn Response ===');
+  console.log('Status:', response.status);
+  console.log('Status Text:', response.statusText);
+  console.log(
+    'Response Headers:',
+    Object.fromEntries(response.headers.entries())
+  );
+
   if (!response.ok) {
-    const errorBody = await safeJson(response);
+    const errorText = await response.text();
+    console.error('=== LinkedIn Token Exchange Error ===');
+    console.error('Raw Error Response:', errorText);
+
+    let errorBody;
+    try {
+      errorBody = JSON.parse(errorText);
+      console.error('Parsed Error:', JSON.stringify(errorBody, null, 2));
+    } catch {
+      console.error('Error response is not JSON');
+      errorBody = { error: errorText || 'Unknown error' };
+    }
+
     return NextResponse.json(
       { error: 'Failed to exchange token', details: errorBody },
       {
@@ -77,14 +130,11 @@ export async function POST(req: NextRequest) {
   }
 
   const data = (await response.json()) as TokenResponse;
+  console.log('=== Token Exchange Success ===');
+  console.log('Access token received (length):', data.access_token?.length);
+  console.log('Token type:', data.token_type);
+  console.log('Expires in:', data.expires_in);
+  console.log('Scope:', data.scope);
 
   return NextResponse.json(data);
-}
-
-async function safeJson(res: Response) {
-  try {
-    return await res.json();
-  } catch {
-    return await res.text();
-  }
 }
