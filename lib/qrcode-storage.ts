@@ -2,38 +2,12 @@
 
 import QRCode from 'qrcode';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import fs from 'fs';
-import path from 'path';
-
-type AwsExports = {
-  aws_user_files_s3_bucket?: string;
-  aws_user_files_s3_bucket_region?: string;
-};
-
-function loadAwsExports(): AwsExports {
-  try {
-    const awsExportsPath = path.join(process.cwd(), 'src', 'aws-exports.js');
-    if (!fs.existsSync(awsExportsPath)) {
-      return {};
-    }
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(awsExportsPath);
-    return (mod.default || mod) as AwsExports;
-  } catch (error) {
-    // If the file isn't present (e.g., not committed), fall back to env only.
-    return {};
-  }
-}
-
-const awsmobile = loadAwsExports();
 
 function getBucketConfig() {
-  const bucket =
-    process.env.AWS_S3_BUCKET || awsmobile.aws_user_files_s3_bucket;
+  const bucket = process.env.AWS_S3_BUCKET;
   const region =
     process.env.AWS_S3_BUCKET_REGION ||
     process.env.AWS_REGION ||
-    awsmobile.aws_user_files_s3_bucket_region ||
     'us-east-1';
 
   if (!bucket) {

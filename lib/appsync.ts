@@ -1,39 +1,12 @@
 type GraphQLError = { message: string };
 
-import fs from "fs";
-import path from "path";
-
-type AwsExports = {
-  aws_appsync_graphqlEndpoint?: string;
-  aws_appsync_apiKey?: string;
-};
-
-function loadAwsExports(): AwsExports {
-  try {
-    const awsExportsPath = path.join(process.cwd(), "src", "aws-exports.js");
-    if (!fs.existsSync(awsExportsPath)) {
-      return {};
-    }
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(awsExportsPath);
-    return (mod.default || mod) as AwsExports;
-  } catch (error) {
-    // If the file isn't present (e.g., not committed), fall back to env only.
-    return {};
-  }
-}
-
-const awsmobile = loadAwsExports();
-
 const endpoint =
   process.env.AWS_APPSYNC_GRAPHQL_ENDPOINT ||
-  process.env.NEXT_PUBLIC_AWS_APPSYNC_GRAPHQL_ENDPOINT ||
-  awsmobile.aws_appsync_graphqlEndpoint;
+  process.env.NEXT_PUBLIC_AWS_APPSYNC_GRAPHQL_ENDPOINT;
 
 const apiKey =
   process.env.AWS_APPSYNC_API_KEY ||
-  process.env.NEXT_PUBLIC_AWS_APPSYNC_API_KEY ||
-  awsmobile.aws_appsync_apiKey;
+  process.env.NEXT_PUBLIC_AWS_APPSYNC_API_KEY;
 
 /**
  * Small helper to talk to the AppSync API using the generated endpoint + API key.
