@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
+  // Add this logging:
+  console.log('Client ID:', clientId);
+  console.log('Client ID matches expected:', clientId === '777zbuyll96931');
+  console.log('Client Secret exists:', !!clientSecret);
+  console.log('Client Secret length:', clientSecret?.length);
+
   if (!clientId || !clientSecret) {
     return NextResponse.json(
       { error: 'LinkedIn client credentials are not configured' },
