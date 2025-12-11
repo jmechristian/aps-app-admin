@@ -1,5 +1,8 @@
 type GraphQLError = { message: string };
 
+import fs from "fs";
+import path from "path";
+
 type AwsExports = {
   aws_appsync_graphqlEndpoint?: string;
   aws_appsync_apiKey?: string;
@@ -7,8 +10,12 @@ type AwsExports = {
 
 function loadAwsExports(): AwsExports {
   try {
+    const awsExportsPath = path.join(process.cwd(), "src", "aws-exports.js");
+    if (!fs.existsSync(awsExportsPath)) {
+      return {};
+    }
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require("@/src/aws-exports");
+    const mod = require(awsExportsPath);
     return (mod.default || mod) as AwsExports;
   } catch (error) {
     // If the file isn't present (e.g., not committed), fall back to env only.

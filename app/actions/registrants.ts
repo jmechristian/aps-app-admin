@@ -337,7 +337,7 @@ async function fetchAllOldRegistrants(): Promise<OldRegistrant[]> {
   let nextToken: string | null | undefined = null;
 
   do {
-    const response = await requestOldGraphQL<OldRegistrantsResponse>(
+    const response: OldRegistrantsResponse = await requestOldGraphQL<OldRegistrantsResponse>(
       LIST_OLD_REGISTRANTS,
       {
         limit: 1000,
