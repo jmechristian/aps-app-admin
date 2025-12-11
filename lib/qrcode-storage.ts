@@ -4,10 +4,26 @@ import QRCode from 'qrcode';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import awsmobile from '@/src/aws-exports';
 
+function getBucketConfig() {
+  const bucket =
+    process.env.AWS_S3_BUCKET || awsmobile.aws_user_files_s3_bucket;
+  const region =
+    process.env.AWS_S3_BUCKET_REGION ||
+    process.env.AWS_REGION ||
+    awsmobile.aws_user_files_s3_bucket_region ||
+    'us-east-1';
+
+  if (!bucket) {
+    throw new Error('S3 bucket name not configured');
+  }
+
+  return { bucket, region };
+}
+
 // S3 client will use default credentials from environment or IAM role
-const s3Client = new S3Client({
-  region: awsmobile.aws_user_files_s3_bucket_region || 'us-east-1',
-});
+function createS3Client(region: string) {
+  return new S3Client({ region });
+}
 
 /**
  * Generate vCard string from registrant data
@@ -90,6 +106,9 @@ export async function generateAndUploadQRCode(
   }
 ): Promise<string> {
   try {
+    const { bucket, region } = getBucketConfig();
+    const s3Client = createS3Client(region);
+
     // Generate vCard
     const vCard = generateVCard(data);
     
@@ -97,16 +116,11 @@ export async function generateAndUploadQRCode(
     const qrCodeBuffer = await generateQRCodeBuffer(vCard);
     
     // Upload to S3
-    const bucketName = awsmobile.aws_user_files_s3_bucket;
-    if (!bucketName) {
-      throw new Error('S3 bucket name not configured');
-    }
-    
     const key = `qrcodes/${registrantId}.png`;
     
     // Try to upload with public-read ACL first
     let command = new PutObjectCommand({
-      Bucket: bucketName,
+      Bucket: bucket,
       Key: key,
       Body: qrCodeBuffer,
       ContentType: 'image/png',
@@ -121,7 +135,7 @@ export async function generateAndUploadQRCode(
       if (error instanceof Error && (error.message.includes('ACL') || error.message.includes('AccessControlListNotSupported'))) {
         console.warn('ACL not supported, uploading without ACL (relying on bucket policy)');
         command = new PutObjectCommand({
-          Bucket: bucketName,
+          Bucket: bucket,
           Key: key,
           Body: qrCodeBuffer,
           ContentType: 'image/png',
@@ -133,8 +147,7 @@ export async function generateAndUploadQRCode(
     }
     
     // Return the public URL
-    const region = awsmobile.aws_user_files_s3_bucket_region || 'us-east-1';
-    const url = `https://${bucketName}.s3.${region}.amazonaws.com/${key}`;
+    const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
     
     return url;
   } catch (error) {

@@ -1,7 +1,10 @@
 type GraphQLError = { message: string };
 
-const OLD_ENDPOINT = 'https://c6pkoby5rbgtxcum5slz7hgem4.appsync-api.us-east-1.amazonaws.com/graphql';
-const OLD_API_KEY = 'da2-j6b7wrlbzfghtjaxq7t75fv4hm';
+const OLD_ENDPOINT =
+  process.env.OLD_APPSYNC_GRAPHQL_ENDPOINT ??
+  process.env.NEXT_PUBLIC_OLD_APPSYNC_GRAPHQL_ENDPOINT;
+const OLD_API_KEY =
+  process.env.OLD_APPSYNC_API_KEY ?? process.env.NEXT_PUBLIC_OLD_APPSYNC_API_KEY;
 
 /**
  * Client for the old Amplify AppSync API
@@ -11,6 +14,10 @@ export async function requestOldGraphQL<T>(
   query: string,
   variables?: Record<string, unknown>
 ): Promise<T> {
+  if (!OLD_ENDPOINT || !OLD_API_KEY) {
+    throw new Error('Missing old AppSync configuration');
+  }
+
   const res = await fetch(OLD_ENDPOINT, {
     method: 'POST',
     headers: {
