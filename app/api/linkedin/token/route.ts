@@ -46,6 +46,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // VERIFYING REDIRECT URI MATCH - ADD THIS NEW SECTION
+  console.log('=== VERIFYING REDIRECT URI MATCH ===');
+  console.log('redirectUri received from app:', redirectUri);
+  console.log(
+    'Expected redirectUri:',
+    'https://aps-app-admin.vercel.app/api/linkedin/callback'
+  );
+  console.log(
+    'Exact match:',
+    redirectUri === 'https://aps-app-admin.vercel.app/api/linkedin/callback'
+  );
+  console.log('Length match:', redirectUri.length === 54);
+  console.log('Character-by-character check:');
+  const expected = 'https://aps-app-admin.vercel.app/api/linkedin/callback';
+  for (let i = 0; i < Math.max(redirectUri.length, expected.length); i++) {
+    if (redirectUri[i] !== expected[i]) {
+      console.log(
+        `Mismatch at position ${i}: got '${
+          redirectUri[i] || '(end)'
+        }' (${redirectUri.charCodeAt(i)}), expected '${
+          expected[i] || '(end)'
+        }' (${expected.charCodeAt(i)})`
+      );
+      break;
+    }
+  }
+
   // Log raw values before encoding
   console.log('=== Raw values before encoding ===');
   console.log('redirectUri (raw):', redirectUri);
