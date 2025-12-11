@@ -55,14 +55,14 @@ export default async function Home() {
                 Create new event
               </h2>
               <p className='text-sm text-slate-600'>
-                Add a new APS record with a year label and optional codes.
+                Add a new APS record with a year label.
               </p>
             </div>
           </div>
 
           <form
             action={createAps}
-            className='mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner sm:grid-cols-[1.2fr_1.2fr_auto]'
+            className='mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner sm:grid-cols-[1.2fr_auto]'
           >
             <label className='flex flex-col gap-2 text-sm font-medium text-slate-700'>
               Year
@@ -70,14 +70,6 @@ export default async function Home() {
                 name='year'
                 placeholder='2025'
                 required
-                className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none ring-0 transition focus:border-slate-400 focus:shadow-md'
-              />
-            </label>
-            <label className='flex flex-col gap-2 text-sm font-medium text-slate-700'>
-              Codes (comma separated)
-              <input
-                name='codes'
-                placeholder='VIP, EARLY, PARTNER'
                 className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none ring-0 transition focus:border-slate-400 focus:shadow-md'
               />
             </label>
@@ -138,23 +130,6 @@ export default async function Home() {
                       </Link>
                     </div>
 
-                    <div className='flex flex-wrap gap-2'>
-                      {(event.codes ?? []).length > 0 ? (
-                        event.codes?.map((code) => (
-                          <span
-                            key={code}
-                            className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'
-                          >
-                            {code}
-                          </span>
-                        ))
-                      ) : (
-                        <span className='text-sm text-slate-500'>
-                          No codes added
-                        </span>
-                      )}
-                    </div>
-
                     <div className='flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between'>
                       <details className='group w-full sm:w-auto'>
                         <summary className='flex cursor-pointer items-center justify-between gap-2 text-sm font-semibold text-slate-800'>
@@ -174,14 +149,6 @@ export default async function Home() {
                               name='year'
                               defaultValue={event.year}
                               required
-                              className='w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white'
-                            />
-                          </label>
-                          <label className='flex flex-col gap-1 text-xs font-semibold text-slate-700 sm:col-span-2'>
-                            Codes (comma separated)
-                            <input
-                              name='codes'
-                              defaultValue={(event.codes ?? []).join(', ')}
                               className='w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white'
                             />
                           </label>

@@ -4,11 +4,21 @@ import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
 import RegistrantsTable from './registrants-table';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
+import { updateAps, addCodeToAps, removeCodeFromAps } from '@/app/actions/aps';
+import CodesSection from './codes-section';
 
 type APS = {
   id: string;
   year: string;
   codes?: string[] | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  location?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  website?: string | null;
 };
 
 const GET_APS = /* GraphQL */ `
@@ -17,6 +27,14 @@ const GET_APS = /* GraphQL */ `
       id
       year
       codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
     }
   }
 `;
@@ -99,25 +117,98 @@ function ApsDetailClient({
               {aps.id}
             </div>
 
-            <div className='mt-6 space-y-3'>
-              <p className='text-sm font-semibold text-slate-700'>Codes</p>
-              <div className='flex flex-wrap gap-2'>
-                {(aps.codes ?? []).length > 0 ? (
-                  aps.codes?.map((code) => (
-                    <span
-                      key={code}
-                      className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'
-                    >
-                      {code}
-                    </span>
-                  ))
-                ) : (
-                  <span className='text-sm text-slate-500'>
-                    No codes have been added for this event.
-                  </span>
-                )}
+            <form
+              action={updateAps}
+              className='mt-8 grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 shadow-inner sm:grid-cols-2'
+            >
+              <input type='hidden' name='id' value={aps.id} />
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                Year
+                <input
+                  name='year'
+                  defaultValue={aps.year}
+                  required
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                Start date
+                <input
+                  name='startDate'
+                  defaultValue={aps.startDate ?? ''}
+                  placeholder='YYYY-MM-DD'
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                End date
+                <input
+                  name='endDate'
+                  defaultValue={aps.endDate ?? ''}
+                  placeholder='YYYY-MM-DD'
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700 sm:col-span-2'>
+                Location name
+                <input
+                  name='location'
+                  defaultValue={aps.location ?? ''}
+                  placeholder='Venue or facility'
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700 sm:col-span-2'>
+                Address
+                <input
+                  name='address'
+                  defaultValue={aps.address ?? ''}
+                  placeholder='Street address'
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                City
+                <input
+                  name='city'
+                  defaultValue={aps.city ?? ''}
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                State
+                <input
+                  name='state'
+                  defaultValue={aps.state ?? ''}
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                ZIP
+                <input
+                  name='zip'
+                  defaultValue={aps.zip ?? ''}
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
+                Website
+                <input
+                  name='website'
+                  defaultValue={aps.website ?? ''}
+                  placeholder='https://example.com'
+                  className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+                />
+              </label>
+              <div className='sm:col-span-2'>
+                <button
+                  type='submit'
+                  className='inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+                >
+                  Save APS details
+                </button>
               </div>
-            </div>
+            </form>
           </div>
 
           <div className='flex flex-col gap-4 rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-900 to-slate-800 p-8 text-white shadow-lg'>
@@ -146,6 +237,15 @@ function ApsDetailClient({
               </a>
             </div>
           </div>
+        </section>
+
+        <section>
+          <CodesSection
+            eventId={eventId}
+            codes={aps.codes ?? []}
+            onAddCode={addCodeToAps}
+            onRemoveCode={removeCodeFromAps}
+          />
         </section>
 
         <section>

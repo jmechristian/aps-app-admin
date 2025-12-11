@@ -6,6 +6,14 @@ import { requestGraphQL } from "@/lib/appsync";
 type APSInput = {
   year: string;
   codes?: string[] | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  location?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  website?: string | null;
 };
 
 const CREATE_APS = /* GraphQL */ `
@@ -22,6 +30,14 @@ const UPDATE_APS = /* GraphQL */ `
       id
       year
       codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
     }
   }
 `;
@@ -43,14 +59,36 @@ function parseCodes(raw: FormDataEntryValue | null): string[] | null {
     .filter(Boolean);
 }
 
-function buildInput(formData: FormData): APSInput {
+function parseString(raw: FormDataEntryValue | null): string | null {
+  if (!raw) return null;
+  const value = raw.toString().trim();
+  return value ? value : null;
+}
+
+function buildInput(formData: FormData, includeCodes: boolean = false): APSInput {
   const year = formData.get("year")?.toString().trim() || "";
   if (!year) {
     throw new Error("Year is required");
   }
 
-  const codes = parseCodes(formData.get("codes"));
-  return { year, codes: codes?.length ? codes : null };
+  const input: APSInput = {
+    year,
+    startDate: parseString(formData.get("startDate")),
+    endDate: parseString(formData.get("endDate")),
+    location: parseString(formData.get("location")),
+    address: parseString(formData.get("address")),
+    city: parseString(formData.get("city")),
+    state: parseString(formData.get("state")),
+    zip: parseString(formData.get("zip")),
+    website: parseString(formData.get("website")),
+  };
+
+  if (includeCodes) {
+    const codes = parseCodes(formData.get("codes"));
+    input.codes = codes?.length ? codes : null;
+  }
+
+  return input;
 }
 
 export async function createAps(formData: FormData) {
@@ -70,12 +108,81 @@ export async function updateAps(formData: FormData) {
     if (!id) {
       throw new Error("Missing APS id");
     }
-    const input = { id, ...buildInput(formData) };
+    const input = { id, ...buildInput(formData, false) };
     await requestGraphQL(UPDATE_APS, { input });
     revalidatePath("/");
     revalidatePath(`/aps/${id}`);
   } catch (error) {
     console.error("Update APS failed", error);
+    throw error;
+  }
+}
+
+const GET_APS_FOR_CODES = /* GraphQL */ `
+  query GetAPS($id: ID!) {
+    getAPS(id: $id) {
+      id
+      year
+      codes
+    }
+  }
+`;
+
+export async function addCodeToAps(id: string, code: string) {
+  try {
+    // Fetch current APS to get existing codes and year
+    const data = await requestGraphQL<{ getAPS?: { year: string; codes?: string[] | null } | null }>(GET_APS_FOR_CODES, { id });
+    if (!data.getAPS) {
+      throw new Error("APS not found");
+    }
+    
+    const currentCodes = data.getAPS.codes ?? [];
+    
+    // Check if code already exists
+    if (currentCodes.includes(code.trim())) {
+      throw new Error("Code already exists");
+    }
+
+    // Add new code
+    const updatedCodes = [...currentCodes, code.trim()];
+    
+    await requestGraphQL(UPDATE_APS, { 
+      input: { 
+        id, 
+        year: data.getAPS.year,
+        codes: updatedCodes 
+      } 
+    });
+    revalidatePath(`/aps/${id}`);
+  } catch (error) {
+    console.error("Add code failed", error);
+    throw error;
+  }
+}
+
+export async function removeCodeFromAps(id: string, code: string) {
+  try {
+    // Fetch current APS to get existing codes and year
+    const data = await requestGraphQL<{ getAPS?: { year: string; codes?: string[] | null } | null }>(GET_APS_FOR_CODES, { id });
+    if (!data.getAPS) {
+      throw new Error("APS not found");
+    }
+    
+    const currentCodes = data.getAPS.codes ?? [];
+    
+    // Remove the code
+    const updatedCodes = currentCodes.filter((c) => c !== code);
+    
+    await requestGraphQL(UPDATE_APS, { 
+      input: { 
+        id, 
+        year: data.getAPS.year,
+        codes: updatedCodes.length > 0 ? updatedCodes : null 
+      } 
+    });
+    revalidatePath(`/aps/${id}`);
+  } catch (error) {
+    console.error("Remove code failed", error);
     throw error;
   }
 }

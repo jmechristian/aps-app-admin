@@ -31,6 +31,14 @@ type APS @model @auth(rules: [{ allow: public }]) {
   year: String!
   codes: [String]
   agenda: ApsAgenda @hasOne
+  startDate: String
+  endDate: String
+  location: String
+  address: String
+  city: String
+  state: String
+  zip: String
+  website: String
   Registrants: [ApsRegistrant] @hasMany(indexName: "byAPS")
   Sponsors: [ApsSponsor] @hasMany(indexName: "byEvent")
   Speakers: [APSSpeaker] @hasMany(indexName: "byEvent")
