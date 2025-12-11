@@ -20,25 +20,6 @@ export async function POST(req: NextRequest) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
-  // Comprehensive logging
-  console.log('=== LinkedIn Token Exchange Request ===');
-  console.log('Client ID:', clientId);
-  console.log('Client ID matches expected:', clientId === '777zbuyll96931');
-  console.log('Client Secret exists:', !!clientSecret);
-  console.log('Client Secret length:', clientSecret?.length);
-  console.log('Client Secret first 5 chars:', clientSecret?.substring(0, 5));
-  console.log(
-    'Client Secret last 5 chars:',
-    clientSecret?.substring((clientSecret?.length || 0) - 5)
-  );
-  console.log(
-    'Client Secret has whitespace:',
-    clientSecret?.includes(' ') ||
-      clientSecret?.includes('\n') ||
-      clientSecret?.includes('\t')
-  );
-  console.log('Client Secret (JSON):', JSON.stringify(clientSecret));
-
   if (!clientId || !clientSecret) {
     return NextResponse.json(
       { error: 'LinkedIn client credentials are not configured' },
@@ -46,73 +27,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // VERIFYING REDIRECT URI MATCH
-  console.log('=== VERIFYING REDIRECT URI MATCH ===');
-  console.log('redirectUri received from app:', redirectUri);
-  console.log(
-    'Expected redirectUri:',
-    'https://aps-app-admin.vercel.app/api/linkedin/callback'
-  );
-  console.log(
-    'Exact match:',
-    redirectUri === 'https://aps-app-admin.vercel.app/api/linkedin/callback'
-  );
-  console.log('Length match:', redirectUri.length === 54);
-  console.log('Character-by-character check:');
-  const expected = 'https://aps-app-admin.vercel.app/api/linkedin/callback';
-  for (let i = 0; i < Math.max(redirectUri.length, expected.length); i++) {
-    if (redirectUri[i] !== expected[i]) {
-      console.log(
-        `Mismatch at position ${i}: got '${
-          redirectUri[i] || '(end)'
-        }' (${redirectUri.charCodeAt(i)}), expected '${
-          expected[i] || '(end)'
-        }' (${expected.charCodeAt(i)})`
-      );
-      break;
-    }
-  }
+  // CRITICAL: The redirect_uri MUST match exactly what was used in the authorization request
+  const expectedRedirectUri =
+    'https://aps-app-admin.vercel.app/api/linkedin/callback';
 
-  // Log raw values before encoding
-  console.log('=== Raw values before encoding ===');
-  console.log('redirectUri (raw):', redirectUri);
-  console.log('redirectUri (JSON):', JSON.stringify(redirectUri));
-  console.log('redirectUri length:', redirectUri.length);
-  console.log('clientId (raw):', clientId);
-  console.log('clientSecret (raw):', clientSecret);
-  console.log('code length:', code.length);
-  console.log('codeVerifier (raw):', codeVerifier);
-  console.log('codeVerifier length:', codeVerifier.length);
+  console.log('=== LinkedIn Token Exchange ===');
+  console.log('Redirect URI received:', redirectUri);
+  console.log('Expected redirect URI:', expectedRedirectUri);
+  console.log('Match:', redirectUri === expectedRedirectUri);
+  console.log('Code length:', code.length);
+  console.log('Code verifier length:', codeVerifier.length);
 
-  // Client Secret Debug
-  console.log('=== Client Secret Debug ===');
-  console.log('Secret raw:', clientSecret);
-  console.log('Secret encoded:', encodeURIComponent(clientSecret));
-  console.log('Secret bytes (hex):', Buffer.from(clientSecret).toString('hex'));
+  // Use URLSearchParams for proper encoding (like qs.stringify)
+  const params = new URLSearchParams();
+  params.append('grant_type', 'authorization_code');
+  params.append('code', code); // URLSearchParams will encode this
+  params.append('redirect_uri', redirectUri); // Must match auth request exactly
+  params.append('client_id', clientId);
+  params.append('client_secret', clientSecret);
+  params.append('code_verifier', codeVerifier);
 
-  // Manually construct body with explicit encoding
-  const bodyParts = [
-    `grant_type=authorization_code`,
-    `code=${encodeURIComponent(code)}`,
-    `redirect_uri=${encodeURIComponent(redirectUri)}`,
-    `client_id=${encodeURIComponent(clientId)}`,
-    `client_secret=${encodeURIComponent(clientSecret)}`, // Explicitly encode the secret
-    `code_verifier=${encodeURIComponent(codeVerifier)}`,
-  ];
+  const bodyString = params.toString();
 
-  const bodyString = bodyParts.join('&');
-
-  console.log('=== Manual body construction (with encoded secret) ===');
-  console.log(
-    'Body (secret hidden):',
-    bodyString.replace(/client_secret=[^&]+/, 'client_secret=***')
-  );
-  console.log('Full body:', bodyString);
-
-  console.log('=== Sending request to LinkedIn ===');
-  console.log('URL: https://www.linkedin.com/oauth/v2/accessToken');
-  console.log('Method: POST');
-  console.log('Content-Type: application/x-www-form-urlencoded');
+  console.log('=== Request Body (secret hidden) ===');
+  console.log(bodyString.replace(/client_secret=[^&]+/, 'client_secret=***'));
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
@@ -125,26 +63,17 @@ export async function POST(req: NextRequest) {
     }
   );
 
+  const responseText = await response.text();
   console.log('=== LinkedIn Response ===');
   console.log('Status:', response.status);
-  console.log('Status Text:', response.statusText);
-  console.log(
-    'Response Headers:',
-    Object.fromEntries(response.headers.entries())
-  );
+  console.log('Response:', responseText);
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('=== LinkedIn Token Exchange Error ===');
-    console.error('Raw Error Response:', errorText);
-
     let errorBody;
     try {
-      errorBody = JSON.parse(errorText);
-      console.error('Parsed Error:', JSON.stringify(errorBody, null, 2));
+      errorBody = JSON.parse(responseText);
     } catch {
-      console.error('Error response is not JSON');
-      errorBody = { error: errorText || 'Unknown error' };
+      errorBody = { error: responseText || 'Unknown error' };
     }
 
     return NextResponse.json(
@@ -158,12 +87,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const data = (await response.json()) as TokenResponse;
-  console.log('=== Token Exchange Success ===');
-  console.log('Access token received (length):', data.access_token?.length);
-  console.log('Token type:', data.token_type);
-  console.log('Expires in:', data.expires_in);
-  console.log('Scope:', data.scope);
-
+  const data = JSON.parse(responseText) as TokenResponse;
   return NextResponse.json(data);
 }
