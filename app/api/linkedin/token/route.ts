@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // VERIFYING REDIRECT URI MATCH - ADD THIS NEW SECTION
+  // VERIFYING REDIRECT URI MATCH
   console.log('=== VERIFYING REDIRECT URI MATCH ===');
   console.log('redirectUri received from app:', redirectUri);
   console.log(
@@ -84,23 +84,35 @@ export async function POST(req: NextRequest) {
   console.log('codeVerifier (raw):', codeVerifier);
   console.log('codeVerifier length:', codeVerifier.length);
 
-  // Manually construct body to have full control over encoding
+  // Client Secret Debug
+  console.log('=== Client Secret Debug ===');
+  console.log('Secret raw:', clientSecret);
+  console.log('Secret encoded:', encodeURIComponent(clientSecret));
+  console.log('Secret bytes (hex):', Buffer.from(clientSecret).toString('hex'));
+
+  // Manually construct body with explicit encoding
   const bodyParts = [
     `grant_type=authorization_code`,
     `code=${encodeURIComponent(code)}`,
     `redirect_uri=${encodeURIComponent(redirectUri)}`,
-    `client_id=${clientId}`, // Don't encode - send raw
-    `client_secret=${clientSecret}`, // Don't encode - send raw (including ==)
+    `client_id=${encodeURIComponent(clientId)}`,
+    `client_secret=${encodeURIComponent(clientSecret)}`, // Explicitly encode the secret
     `code_verifier=${encodeURIComponent(codeVerifier)}`,
   ];
 
   const bodyString = bodyParts.join('&');
 
-  console.log('=== Manual body construction ===');
+  console.log('=== Manual body construction (with encoded secret) ===');
   console.log(
     'Body (secret hidden):',
     bodyString.replace(/client_secret=[^&]+/, 'client_secret=***')
   );
+  console.log('Full body:', bodyString);
+
+  console.log('=== Sending request to LinkedIn ===');
+  console.log('URL: https://www.linkedin.com/oauth/v2/accessToken');
+  console.log('Method: POST');
+  console.log('Content-Type: application/x-www-form-urlencoded');
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
