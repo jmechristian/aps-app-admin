@@ -8,11 +8,11 @@ type TokenResponse = {
 };
 
 export async function POST(req: NextRequest) {
-  const { code, redirectUri, codeVerifier } = await req.json();
+  const { code, redirectUri } = await req.json();
 
-  if (!code || !redirectUri || !codeVerifier) {
+  if (!code || !redirectUri) {
     return NextResponse.json(
-      { error: 'Missing code, redirectUri, or codeVerifier' },
+      { error: 'Missing code or redirectUri' },
       { status: 400 }
     );
   }
@@ -31,28 +31,21 @@ export async function POST(req: NextRequest) {
   const expectedRedirectUri =
     'https://aps-app-admin.vercel.app/api/linkedin/callback';
 
-  console.log('=== LinkedIn Token Exchange (with client_secret) ===');
+  console.log('=== LinkedIn Token Exchange (standard OAuth, no PKCE) ===');
   console.log('Redirect URI received:', redirectUri);
   console.log('Expected redirect URI:', expectedRedirectUri);
   console.log('Match:', redirectUri === expectedRedirectUri);
   console.log('Code length:', code.length);
-  console.log('Code verifier length:', codeVerifier.length);
   console.log('Client ID:', clientId);
   console.log('Client Secret length:', clientSecret.length);
-  console.log('Client Secret first 3:', clientSecret.substring(0, 3));
-  console.log(
-    'Client Secret last 3:',
-    clientSecret.substring(clientSecret.length - 3)
-  );
 
-  // LinkedIn requires client_secret in body (not Basic Auth) even with PKCE
+  // Standard LinkedIn OAuth - no PKCE, just client_id and client_secret
   const params = new URLSearchParams();
   params.append('grant_type', 'authorization_code');
   params.append('code', code);
   params.append('redirect_uri', redirectUri);
   params.append('client_id', clientId);
   params.append('client_secret', clientSecret);
-  params.append('code_verifier', codeVerifier);
 
   const bodyString = params.toString();
 
