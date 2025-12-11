@@ -84,33 +84,23 @@ export async function POST(req: NextRequest) {
   console.log('codeVerifier (raw):', codeVerifier);
   console.log('codeVerifier length:', codeVerifier.length);
 
-  const params = new URLSearchParams({
-    grant_type: 'authorization_code',
-    code,
-    redirect_uri: redirectUri,
-    client_id: clientId,
-    client_secret: clientSecret,
-    code_verifier: codeVerifier,
-  });
+  // Manually construct body to have full control over encoding
+  const bodyParts = [
+    `grant_type=authorization_code`,
+    `code=${encodeURIComponent(code)}`,
+    `redirect_uri=${encodeURIComponent(redirectUri)}`,
+    `client_id=${clientId}`, // Don't encode - send raw
+    `client_secret=${clientSecret}`, // Don't encode - send raw (including ==)
+    `code_verifier=${encodeURIComponent(codeVerifier)}`,
+  ];
 
-  // Log URLSearchParams result
-  console.log('=== URLSearchParams result ===');
-  console.log('redirect_uri in params:', params.get('redirect_uri'));
-  console.log('client_id in params:', params.get('client_id'));
-  console.log('code_verifier in params:', params.get('code_verifier'));
+  const bodyString = bodyParts.join('&');
+
+  console.log('=== Manual body construction ===');
   console.log(
-    'Full body (secret hidden):',
-    params.toString().replace(/client_secret=[^&]+/, 'client_secret=***')
+    'Body (secret hidden):',
+    bodyString.replace(/client_secret=[^&]+/, 'client_secret=***')
   );
-
-  // TEMPORARY: Log full params with secret for debugging (remove after!)
-  console.log('=== FULL PARAMS TO LINKEDIN (DEBUG) ===');
-  console.log('Full params string:', params.toString());
-
-  console.log('=== Sending request to LinkedIn ===');
-  console.log('URL: https://www.linkedin.com/oauth/v2/accessToken');
-  console.log('Method: POST');
-  console.log('Content-Type: application/x-www-form-urlencoded');
 
   const response = await fetch(
     'https://www.linkedin.com/oauth/v2/accessToken',
@@ -119,7 +109,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: params.toString(),
+      body: bodyString,
     }
   );
 
