@@ -1,0 +1,3700 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type APS @aws_api_key {
+  Companies(filter: ModelAPSCompanyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAPSCompanyConnection
+  Registrants(filter: ModelApsRegistrantFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsRegistrantConnection
+  Speakers(filter: ModelAPSSpeakerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAPSSpeakerConnection
+  Sponsors(filter: ModelApsSponsorFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsSponsorConnection
+  aPSAgendaId: ID
+  addOns(filter: ModelApsAddOnFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAddOnConnection
+  address: String
+  agenda: ApsAgenda
+  city: String
+  codes: [String]
+  createdAt: AWSDateTime!
+  endDate: String
+  exhibitorDeals(filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorDealConnection
+  exhibitorHandouts(filter: ModelApsAppExhibitorHandoutFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorHandoutConnection
+  exhibitorPhotos(filter: ModelApsAppExhibitorPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPhotoConnection
+  exhibitorPromotions(filter: ModelApsAppExhibitorPromotionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPromotionConnection
+  exhibitors(filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorProfileConnection
+  id: ID!
+  location: String
+  photos(filter: ModelApsAppUserPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserPhotoConnection
+  startDate: String
+  state: String
+  updatedAt: AWSDateTime!
+  website: String
+  year: String!
+  zip: String
+}
+
+type APSBoard @aws_api_key {
+  bio: String
+  company: String!
+  createdAt: AWSDateTime!
+  email: String!
+  id: ID!
+  linkedin: String
+  name: String!
+  profilePic: String
+  title: String
+  updatedAt: AWSDateTime!
+}
+
+type APSCompany @aws_api_key {
+  aPSCompaniesId: ID
+  address: String
+  city: String
+  country: String
+  createdAt: AWSDateTime!
+  description: String
+  email: String!
+  event: APS!
+  eventId: ID!
+  exhibitorProfiles(filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorProfileConnection
+  id: ID!
+  logo: String
+  name: String!
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  phone: String
+  registrants(filter: ModelApsRegistrantFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsRegistrantConnection
+  sponsors(filter: ModelApsSponsorFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsSponsorConnection
+  state: String
+  type: CompanyType
+  updatedAt: AWSDateTime!
+  website: String
+  zip: String
+}
+
+type APSSpeaker @aws_api_key {
+  aPSSpeakersId: ID
+  bio: String!
+  company: String!
+  createdAt: AWSDateTime!
+  email: String!
+  event: APS!
+  eventId: ID!
+  firstName: String!
+  headshot: String!
+  id: ID!
+  lastName: String!
+  linkedin: String
+  mediaConsent: Boolean
+  phone: String
+  presentationSummary: String
+  presentationTitle: String
+  privacyConsent: Boolean
+  title: String!
+  updatedAt: AWSDateTime!
+}
+
+type ApsAddOn @aws_api_key {
+  aPSAddOnsId: ID
+  altLink: String
+  company: String!
+  createdAt: AWSDateTime!
+  date: String!
+  description: String!
+  event: APS!
+  eventId: ID!
+  id: ID!
+  limit: Int
+  location: String!
+  subheadline: String
+  time: String!
+  title: String!
+  type: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsAdminAnnouncement @aws_cognito_user_pools {
+  body: String!
+  createdAt: AWSDateTime!
+  deepLink: String
+  eventId: ID!
+  id: ID!
+  title: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsAgenda @aws_api_key {
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  id: ID!
+  items(filter: ModelApsAppSessionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppSessionConnection
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppExhibitorDeal @aws_api_key {
+  aPSExhibitorDealsId: ID
+  apsAppExhibitorProfileDealsId: ID
+  apsAppUserExhibitorDealsId: ID
+  createdAt: AWSDateTime!
+  deal: String
+  event: APS!
+  eventId: ID!
+  exhibitor: ApsAppExhibitorProfile!
+  exhibitorId: ID!
+  id: ID!
+  link: String
+  updatedAt: AWSDateTime!
+  user: ApsAppUser
+  userId: ID
+}
+
+type ApsAppExhibitorHandout @aws_api_key {
+  aPSExhibitorHandoutsId: ID
+  apsAppExhibitorProfileHandoutsId: ID
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  exhibitor: ApsAppExhibitorProfile!
+  exhibitorId: ID!
+  handout: String
+  id: ID!
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppExhibitorPhoto @aws_api_key {
+  aPSExhibitorPhotosId: ID
+  approved: Boolean
+  apsAppExhibitorProfilePhotosId: ID
+  caption: String
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  exhibitor: ApsAppExhibitorProfile!
+  exhibitorId: ID!
+  id: ID!
+  photo: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppExhibitorProfile @aws_api_key {
+  aPSCompanyExhibitorProfilesId: ID
+  aPSExhibitorsId: ID
+  boothNumber: String
+  company: APSCompany!
+  companyId: ID!
+  createdAt: AWSDateTime!
+  deals(filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorDealConnection
+  event: APS!
+  eventId: ID!
+  handouts(filter: ModelApsAppExhibitorHandoutFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorHandoutConnection
+  id: ID!
+  likes: Int
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  phone: String
+  photos(filter: ModelApsAppExhibitorPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPhotoConnection
+  promotions(filter: ModelApsAppExhibitorPromotionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPromotionConnection
+  sponsor: ApsSponsor
+  sponsorId: ID
+  title: String
+  updatedAt: AWSDateTime!
+  video: String
+  videoCaption: String
+  views: Int
+  visits: Int
+}
+
+type ApsAppExhibitorPromotion @aws_api_key {
+  aPSExhibitorPromotionsId: ID
+  apsAppExhibitorProfilePromotionsId: ID
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  exhibitor: ApsAppExhibitorProfile!
+  exhibitorId: ID!
+  id: ID!
+  link: String
+  promotion: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppSession @aws_api_key {
+  agenda: ApsAgenda
+  agendaId: ID
+  apsAgendaItemsId: ID
+  createdAt: AWSDateTime!
+  date: String
+  id: ID!
+  location: String
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  session: String
+  sessionQuestions(filter: ModelApsAppSessionQuestionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppSessionQuestionConnection
+  time: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppSessionQuestion @aws_api_key {
+  apsAppSessionSessionQuestionsId: ID
+  apsAppUserSessionQuestionsId: ID
+  createdAt: AWSDateTime!
+  id: ID!
+  question: String
+  session: ApsAppSession!
+  sessionId: ID!
+  updatedAt: AWSDateTime!
+  user: ApsAppUser!
+  userId: ID!
+}
+
+type ApsAppUser @aws_api_key {
+  contacts(filter: ModelApsAppUserContactFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserContactConnection
+  createdAt: AWSDateTime!
+  exhibitorDeals(filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorDealConnection
+  id: ID!
+  leads(filter: ModelApsAppUserLeadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserLeadConnection
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  photos(filter: ModelApsAppUserPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserPhotoConnection
+  profile: ApsAppUserProfile
+  profileId: ID
+  registrant: ApsRegistrant!
+  registrantId: ID!
+  sentDmMessages(createdAt: ModelStringKeyConditionInput, filter: ModelApsDmMessageFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsDmMessageConnection
+  sessionQuestions(filter: ModelApsAppSessionQuestionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppSessionQuestionConnection
+  updatedAt: AWSDateTime!
+}
+
+type ApsAppUserContact @aws_api_key {
+  apsAppUserContactsId: ID
+  contact: ApsAppUserProfile!
+  contactId: ID!
+  createdAt: AWSDateTime!
+  favorite: Boolean
+  id: ID!
+  updatedAt: AWSDateTime!
+  user: ApsAppUser!
+  userId: ID!
+}
+
+type ApsAppUserLead @aws_api_key {
+  apsAppUserLeadsId: ID
+  contact: ApsAppUserProfile!
+  contactId: ID!
+  createdAt: AWSDateTime!
+  favorite: Boolean
+  id: ID!
+  updatedAt: AWSDateTime!
+  user: ApsAppUser!
+  userId: ID!
+}
+
+type ApsAppUserNote @aws_api_key {
+  apsAppUserNotesId: ID
+  company: APSCompany
+  companyId: ID
+  createdAt: AWSDateTime!
+  exhibitor: ApsAppExhibitorProfile
+  exhibitorId: ID
+  id: ID!
+  note: String
+  profile: ApsAppUserProfile
+  profileId: ID
+  registrant: ApsRegistrant
+  registrantId: ID
+  session: ApsAppSession
+  sessionId: ID
+  updatedAt: AWSDateTime!
+  user: ApsAppUser!
+  userId: ID!
+}
+
+type ApsAppUserPhoto @aws_api_key {
+  aPSPhotosId: ID
+  approved: Boolean
+  apsAppUserPhotosId: ID
+  caption: String
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  id: ID!
+  photo: String
+  updatedAt: AWSDateTime!
+  user: ApsAppUser
+  userId: ID
+}
+
+type ApsAppUserProfile @aws_api_key {
+  affiliates(filter: ModelProfileAffiliateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelProfileAffiliateConnection
+  attendeeType: RegistrantType
+  bio: String
+  company: String
+  contacts(filter: ModelApsAppUserContactFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserContactConnection
+  createdAt: AWSDateTime!
+  education(filter: ModelProfileEducationFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelProfileEducationConnection
+  email: String
+  facebook: String
+  firstName: String
+  id: ID!
+  instagram: String
+  interests(filter: ModelProfileInterestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelProfileInterestConnection
+  jobTitle: String
+  lastName: String
+  leads(filter: ModelApsAppUserLeadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserLeadConnection
+  linkedin: String
+  location: String
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  phone: String
+  profilePicture: String
+  resume: String
+  twitter: String
+  updatedAt: AWSDateTime!
+  user: ApsAppUser!
+  userId: ID!
+  website: [String]
+  youtube: String
+}
+
+type ApsDmMessage @aws_cognito_user_pools {
+  body: String
+  createdAt: AWSDateTime!
+  eventId: ID!
+  id: ID!
+  owners: [String!]!
+  sender: ApsAppUser!
+  senderUserId: ID!
+  thread: ApsDmThread!
+  threadId: ID!
+  type: String
+  updatedAt: AWSDateTime!
+}
+
+type ApsDmParticipantState @aws_cognito_user_pools {
+  createdAt: AWSDateTime!
+  eventId: ID!
+  id: ID!
+  lastMessageAt: AWSDateTime
+  lastReadAt: AWSDateTime
+  thread: ApsDmThread!
+  threadId: ID!
+  unreadCount: Int
+  updatedAt: AWSDateTime!
+  userId: ID!
+}
+
+type ApsDmThread @aws_cognito_user_pools {
+  createdAt: AWSDateTime!
+  dmKey: String!
+  eventId: ID!
+  id: ID!
+  lastMessageAt: AWSDateTime
+  lastMessagePreview: String
+  messages(createdAt: ModelStringKeyConditionInput, filter: ModelApsDmMessageFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsDmMessageConnection
+  owners: [String!]!
+  participantStates(filter: ModelApsDmParticipantStateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ModelIDKeyConditionInput): ModelApsDmParticipantStateConnection
+  updatedAt: AWSDateTime!
+  userAId: ID!
+  userBId: ID!
+}
+
+type ApsPushToken @aws_cognito_user_pools {
+  createdAt: AWSDateTime!
+  id: ID!
+  platform: String
+  token: String!
+  updatedAt: AWSDateTime!
+  userId: ID!
+}
+
+type ApsRegistrant @aws_api_key {
+  aPSCompanyRegistrantsId: ID
+  aPSRegistrantsId: ID
+  appUser: ApsAppUser
+  appUserId: ID
+  approvedAt: String
+  aps: APS!
+  apsID: ID!
+  apsRegistrantSeatingChartRegistrantId: ID
+  aristoStatus: String
+  aristoTransportation: String
+  attendeeType: RegistrantType!
+  billingAddressCity: String
+  billingAddressEmail: String
+  billingAddressFirstName: String
+  billingAddressLastName: String
+  billingAddressPhone: String
+  billingAddressState: String
+  billingAddressStreet: String
+  billingAddressZip: String
+  bio: String
+  company: APSCompany
+  companyId: ID
+  createdAt: AWSDateTime!
+  discountCode: String
+  email: String!
+  firstName: String
+  headshot: String
+  id: ID!
+  interests: [String]
+  jobTitle: String
+  lastName: String
+  learningObjectives: String
+  magnaStatus: String
+  magnaTransportation: String
+  morrisetteStatus: String
+  morrisetteTransportation: String
+  notes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection
+  otherInterest: String
+  paymentConfirmation: String
+  paymentLast4: String
+  paymentMethod: String
+  phone: String
+  presentation: String
+  presentationSummary: String
+  presentationTitle: String
+  qrCode: String
+  registrationEmailReceived: Boolean
+  registrationEmailReceivedDate: String
+  registrationEmailSent: Boolean
+  registrationEmailSentDate: String
+  sameAsAttendee: Boolean
+  seatingChartRegistrant: ApsSeatingChartRegistrant
+  speakerTopic: String
+  speedNetworking: Boolean
+  speedNetworkingStatus: String
+  status: RegistrantStatus!
+  termsAccepted: Boolean
+  totalAmount: Int
+  updatedAt: AWSDateTime!
+  welcomeEmailReceived: Boolean
+  welcomeEmailReceivedDate: String
+  welcomeEmailSent: Boolean
+  welcomeEmailSentDate: String
+}
+
+type ApsSeatingChart @aws_api_key {
+  createdAt: AWSDateTime!
+  id: ID!
+  registrants(filter: ModelApsSeatingChartRegistrantFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsSeatingChartRegistrantConnection
+  updatedAt: AWSDateTime!
+}
+
+type ApsSeatingChartRegistrant @aws_api_key {
+  apsSeatingChartRegistrantsId: ID
+  category: String
+  company: String
+  createdAt: AWSDateTime!
+  email: String
+  firstName: String
+  id: ID!
+  lastName: String
+  notes: String
+  registrant: ApsRegistrant!
+  registrantID: ID!
+  role: String
+  seatingChart: ApsSeatingChart!
+  seatingChartID: ID!
+  tableNumber: Int
+  updatedAt: AWSDateTime!
+}
+
+type ApsSponsor @aws_api_key {
+  aPSCompanySponsorsId: ID
+  aPSSponsorsId: ID
+  apsSponsorProfileId: ID
+  company: APSCompany!
+  companyId: ID!
+  createdAt: AWSDateTime!
+  event: APS!
+  eventId: ID!
+  id: ID!
+  profile: ApsAppExhibitorProfile
+  updatedAt: AWSDateTime!
+}
+
+type ModelAPSBoardConnection @aws_api_key {
+  items: [APSBoard]!
+  nextToken: String
+}
+
+type ModelAPSCompanyConnection @aws_api_key {
+  items: [APSCompany]!
+  nextToken: String
+}
+
+type ModelAPSConnection @aws_api_key {
+  items: [APS]!
+  nextToken: String
+}
+
+type ModelAPSSpeakerConnection @aws_api_key {
+  items: [APSSpeaker]!
+  nextToken: String
+}
+
+type ModelApsAddOnConnection @aws_api_key {
+  items: [ApsAddOn]!
+  nextToken: String
+}
+
+type ModelApsAdminAnnouncementConnection {
+  items: [ApsAdminAnnouncement]!
+  nextToken: String
+}
+
+type ModelApsAgendaConnection @aws_api_key {
+  items: [ApsAgenda]!
+  nextToken: String
+}
+
+type ModelApsAppExhibitorDealConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppExhibitorDeal]!
+  nextToken: String
+}
+
+type ModelApsAppExhibitorHandoutConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppExhibitorHandout]!
+  nextToken: String
+}
+
+type ModelApsAppExhibitorPhotoConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppExhibitorPhoto]!
+  nextToken: String
+}
+
+type ModelApsAppExhibitorProfileConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppExhibitorProfile]!
+  nextToken: String
+}
+
+type ModelApsAppExhibitorPromotionConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppExhibitorPromotion]!
+  nextToken: String
+}
+
+type ModelApsAppSessionConnection @aws_api_key {
+  items: [ApsAppSession]!
+  nextToken: String
+}
+
+type ModelApsAppSessionQuestionConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppSessionQuestion]!
+  nextToken: String
+}
+
+type ModelApsAppUserConnection @aws_api_key {
+  items: [ApsAppUser]!
+  nextToken: String
+}
+
+type ModelApsAppUserContactConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppUserContact]!
+  nextToken: String
+}
+
+type ModelApsAppUserLeadConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppUserLead]!
+  nextToken: String
+}
+
+type ModelApsAppUserNoteConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppUserNote]!
+  nextToken: String
+}
+
+type ModelApsAppUserPhotoConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppUserPhoto]!
+  nextToken: String
+}
+
+type ModelApsAppUserProfileConnection @aws_api_key {
+  items: [ApsAppUserProfile]!
+  nextToken: String
+}
+
+type ModelApsDmMessageConnection @aws_api_key {
+  items: [ApsDmMessage]!
+  nextToken: String
+}
+
+type ModelApsDmParticipantStateConnection {
+  items: [ApsDmParticipantState]!
+  nextToken: String
+}
+
+type ModelApsDmThreadConnection {
+  items: [ApsDmThread]!
+  nextToken: String
+}
+
+type ModelApsPushTokenConnection {
+  items: [ApsPushToken]!
+  nextToken: String
+}
+
+type ModelApsRegistrantConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsRegistrant]!
+  nextToken: String
+}
+
+type ModelApsSeatingChartConnection @aws_api_key {
+  items: [ApsSeatingChart]!
+  nextToken: String
+}
+
+type ModelApsSeatingChartRegistrantConnection @aws_api_key {
+  items: [ApsSeatingChartRegistrant]!
+  nextToken: String
+}
+
+type ModelApsSponsorConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsSponsor]!
+  nextToken: String
+}
+
+type ModelProfileAffiliateConnection @aws_api_key {
+  items: [ProfileAffiliate]!
+  nextToken: String
+}
+
+type ModelProfileEducationConnection @aws_api_key {
+  items: [ProfileEducation]!
+  nextToken: String
+}
+
+type ModelProfileInterestConnection @aws_api_key {
+  items: [ProfileInterest]!
+  nextToken: String
+}
+
+type Mutation {
+  createAPS(condition: ModelAPSConditionInput, input: CreateAPSInput!): APS @aws_api_key
+  createAPSBoard(condition: ModelAPSBoardConditionInput, input: CreateAPSBoardInput!): APSBoard @aws_api_key
+  createAPSCompany(condition: ModelAPSCompanyConditionInput, input: CreateAPSCompanyInput!): APSCompany @aws_api_key
+  createAPSSpeaker(condition: ModelAPSSpeakerConditionInput, input: CreateAPSSpeakerInput!): APSSpeaker @aws_api_key
+  createApsAddOn(condition: ModelApsAddOnConditionInput, input: CreateApsAddOnInput!): ApsAddOn @aws_api_key
+  createApsAdminAnnouncement(condition: ModelApsAdminAnnouncementConditionInput, input: CreateApsAdminAnnouncementInput!): ApsAdminAnnouncement
+  createApsAgenda(condition: ModelApsAgendaConditionInput, input: CreateApsAgendaInput!): ApsAgenda @aws_api_key
+  createApsAppExhibitorDeal(condition: ModelApsAppExhibitorDealConditionInput, input: CreateApsAppExhibitorDealInput!): ApsAppExhibitorDeal @aws_api_key
+  createApsAppExhibitorHandout(condition: ModelApsAppExhibitorHandoutConditionInput, input: CreateApsAppExhibitorHandoutInput!): ApsAppExhibitorHandout @aws_api_key
+  createApsAppExhibitorPhoto(condition: ModelApsAppExhibitorPhotoConditionInput, input: CreateApsAppExhibitorPhotoInput!): ApsAppExhibitorPhoto @aws_api_key
+  createApsAppExhibitorProfile(condition: ModelApsAppExhibitorProfileConditionInput, input: CreateApsAppExhibitorProfileInput!): ApsAppExhibitorProfile @aws_api_key
+  createApsAppExhibitorPromotion(condition: ModelApsAppExhibitorPromotionConditionInput, input: CreateApsAppExhibitorPromotionInput!): ApsAppExhibitorPromotion @aws_api_key
+  createApsAppSession(condition: ModelApsAppSessionConditionInput, input: CreateApsAppSessionInput!): ApsAppSession @aws_api_key
+  createApsAppSessionQuestion(condition: ModelApsAppSessionQuestionConditionInput, input: CreateApsAppSessionQuestionInput!): ApsAppSessionQuestion @aws_api_key
+  createApsAppUser(condition: ModelApsAppUserConditionInput, input: CreateApsAppUserInput!): ApsAppUser @aws_api_key
+  createApsAppUserContact(condition: ModelApsAppUserContactConditionInput, input: CreateApsAppUserContactInput!): ApsAppUserContact @aws_api_key
+  createApsAppUserLead(condition: ModelApsAppUserLeadConditionInput, input: CreateApsAppUserLeadInput!): ApsAppUserLead @aws_api_key
+  createApsAppUserNote(condition: ModelApsAppUserNoteConditionInput, input: CreateApsAppUserNoteInput!): ApsAppUserNote @aws_api_key
+  createApsAppUserPhoto(condition: ModelApsAppUserPhotoConditionInput, input: CreateApsAppUserPhotoInput!): ApsAppUserPhoto @aws_api_key
+  createApsAppUserProfile(condition: ModelApsAppUserProfileConditionInput, input: CreateApsAppUserProfileInput!): ApsAppUserProfile @aws_api_key
+  createApsDmMessage(condition: ModelApsDmMessageConditionInput, input: CreateApsDmMessageInput!): ApsDmMessage
+  createApsDmParticipantState(condition: ModelApsDmParticipantStateConditionInput, input: CreateApsDmParticipantStateInput!): ApsDmParticipantState
+  createApsDmThread(condition: ModelApsDmThreadConditionInput, input: CreateApsDmThreadInput!): ApsDmThread
+  createApsPushToken(condition: ModelApsPushTokenConditionInput, input: CreateApsPushTokenInput!): ApsPushToken
+  createApsRegistrant(condition: ModelApsRegistrantConditionInput, input: CreateApsRegistrantInput!): ApsRegistrant @aws_api_key
+  createApsSeatingChart(condition: ModelApsSeatingChartConditionInput, input: CreateApsSeatingChartInput!): ApsSeatingChart @aws_api_key
+  createApsSeatingChartRegistrant(condition: ModelApsSeatingChartRegistrantConditionInput, input: CreateApsSeatingChartRegistrantInput!): ApsSeatingChartRegistrant @aws_api_key
+  createApsSponsor(condition: ModelApsSponsorConditionInput, input: CreateApsSponsorInput!): ApsSponsor @aws_api_key
+  createProfileAffiliate(condition: ModelProfileAffiliateConditionInput, input: CreateProfileAffiliateInput!): ProfileAffiliate @aws_api_key
+  createProfileEducation(condition: ModelProfileEducationConditionInput, input: CreateProfileEducationInput!): ProfileEducation @aws_api_key
+  createProfileInterest(condition: ModelProfileInterestConditionInput, input: CreateProfileInterestInput!): ProfileInterest @aws_api_key
+  deleteAPS(condition: ModelAPSConditionInput, input: DeleteAPSInput!): APS @aws_api_key
+  deleteAPSBoard(condition: ModelAPSBoardConditionInput, input: DeleteAPSBoardInput!): APSBoard @aws_api_key
+  deleteAPSCompany(condition: ModelAPSCompanyConditionInput, input: DeleteAPSCompanyInput!): APSCompany @aws_api_key
+  deleteAPSSpeaker(condition: ModelAPSSpeakerConditionInput, input: DeleteAPSSpeakerInput!): APSSpeaker @aws_api_key
+  deleteApsAddOn(condition: ModelApsAddOnConditionInput, input: DeleteApsAddOnInput!): ApsAddOn @aws_api_key
+  deleteApsAdminAnnouncement(condition: ModelApsAdminAnnouncementConditionInput, input: DeleteApsAdminAnnouncementInput!): ApsAdminAnnouncement
+  deleteApsAgenda(condition: ModelApsAgendaConditionInput, input: DeleteApsAgendaInput!): ApsAgenda @aws_api_key
+  deleteApsAppExhibitorDeal(condition: ModelApsAppExhibitorDealConditionInput, input: DeleteApsAppExhibitorDealInput!): ApsAppExhibitorDeal @aws_api_key
+  deleteApsAppExhibitorHandout(condition: ModelApsAppExhibitorHandoutConditionInput, input: DeleteApsAppExhibitorHandoutInput!): ApsAppExhibitorHandout @aws_api_key
+  deleteApsAppExhibitorPhoto(condition: ModelApsAppExhibitorPhotoConditionInput, input: DeleteApsAppExhibitorPhotoInput!): ApsAppExhibitorPhoto @aws_api_key
+  deleteApsAppExhibitorProfile(condition: ModelApsAppExhibitorProfileConditionInput, input: DeleteApsAppExhibitorProfileInput!): ApsAppExhibitorProfile @aws_api_key
+  deleteApsAppExhibitorPromotion(condition: ModelApsAppExhibitorPromotionConditionInput, input: DeleteApsAppExhibitorPromotionInput!): ApsAppExhibitorPromotion @aws_api_key
+  deleteApsAppSession(condition: ModelApsAppSessionConditionInput, input: DeleteApsAppSessionInput!): ApsAppSession @aws_api_key
+  deleteApsAppSessionQuestion(condition: ModelApsAppSessionQuestionConditionInput, input: DeleteApsAppSessionQuestionInput!): ApsAppSessionQuestion @aws_api_key
+  deleteApsAppUser(condition: ModelApsAppUserConditionInput, input: DeleteApsAppUserInput!): ApsAppUser @aws_api_key
+  deleteApsAppUserContact(condition: ModelApsAppUserContactConditionInput, input: DeleteApsAppUserContactInput!): ApsAppUserContact @aws_api_key
+  deleteApsAppUserLead(condition: ModelApsAppUserLeadConditionInput, input: DeleteApsAppUserLeadInput!): ApsAppUserLead @aws_api_key
+  deleteApsAppUserNote(condition: ModelApsAppUserNoteConditionInput, input: DeleteApsAppUserNoteInput!): ApsAppUserNote @aws_api_key
+  deleteApsAppUserPhoto(condition: ModelApsAppUserPhotoConditionInput, input: DeleteApsAppUserPhotoInput!): ApsAppUserPhoto @aws_api_key
+  deleteApsAppUserProfile(condition: ModelApsAppUserProfileConditionInput, input: DeleteApsAppUserProfileInput!): ApsAppUserProfile @aws_api_key
+  deleteApsDmMessage(condition: ModelApsDmMessageConditionInput, input: DeleteApsDmMessageInput!): ApsDmMessage
+  deleteApsDmParticipantState(condition: ModelApsDmParticipantStateConditionInput, input: DeleteApsDmParticipantStateInput!): ApsDmParticipantState
+  deleteApsDmThread(condition: ModelApsDmThreadConditionInput, input: DeleteApsDmThreadInput!): ApsDmThread
+  deleteApsPushToken(condition: ModelApsPushTokenConditionInput, input: DeleteApsPushTokenInput!): ApsPushToken
+  deleteApsRegistrant(condition: ModelApsRegistrantConditionInput, input: DeleteApsRegistrantInput!): ApsRegistrant @aws_api_key
+  deleteApsSeatingChart(condition: ModelApsSeatingChartConditionInput, input: DeleteApsSeatingChartInput!): ApsSeatingChart @aws_api_key
+  deleteApsSeatingChartRegistrant(condition: ModelApsSeatingChartRegistrantConditionInput, input: DeleteApsSeatingChartRegistrantInput!): ApsSeatingChartRegistrant @aws_api_key
+  deleteApsSponsor(condition: ModelApsSponsorConditionInput, input: DeleteApsSponsorInput!): ApsSponsor @aws_api_key
+  deleteProfileAffiliate(condition: ModelProfileAffiliateConditionInput, input: DeleteProfileAffiliateInput!): ProfileAffiliate @aws_api_key
+  deleteProfileEducation(condition: ModelProfileEducationConditionInput, input: DeleteProfileEducationInput!): ProfileEducation @aws_api_key
+  deleteProfileInterest(condition: ModelProfileInterestConditionInput, input: DeleteProfileInterestInput!): ProfileInterest @aws_api_key
+  updateAPS(condition: ModelAPSConditionInput, input: UpdateAPSInput!): APS @aws_api_key
+  updateAPSBoard(condition: ModelAPSBoardConditionInput, input: UpdateAPSBoardInput!): APSBoard @aws_api_key
+  updateAPSCompany(condition: ModelAPSCompanyConditionInput, input: UpdateAPSCompanyInput!): APSCompany @aws_api_key
+  updateAPSSpeaker(condition: ModelAPSSpeakerConditionInput, input: UpdateAPSSpeakerInput!): APSSpeaker @aws_api_key
+  updateApsAddOn(condition: ModelApsAddOnConditionInput, input: UpdateApsAddOnInput!): ApsAddOn @aws_api_key
+  updateApsAdminAnnouncement(condition: ModelApsAdminAnnouncementConditionInput, input: UpdateApsAdminAnnouncementInput!): ApsAdminAnnouncement
+  updateApsAgenda(condition: ModelApsAgendaConditionInput, input: UpdateApsAgendaInput!): ApsAgenda @aws_api_key
+  updateApsAppExhibitorDeal(condition: ModelApsAppExhibitorDealConditionInput, input: UpdateApsAppExhibitorDealInput!): ApsAppExhibitorDeal @aws_api_key
+  updateApsAppExhibitorHandout(condition: ModelApsAppExhibitorHandoutConditionInput, input: UpdateApsAppExhibitorHandoutInput!): ApsAppExhibitorHandout @aws_api_key
+  updateApsAppExhibitorPhoto(condition: ModelApsAppExhibitorPhotoConditionInput, input: UpdateApsAppExhibitorPhotoInput!): ApsAppExhibitorPhoto @aws_api_key
+  updateApsAppExhibitorProfile(condition: ModelApsAppExhibitorProfileConditionInput, input: UpdateApsAppExhibitorProfileInput!): ApsAppExhibitorProfile @aws_api_key
+  updateApsAppExhibitorPromotion(condition: ModelApsAppExhibitorPromotionConditionInput, input: UpdateApsAppExhibitorPromotionInput!): ApsAppExhibitorPromotion @aws_api_key
+  updateApsAppSession(condition: ModelApsAppSessionConditionInput, input: UpdateApsAppSessionInput!): ApsAppSession @aws_api_key
+  updateApsAppSessionQuestion(condition: ModelApsAppSessionQuestionConditionInput, input: UpdateApsAppSessionQuestionInput!): ApsAppSessionQuestion @aws_api_key
+  updateApsAppUser(condition: ModelApsAppUserConditionInput, input: UpdateApsAppUserInput!): ApsAppUser @aws_api_key
+  updateApsAppUserContact(condition: ModelApsAppUserContactConditionInput, input: UpdateApsAppUserContactInput!): ApsAppUserContact @aws_api_key
+  updateApsAppUserLead(condition: ModelApsAppUserLeadConditionInput, input: UpdateApsAppUserLeadInput!): ApsAppUserLead @aws_api_key
+  updateApsAppUserNote(condition: ModelApsAppUserNoteConditionInput, input: UpdateApsAppUserNoteInput!): ApsAppUserNote @aws_api_key
+  updateApsAppUserPhoto(condition: ModelApsAppUserPhotoConditionInput, input: UpdateApsAppUserPhotoInput!): ApsAppUserPhoto @aws_api_key
+  updateApsAppUserProfile(condition: ModelApsAppUserProfileConditionInput, input: UpdateApsAppUserProfileInput!): ApsAppUserProfile @aws_api_key
+  updateApsDmMessage(condition: ModelApsDmMessageConditionInput, input: UpdateApsDmMessageInput!): ApsDmMessage
+  updateApsDmParticipantState(condition: ModelApsDmParticipantStateConditionInput, input: UpdateApsDmParticipantStateInput!): ApsDmParticipantState
+  updateApsDmThread(condition: ModelApsDmThreadConditionInput, input: UpdateApsDmThreadInput!): ApsDmThread
+  updateApsPushToken(condition: ModelApsPushTokenConditionInput, input: UpdateApsPushTokenInput!): ApsPushToken
+  updateApsRegistrant(condition: ModelApsRegistrantConditionInput, input: UpdateApsRegistrantInput!): ApsRegistrant @aws_api_key
+  updateApsSeatingChart(condition: ModelApsSeatingChartConditionInput, input: UpdateApsSeatingChartInput!): ApsSeatingChart @aws_api_key
+  updateApsSeatingChartRegistrant(condition: ModelApsSeatingChartRegistrantConditionInput, input: UpdateApsSeatingChartRegistrantInput!): ApsSeatingChartRegistrant @aws_api_key
+  updateApsSponsor(condition: ModelApsSponsorConditionInput, input: UpdateApsSponsorInput!): ApsSponsor @aws_api_key
+  updateProfileAffiliate(condition: ModelProfileAffiliateConditionInput, input: UpdateProfileAffiliateInput!): ProfileAffiliate @aws_api_key
+  updateProfileEducation(condition: ModelProfileEducationConditionInput, input: UpdateProfileEducationInput!): ProfileEducation @aws_api_key
+  updateProfileInterest(condition: ModelProfileInterestConditionInput, input: UpdateProfileInterestInput!): ProfileInterest @aws_api_key
+}
+
+type ProfileAffiliate @aws_api_key {
+  affiliate: String
+  apsAppUserProfileAffiliatesId: ID
+  createdAt: AWSDateTime!
+  endDate: String
+  id: ID!
+  profile: ApsAppUserProfile!
+  profileId: ID!
+  role: String
+  startDate: String
+  updatedAt: AWSDateTime!
+}
+
+type ProfileEducation @aws_api_key {
+  apsAppUserProfileEducationId: ID
+  createdAt: AWSDateTime!
+  degree: String
+  fieldOfStudy: String
+  id: ID!
+  profile: ApsAppUserProfile!
+  profileId: ID!
+  school: String
+  updatedAt: AWSDateTime!
+}
+
+type ProfileInterest @aws_api_key {
+  apsAppUserProfileInterestsId: ID
+  createdAt: AWSDateTime!
+  id: ID!
+  interest: String
+  profile: ApsAppUserProfile!
+  profileId: ID!
+  updatedAt: AWSDateTime!
+}
+
+type Query {
+  aPSCompaniesByEventId(eventId: ID!, filter: ModelAPSCompanyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAPSCompanyConnection @aws_api_key
+  aPSSpeakersByEventId(eventId: ID!, filter: ModelAPSSpeakerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAPSSpeakerConnection @aws_api_key
+  apsAddOnsByEventId(eventId: ID!, filter: ModelApsAddOnFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAddOnConnection @aws_api_key
+  apsAdminAnnouncementsByEventIdAndCreatedAt(createdAt: ModelStringKeyConditionInput, eventId: ID!, filter: ModelApsAdminAnnouncementFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAdminAnnouncementConnection
+  apsAgendaByEventId(eventId: ID!, filter: ModelApsAgendaFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAgendaConnection @aws_api_key
+  apsAppExhibitorDealsByEventId(eventId: ID!, filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorDealConnection @aws_api_key
+  apsAppExhibitorDealsByExhibitorId(exhibitorId: ID!, filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorDealConnection @aws_api_key
+  apsAppExhibitorDealsByUserId(filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppExhibitorDealConnection @aws_api_key
+  apsAppExhibitorHandoutsByEventId(eventId: ID!, filter: ModelApsAppExhibitorHandoutFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorHandoutConnection @aws_api_key
+  apsAppExhibitorHandoutsByExhibitorId(exhibitorId: ID!, filter: ModelApsAppExhibitorHandoutFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorHandoutConnection @aws_api_key
+  apsAppExhibitorPhotosByEventId(eventId: ID!, filter: ModelApsAppExhibitorPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPhotoConnection @aws_api_key
+  apsAppExhibitorPhotosByExhibitorId(exhibitorId: ID!, filter: ModelApsAppExhibitorPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPhotoConnection @aws_api_key
+  apsAppExhibitorProfilesByCompanyId(companyId: ID!, filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorProfileConnection @aws_api_key
+  apsAppExhibitorProfilesByEventId(eventId: ID!, filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorProfileConnection @aws_api_key
+  apsAppExhibitorProfilesBySponsorId(filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, sponsorId: ID!): ModelApsAppExhibitorProfileConnection @aws_api_key
+  apsAppExhibitorPromotionsByEventId(eventId: ID!, filter: ModelApsAppExhibitorPromotionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPromotionConnection @aws_api_key
+  apsAppExhibitorPromotionsByExhibitorId(exhibitorId: ID!, filter: ModelApsAppExhibitorPromotionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppExhibitorPromotionConnection @aws_api_key
+  apsAppSessionQuestionsBySessionId(filter: ModelApsAppSessionQuestionFilterInput, limit: Int, nextToken: String, sessionId: ID!, sortDirection: ModelSortDirection): ModelApsAppSessionQuestionConnection @aws_api_key
+  apsAppSessionQuestionsByUserId(filter: ModelApsAppSessionQuestionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppSessionQuestionConnection @aws_api_key
+  apsAppSessionsByAgendaId(agendaId: ID!, filter: ModelApsAppSessionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppSessionConnection @aws_api_key
+  apsAppUserContactsByContactId(contactId: ID!, filter: ModelApsAppUserContactFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserContactConnection @aws_api_key
+  apsAppUserContactsByUserId(filter: ModelApsAppUserContactFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppUserContactConnection @aws_api_key
+  apsAppUserLeadsByContactId(contactId: ID!, filter: ModelApsAppUserLeadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserLeadConnection @aws_api_key
+  apsAppUserLeadsByUserId(filter: ModelApsAppUserLeadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppUserLeadConnection @aws_api_key
+  apsAppUserNotesByCompanyId(companyId: ID!, filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserNotesByExhibitorId(exhibitorId: ID!, filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserNotesByProfileId(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, profileId: ID!, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserNotesByRegistrantId(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, registrantId: ID!, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserNotesBySessionId(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sessionId: ID!, sortDirection: ModelSortDirection): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserNotesByUserId(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppUserNoteConnection @aws_api_key
+  apsAppUserPhotosByEventId(eventId: ID!, filter: ModelApsAppUserPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsAppUserPhotoConnection @aws_api_key
+  apsAppUserPhotosByUserId(filter: ModelApsAppUserPhotoFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppUserPhotoConnection @aws_api_key
+  apsAppUserProfilesByUserId(filter: ModelApsAppUserProfileFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsAppUserProfileConnection @aws_api_key
+  apsAppUsersByRegistrantId(filter: ModelApsAppUserFilterInput, limit: Int, nextToken: String, registrantId: ID!, sortDirection: ModelSortDirection): ModelApsAppUserConnection @aws_api_key
+  apsDmMessagesBySenderUserIdAndCreatedAt(createdAt: ModelStringKeyConditionInput, filter: ModelApsDmMessageFilterInput, limit: Int, nextToken: String, senderUserId: ID!, sortDirection: ModelSortDirection): ModelApsDmMessageConnection
+  apsDmMessagesByThreadIdAndCreatedAt(createdAt: ModelStringKeyConditionInput, filter: ModelApsDmMessageFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, threadId: ID!): ModelApsDmMessageConnection
+  apsDmParticipantStatesByThreadIdAndUserId(filter: ModelApsDmParticipantStateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, threadId: ID!, userId: ModelIDKeyConditionInput): ModelApsDmParticipantStateConnection
+  apsDmParticipantStatesByUserIdAndLastMessageAt(filter: ModelApsDmParticipantStateFilterInput, lastMessageAt: ModelStringKeyConditionInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, userId: ID!): ModelApsDmParticipantStateConnection
+  apsDmThreadsByDmKey(dmKey: String!, filter: ModelApsDmThreadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsDmThreadConnection
+  apsPushTokensByUserIdAndUpdatedAt(filter: ModelApsPushTokenFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection, updatedAt: ModelStringKeyConditionInput, userId: ID!): ModelApsPushTokenConnection
+  apsRegistrantsByApsID(apsID: ID!, filter: ModelApsRegistrantFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsRegistrantConnection @aws_api_key
+  apsRegistrantsByCompanyId(companyId: ID!, filter: ModelApsRegistrantFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsRegistrantConnection @aws_api_key
+  apsSeatingChartRegistrantsByRegistrantID(filter: ModelApsSeatingChartRegistrantFilterInput, limit: Int, nextToken: String, registrantID: ID!, sortDirection: ModelSortDirection): ModelApsSeatingChartRegistrantConnection @aws_api_key
+  apsSeatingChartRegistrantsBySeatingChartID(filter: ModelApsSeatingChartRegistrantFilterInput, limit: Int, nextToken: String, seatingChartID: ID!, sortDirection: ModelSortDirection): ModelApsSeatingChartRegistrantConnection @aws_api_key
+  apsSponsorsByCompanyId(companyId: ID!, filter: ModelApsSponsorFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsSponsorConnection @aws_api_key
+  apsSponsorsByEventId(eventId: ID!, filter: ModelApsSponsorFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApsSponsorConnection @aws_api_key
+  getAPS(id: ID!): APS @aws_api_key
+  getAPSBoard(id: ID!): APSBoard @aws_api_key
+  getAPSCompany(id: ID!): APSCompany @aws_api_key
+  getAPSSpeaker(id: ID!): APSSpeaker @aws_api_key
+  getApsAddOn(id: ID!): ApsAddOn @aws_api_key
+  getApsAdminAnnouncement(id: ID!): ApsAdminAnnouncement
+  getApsAgenda(id: ID!): ApsAgenda @aws_api_key
+  getApsAppExhibitorDeal(id: ID!): ApsAppExhibitorDeal @aws_api_key
+  getApsAppExhibitorHandout(id: ID!): ApsAppExhibitorHandout @aws_api_key
+  getApsAppExhibitorPhoto(id: ID!): ApsAppExhibitorPhoto @aws_api_key
+  getApsAppExhibitorProfile(id: ID!): ApsAppExhibitorProfile @aws_api_key
+  getApsAppExhibitorPromotion(id: ID!): ApsAppExhibitorPromotion @aws_api_key
+  getApsAppSession(id: ID!): ApsAppSession @aws_api_key
+  getApsAppSessionQuestion(id: ID!): ApsAppSessionQuestion @aws_api_key
+  getApsAppUser(id: ID!): ApsAppUser @aws_api_key
+  getApsAppUserContact(id: ID!): ApsAppUserContact @aws_api_key
+  getApsAppUserLead(id: ID!): ApsAppUserLead @aws_api_key
+  getApsAppUserNote(id: ID!): ApsAppUserNote @aws_api_key
+  getApsAppUserPhoto(id: ID!): ApsAppUserPhoto @aws_api_key
+  getApsAppUserProfile(id: ID!): ApsAppUserProfile @aws_api_key
+  getApsDmMessage(id: ID!): ApsDmMessage
+  getApsDmParticipantState(id: ID!): ApsDmParticipantState
+  getApsDmThread(id: ID!): ApsDmThread
+  getApsPushToken(id: ID!): ApsPushToken
+  getApsRegistrant(id: ID!): ApsRegistrant @aws_api_key
+  getApsSeatingChart(id: ID!): ApsSeatingChart @aws_api_key
+  getApsSeatingChartRegistrant(id: ID!): ApsSeatingChartRegistrant @aws_api_key
+  getApsSponsor(id: ID!): ApsSponsor @aws_api_key
+  getProfileAffiliate(id: ID!): ProfileAffiliate @aws_api_key
+  getProfileEducation(id: ID!): ProfileEducation @aws_api_key
+  getProfileInterest(id: ID!): ProfileInterest @aws_api_key
+  listAPS(filter: ModelAPSFilterInput, limit: Int, nextToken: String): ModelAPSConnection @aws_api_key
+  listAPSBoards(filter: ModelAPSBoardFilterInput, limit: Int, nextToken: String): ModelAPSBoardConnection @aws_api_key
+  listAPSCompanies(filter: ModelAPSCompanyFilterInput, limit: Int, nextToken: String): ModelAPSCompanyConnection @aws_api_key
+  listAPSSpeakers(filter: ModelAPSSpeakerFilterInput, limit: Int, nextToken: String): ModelAPSSpeakerConnection @aws_api_key
+  listApsAddOns(filter: ModelApsAddOnFilterInput, limit: Int, nextToken: String): ModelApsAddOnConnection @aws_api_key
+  listApsAdminAnnouncements(filter: ModelApsAdminAnnouncementFilterInput, limit: Int, nextToken: String): ModelApsAdminAnnouncementConnection
+  listApsAgenda(filter: ModelApsAgendaFilterInput, limit: Int, nextToken: String): ModelApsAgendaConnection @aws_api_key
+  listApsAppExhibitorDeals(filter: ModelApsAppExhibitorDealFilterInput, limit: Int, nextToken: String): ModelApsAppExhibitorDealConnection @aws_api_key
+  listApsAppExhibitorHandouts(filter: ModelApsAppExhibitorHandoutFilterInput, limit: Int, nextToken: String): ModelApsAppExhibitorHandoutConnection @aws_api_key
+  listApsAppExhibitorPhotos(filter: ModelApsAppExhibitorPhotoFilterInput, limit: Int, nextToken: String): ModelApsAppExhibitorPhotoConnection @aws_api_key
+  listApsAppExhibitorProfiles(filter: ModelApsAppExhibitorProfileFilterInput, limit: Int, nextToken: String): ModelApsAppExhibitorProfileConnection @aws_api_key
+  listApsAppExhibitorPromotions(filter: ModelApsAppExhibitorPromotionFilterInput, limit: Int, nextToken: String): ModelApsAppExhibitorPromotionConnection @aws_api_key
+  listApsAppSessionQuestions(filter: ModelApsAppSessionQuestionFilterInput, limit: Int, nextToken: String): ModelApsAppSessionQuestionConnection @aws_api_key
+  listApsAppSessions(filter: ModelApsAppSessionFilterInput, limit: Int, nextToken: String): ModelApsAppSessionConnection @aws_api_key
+  listApsAppUserContacts(filter: ModelApsAppUserContactFilterInput, limit: Int, nextToken: String): ModelApsAppUserContactConnection @aws_api_key
+  listApsAppUserLeads(filter: ModelApsAppUserLeadFilterInput, limit: Int, nextToken: String): ModelApsAppUserLeadConnection @aws_api_key
+  listApsAppUserNotes(filter: ModelApsAppUserNoteFilterInput, limit: Int, nextToken: String): ModelApsAppUserNoteConnection @aws_api_key
+  listApsAppUserPhotos(filter: ModelApsAppUserPhotoFilterInput, limit: Int, nextToken: String): ModelApsAppUserPhotoConnection @aws_api_key
+  listApsAppUserProfiles(filter: ModelApsAppUserProfileFilterInput, limit: Int, nextToken: String): ModelApsAppUserProfileConnection @aws_api_key
+  listApsAppUsers(filter: ModelApsAppUserFilterInput, limit: Int, nextToken: String): ModelApsAppUserConnection @aws_api_key
+  listApsDmMessages(filter: ModelApsDmMessageFilterInput, limit: Int, nextToken: String): ModelApsDmMessageConnection
+  listApsDmParticipantStates(filter: ModelApsDmParticipantStateFilterInput, limit: Int, nextToken: String): ModelApsDmParticipantStateConnection
+  listApsDmThreads(filter: ModelApsDmThreadFilterInput, limit: Int, nextToken: String): ModelApsDmThreadConnection
+  listApsPushTokens(filter: ModelApsPushTokenFilterInput, limit: Int, nextToken: String): ModelApsPushTokenConnection
+  listApsRegistrants(filter: ModelApsRegistrantFilterInput, limit: Int, nextToken: String): ModelApsRegistrantConnection @aws_api_key
+  listApsSeatingChartRegistrants(filter: ModelApsSeatingChartRegistrantFilterInput, limit: Int, nextToken: String): ModelApsSeatingChartRegistrantConnection @aws_api_key
+  listApsSeatingCharts(filter: ModelApsSeatingChartFilterInput, limit: Int, nextToken: String): ModelApsSeatingChartConnection @aws_api_key
+  listApsSponsors(filter: ModelApsSponsorFilterInput, limit: Int, nextToken: String): ModelApsSponsorConnection @aws_api_key
+  listProfileAffiliates(filter: ModelProfileAffiliateFilterInput, limit: Int, nextToken: String): ModelProfileAffiliateConnection @aws_api_key
+  listProfileEducations(filter: ModelProfileEducationFilterInput, limit: Int, nextToken: String): ModelProfileEducationConnection @aws_api_key
+  listProfileInterests(filter: ModelProfileInterestFilterInput, limit: Int, nextToken: String): ModelProfileInterestConnection @aws_api_key
+  profileAffiliatesByProfileId(filter: ModelProfileAffiliateFilterInput, limit: Int, nextToken: String, profileId: ID!, sortDirection: ModelSortDirection): ModelProfileAffiliateConnection @aws_api_key
+  profileEducationsByProfileId(filter: ModelProfileEducationFilterInput, limit: Int, nextToken: String, profileId: ID!, sortDirection: ModelSortDirection): ModelProfileEducationConnection @aws_api_key
+  profileInterestsByProfileId(filter: ModelProfileInterestFilterInput, limit: Int, nextToken: String, profileId: ID!, sortDirection: ModelSortDirection): ModelProfileInterestConnection @aws_api_key
+}
+
+type Subscription {
+  onCreateAPS(filter: ModelSubscriptionAPSFilterInput): APS @aws_api_key @aws_subscribe(mutations : ["createAPS"])
+  onCreateAPSBoard(filter: ModelSubscriptionAPSBoardFilterInput): APSBoard @aws_api_key @aws_subscribe(mutations : ["createAPSBoard"])
+  onCreateAPSCompany(filter: ModelSubscriptionAPSCompanyFilterInput): APSCompany @aws_api_key @aws_subscribe(mutations : ["createAPSCompany"])
+  onCreateAPSSpeaker(filter: ModelSubscriptionAPSSpeakerFilterInput): APSSpeaker @aws_api_key @aws_subscribe(mutations : ["createAPSSpeaker"])
+  onCreateApsAddOn(filter: ModelSubscriptionApsAddOnFilterInput): ApsAddOn @aws_api_key @aws_subscribe(mutations : ["createApsAddOn"])
+  onCreateApsAdminAnnouncement(filter: ModelSubscriptionApsAdminAnnouncementFilterInput): ApsAdminAnnouncement @aws_subscribe(mutations : ["createApsAdminAnnouncement"])
+  onCreateApsAgenda(filter: ModelSubscriptionApsAgendaFilterInput): ApsAgenda @aws_api_key @aws_subscribe(mutations : ["createApsAgenda"])
+  onCreateApsAppExhibitorDeal(filter: ModelSubscriptionApsAppExhibitorDealFilterInput): ApsAppExhibitorDeal @aws_api_key @aws_subscribe(mutations : ["createApsAppExhibitorDeal"])
+  onCreateApsAppExhibitorHandout(filter: ModelSubscriptionApsAppExhibitorHandoutFilterInput): ApsAppExhibitorHandout @aws_api_key @aws_subscribe(mutations : ["createApsAppExhibitorHandout"])
+  onCreateApsAppExhibitorPhoto(filter: ModelSubscriptionApsAppExhibitorPhotoFilterInput): ApsAppExhibitorPhoto @aws_api_key @aws_subscribe(mutations : ["createApsAppExhibitorPhoto"])
+  onCreateApsAppExhibitorProfile(filter: ModelSubscriptionApsAppExhibitorProfileFilterInput): ApsAppExhibitorProfile @aws_api_key @aws_subscribe(mutations : ["createApsAppExhibitorProfile"])
+  onCreateApsAppExhibitorPromotion(filter: ModelSubscriptionApsAppExhibitorPromotionFilterInput): ApsAppExhibitorPromotion @aws_api_key @aws_subscribe(mutations : ["createApsAppExhibitorPromotion"])
+  onCreateApsAppSession(filter: ModelSubscriptionApsAppSessionFilterInput): ApsAppSession @aws_api_key @aws_subscribe(mutations : ["createApsAppSession"])
+  onCreateApsAppSessionQuestion(filter: ModelSubscriptionApsAppSessionQuestionFilterInput): ApsAppSessionQuestion @aws_api_key @aws_subscribe(mutations : ["createApsAppSessionQuestion"])
+  onCreateApsAppUser(filter: ModelSubscriptionApsAppUserFilterInput): ApsAppUser @aws_api_key @aws_subscribe(mutations : ["createApsAppUser"])
+  onCreateApsAppUserContact(filter: ModelSubscriptionApsAppUserContactFilterInput): ApsAppUserContact @aws_api_key @aws_subscribe(mutations : ["createApsAppUserContact"])
+  onCreateApsAppUserLead(filter: ModelSubscriptionApsAppUserLeadFilterInput): ApsAppUserLead @aws_api_key @aws_subscribe(mutations : ["createApsAppUserLead"])
+  onCreateApsAppUserNote(filter: ModelSubscriptionApsAppUserNoteFilterInput): ApsAppUserNote @aws_api_key @aws_subscribe(mutations : ["createApsAppUserNote"])
+  onCreateApsAppUserPhoto(filter: ModelSubscriptionApsAppUserPhotoFilterInput): ApsAppUserPhoto @aws_api_key @aws_subscribe(mutations : ["createApsAppUserPhoto"])
+  onCreateApsAppUserProfile(filter: ModelSubscriptionApsAppUserProfileFilterInput): ApsAppUserProfile @aws_api_key @aws_subscribe(mutations : ["createApsAppUserProfile"])
+  onCreateApsDmMessage(filter: ModelSubscriptionApsDmMessageFilterInput): ApsDmMessage @aws_subscribe(mutations : ["createApsDmMessage"])
+  onCreateApsDmParticipantState(filter: ModelSubscriptionApsDmParticipantStateFilterInput, userId: String): ApsDmParticipantState @aws_subscribe(mutations : ["createApsDmParticipantState"])
+  onCreateApsDmThread(filter: ModelSubscriptionApsDmThreadFilterInput): ApsDmThread @aws_subscribe(mutations : ["createApsDmThread"])
+  onCreateApsPushToken(filter: ModelSubscriptionApsPushTokenFilterInput, userId: String): ApsPushToken @aws_subscribe(mutations : ["createApsPushToken"])
+  onCreateApsRegistrant(filter: ModelSubscriptionApsRegistrantFilterInput): ApsRegistrant @aws_api_key @aws_subscribe(mutations : ["createApsRegistrant"])
+  onCreateApsSeatingChart(filter: ModelSubscriptionApsSeatingChartFilterInput): ApsSeatingChart @aws_api_key @aws_subscribe(mutations : ["createApsSeatingChart"])
+  onCreateApsSeatingChartRegistrant(filter: ModelSubscriptionApsSeatingChartRegistrantFilterInput): ApsSeatingChartRegistrant @aws_api_key @aws_subscribe(mutations : ["createApsSeatingChartRegistrant"])
+  onCreateApsSponsor(filter: ModelSubscriptionApsSponsorFilterInput): ApsSponsor @aws_api_key @aws_subscribe(mutations : ["createApsSponsor"])
+  onCreateProfileAffiliate(filter: ModelSubscriptionProfileAffiliateFilterInput): ProfileAffiliate @aws_api_key @aws_subscribe(mutations : ["createProfileAffiliate"])
+  onCreateProfileEducation(filter: ModelSubscriptionProfileEducationFilterInput): ProfileEducation @aws_api_key @aws_subscribe(mutations : ["createProfileEducation"])
+  onCreateProfileInterest(filter: ModelSubscriptionProfileInterestFilterInput): ProfileInterest @aws_api_key @aws_subscribe(mutations : ["createProfileInterest"])
+  onDeleteAPS(filter: ModelSubscriptionAPSFilterInput): APS @aws_api_key @aws_subscribe(mutations : ["deleteAPS"])
+  onDeleteAPSBoard(filter: ModelSubscriptionAPSBoardFilterInput): APSBoard @aws_api_key @aws_subscribe(mutations : ["deleteAPSBoard"])
+  onDeleteAPSCompany(filter: ModelSubscriptionAPSCompanyFilterInput): APSCompany @aws_api_key @aws_subscribe(mutations : ["deleteAPSCompany"])
+  onDeleteAPSSpeaker(filter: ModelSubscriptionAPSSpeakerFilterInput): APSSpeaker @aws_api_key @aws_subscribe(mutations : ["deleteAPSSpeaker"])
+  onDeleteApsAddOn(filter: ModelSubscriptionApsAddOnFilterInput): ApsAddOn @aws_api_key @aws_subscribe(mutations : ["deleteApsAddOn"])
+  onDeleteApsAdminAnnouncement(filter: ModelSubscriptionApsAdminAnnouncementFilterInput): ApsAdminAnnouncement @aws_subscribe(mutations : ["deleteApsAdminAnnouncement"])
+  onDeleteApsAgenda(filter: ModelSubscriptionApsAgendaFilterInput): ApsAgenda @aws_api_key @aws_subscribe(mutations : ["deleteApsAgenda"])
+  onDeleteApsAppExhibitorDeal(filter: ModelSubscriptionApsAppExhibitorDealFilterInput): ApsAppExhibitorDeal @aws_api_key @aws_subscribe(mutations : ["deleteApsAppExhibitorDeal"])
+  onDeleteApsAppExhibitorHandout(filter: ModelSubscriptionApsAppExhibitorHandoutFilterInput): ApsAppExhibitorHandout @aws_api_key @aws_subscribe(mutations : ["deleteApsAppExhibitorHandout"])
+  onDeleteApsAppExhibitorPhoto(filter: ModelSubscriptionApsAppExhibitorPhotoFilterInput): ApsAppExhibitorPhoto @aws_api_key @aws_subscribe(mutations : ["deleteApsAppExhibitorPhoto"])
+  onDeleteApsAppExhibitorProfile(filter: ModelSubscriptionApsAppExhibitorProfileFilterInput): ApsAppExhibitorProfile @aws_api_key @aws_subscribe(mutations : ["deleteApsAppExhibitorProfile"])
+  onDeleteApsAppExhibitorPromotion(filter: ModelSubscriptionApsAppExhibitorPromotionFilterInput): ApsAppExhibitorPromotion @aws_api_key @aws_subscribe(mutations : ["deleteApsAppExhibitorPromotion"])
+  onDeleteApsAppSession(filter: ModelSubscriptionApsAppSessionFilterInput): ApsAppSession @aws_api_key @aws_subscribe(mutations : ["deleteApsAppSession"])
+  onDeleteApsAppSessionQuestion(filter: ModelSubscriptionApsAppSessionQuestionFilterInput): ApsAppSessionQuestion @aws_api_key @aws_subscribe(mutations : ["deleteApsAppSessionQuestion"])
+  onDeleteApsAppUser(filter: ModelSubscriptionApsAppUserFilterInput): ApsAppUser @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUser"])
+  onDeleteApsAppUserContact(filter: ModelSubscriptionApsAppUserContactFilterInput): ApsAppUserContact @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUserContact"])
+  onDeleteApsAppUserLead(filter: ModelSubscriptionApsAppUserLeadFilterInput): ApsAppUserLead @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUserLead"])
+  onDeleteApsAppUserNote(filter: ModelSubscriptionApsAppUserNoteFilterInput): ApsAppUserNote @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUserNote"])
+  onDeleteApsAppUserPhoto(filter: ModelSubscriptionApsAppUserPhotoFilterInput): ApsAppUserPhoto @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUserPhoto"])
+  onDeleteApsAppUserProfile(filter: ModelSubscriptionApsAppUserProfileFilterInput): ApsAppUserProfile @aws_api_key @aws_subscribe(mutations : ["deleteApsAppUserProfile"])
+  onDeleteApsDmMessage(filter: ModelSubscriptionApsDmMessageFilterInput): ApsDmMessage @aws_subscribe(mutations : ["deleteApsDmMessage"])
+  onDeleteApsDmParticipantState(filter: ModelSubscriptionApsDmParticipantStateFilterInput, userId: String): ApsDmParticipantState @aws_subscribe(mutations : ["deleteApsDmParticipantState"])
+  onDeleteApsDmThread(filter: ModelSubscriptionApsDmThreadFilterInput): ApsDmThread @aws_subscribe(mutations : ["deleteApsDmThread"])
+  onDeleteApsPushToken(filter: ModelSubscriptionApsPushTokenFilterInput, userId: String): ApsPushToken @aws_subscribe(mutations : ["deleteApsPushToken"])
+  onDeleteApsRegistrant(filter: ModelSubscriptionApsRegistrantFilterInput): ApsRegistrant @aws_api_key @aws_subscribe(mutations : ["deleteApsRegistrant"])
+  onDeleteApsSeatingChart(filter: ModelSubscriptionApsSeatingChartFilterInput): ApsSeatingChart @aws_api_key @aws_subscribe(mutations : ["deleteApsSeatingChart"])
+  onDeleteApsSeatingChartRegistrant(filter: ModelSubscriptionApsSeatingChartRegistrantFilterInput): ApsSeatingChartRegistrant @aws_api_key @aws_subscribe(mutations : ["deleteApsSeatingChartRegistrant"])
+  onDeleteApsSponsor(filter: ModelSubscriptionApsSponsorFilterInput): ApsSponsor @aws_api_key @aws_subscribe(mutations : ["deleteApsSponsor"])
+  onDeleteProfileAffiliate(filter: ModelSubscriptionProfileAffiliateFilterInput): ProfileAffiliate @aws_api_key @aws_subscribe(mutations : ["deleteProfileAffiliate"])
+  onDeleteProfileEducation(filter: ModelSubscriptionProfileEducationFilterInput): ProfileEducation @aws_api_key @aws_subscribe(mutations : ["deleteProfileEducation"])
+  onDeleteProfileInterest(filter: ModelSubscriptionProfileInterestFilterInput): ProfileInterest @aws_api_key @aws_subscribe(mutations : ["deleteProfileInterest"])
+  onUpdateAPS(filter: ModelSubscriptionAPSFilterInput): APS @aws_api_key @aws_subscribe(mutations : ["updateAPS"])
+  onUpdateAPSBoard(filter: ModelSubscriptionAPSBoardFilterInput): APSBoard @aws_api_key @aws_subscribe(mutations : ["updateAPSBoard"])
+  onUpdateAPSCompany(filter: ModelSubscriptionAPSCompanyFilterInput): APSCompany @aws_api_key @aws_subscribe(mutations : ["updateAPSCompany"])
+  onUpdateAPSSpeaker(filter: ModelSubscriptionAPSSpeakerFilterInput): APSSpeaker @aws_api_key @aws_subscribe(mutations : ["updateAPSSpeaker"])
+  onUpdateApsAddOn(filter: ModelSubscriptionApsAddOnFilterInput): ApsAddOn @aws_api_key @aws_subscribe(mutations : ["updateApsAddOn"])
+  onUpdateApsAdminAnnouncement(filter: ModelSubscriptionApsAdminAnnouncementFilterInput): ApsAdminAnnouncement @aws_subscribe(mutations : ["updateApsAdminAnnouncement"])
+  onUpdateApsAgenda(filter: ModelSubscriptionApsAgendaFilterInput): ApsAgenda @aws_api_key @aws_subscribe(mutations : ["updateApsAgenda"])
+  onUpdateApsAppExhibitorDeal(filter: ModelSubscriptionApsAppExhibitorDealFilterInput): ApsAppExhibitorDeal @aws_api_key @aws_subscribe(mutations : ["updateApsAppExhibitorDeal"])
+  onUpdateApsAppExhibitorHandout(filter: ModelSubscriptionApsAppExhibitorHandoutFilterInput): ApsAppExhibitorHandout @aws_api_key @aws_subscribe(mutations : ["updateApsAppExhibitorHandout"])
+  onUpdateApsAppExhibitorPhoto(filter: ModelSubscriptionApsAppExhibitorPhotoFilterInput): ApsAppExhibitorPhoto @aws_api_key @aws_subscribe(mutations : ["updateApsAppExhibitorPhoto"])
+  onUpdateApsAppExhibitorProfile(filter: ModelSubscriptionApsAppExhibitorProfileFilterInput): ApsAppExhibitorProfile @aws_api_key @aws_subscribe(mutations : ["updateApsAppExhibitorProfile"])
+  onUpdateApsAppExhibitorPromotion(filter: ModelSubscriptionApsAppExhibitorPromotionFilterInput): ApsAppExhibitorPromotion @aws_api_key @aws_subscribe(mutations : ["updateApsAppExhibitorPromotion"])
+  onUpdateApsAppSession(filter: ModelSubscriptionApsAppSessionFilterInput): ApsAppSession @aws_api_key @aws_subscribe(mutations : ["updateApsAppSession"])
+  onUpdateApsAppSessionQuestion(filter: ModelSubscriptionApsAppSessionQuestionFilterInput): ApsAppSessionQuestion @aws_api_key @aws_subscribe(mutations : ["updateApsAppSessionQuestion"])
+  onUpdateApsAppUser(filter: ModelSubscriptionApsAppUserFilterInput): ApsAppUser @aws_api_key @aws_subscribe(mutations : ["updateApsAppUser"])
+  onUpdateApsAppUserContact(filter: ModelSubscriptionApsAppUserContactFilterInput): ApsAppUserContact @aws_api_key @aws_subscribe(mutations : ["updateApsAppUserContact"])
+  onUpdateApsAppUserLead(filter: ModelSubscriptionApsAppUserLeadFilterInput): ApsAppUserLead @aws_api_key @aws_subscribe(mutations : ["updateApsAppUserLead"])
+  onUpdateApsAppUserNote(filter: ModelSubscriptionApsAppUserNoteFilterInput): ApsAppUserNote @aws_api_key @aws_subscribe(mutations : ["updateApsAppUserNote"])
+  onUpdateApsAppUserPhoto(filter: ModelSubscriptionApsAppUserPhotoFilterInput): ApsAppUserPhoto @aws_api_key @aws_subscribe(mutations : ["updateApsAppUserPhoto"])
+  onUpdateApsAppUserProfile(filter: ModelSubscriptionApsAppUserProfileFilterInput): ApsAppUserProfile @aws_api_key @aws_subscribe(mutations : ["updateApsAppUserProfile"])
+  onUpdateApsDmMessage(filter: ModelSubscriptionApsDmMessageFilterInput): ApsDmMessage @aws_subscribe(mutations : ["updateApsDmMessage"])
+  onUpdateApsDmParticipantState(filter: ModelSubscriptionApsDmParticipantStateFilterInput, userId: String): ApsDmParticipantState @aws_subscribe(mutations : ["updateApsDmParticipantState"])
+  onUpdateApsDmThread(filter: ModelSubscriptionApsDmThreadFilterInput): ApsDmThread @aws_subscribe(mutations : ["updateApsDmThread"])
+  onUpdateApsPushToken(filter: ModelSubscriptionApsPushTokenFilterInput, userId: String): ApsPushToken @aws_subscribe(mutations : ["updateApsPushToken"])
+  onUpdateApsRegistrant(filter: ModelSubscriptionApsRegistrantFilterInput): ApsRegistrant @aws_api_key @aws_subscribe(mutations : ["updateApsRegistrant"])
+  onUpdateApsSeatingChart(filter: ModelSubscriptionApsSeatingChartFilterInput): ApsSeatingChart @aws_api_key @aws_subscribe(mutations : ["updateApsSeatingChart"])
+  onUpdateApsSeatingChartRegistrant(filter: ModelSubscriptionApsSeatingChartRegistrantFilterInput): ApsSeatingChartRegistrant @aws_api_key @aws_subscribe(mutations : ["updateApsSeatingChartRegistrant"])
+  onUpdateApsSponsor(filter: ModelSubscriptionApsSponsorFilterInput): ApsSponsor @aws_api_key @aws_subscribe(mutations : ["updateApsSponsor"])
+  onUpdateProfileAffiliate(filter: ModelSubscriptionProfileAffiliateFilterInput): ProfileAffiliate @aws_api_key @aws_subscribe(mutations : ["updateProfileAffiliate"])
+  onUpdateProfileEducation(filter: ModelSubscriptionProfileEducationFilterInput): ProfileEducation @aws_api_key @aws_subscribe(mutations : ["updateProfileEducation"])
+  onUpdateProfileInterest(filter: ModelSubscriptionProfileInterestFilterInput): ProfileInterest @aws_api_key @aws_subscribe(mutations : ["updateProfileInterest"])
+}
+
+enum CompanyType {
+  OEMTIER1
+  SOLUTIONPROVIDER
+  SPONSOR
+}
+
+enum ModelAttributeTypes {
+  _null
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+enum RegistrantStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+enum RegistrantType {
+  EXHIBITOR
+  OEM
+  SOLUTIONPROVIDER
+  SPEAKER
+  SPONSOR
+  STAFF
+  TIER1
+}
+
+input CreateAPSBoardInput {
+  bio: String
+  company: String!
+  email: String!
+  id: ID
+  linkedin: String
+  name: String!
+  profilePic: String
+  title: String
+}
+
+input CreateAPSCompanyInput {
+  aPSCompaniesId: ID
+  address: String
+  city: String
+  country: String
+  description: String
+  email: String!
+  eventId: ID!
+  id: ID
+  logo: String
+  name: String!
+  phone: String
+  state: String
+  type: CompanyType
+  website: String
+  zip: String
+}
+
+input CreateAPSInput {
+  aPSAgendaId: ID
+  address: String
+  city: String
+  codes: [String]
+  endDate: String
+  id: ID
+  location: String
+  startDate: String
+  state: String
+  website: String
+  year: String!
+  zip: String
+}
+
+input CreateAPSSpeakerInput {
+  aPSSpeakersId: ID
+  bio: String!
+  company: String!
+  email: String!
+  eventId: ID!
+  firstName: String!
+  headshot: String!
+  id: ID
+  lastName: String!
+  linkedin: String
+  mediaConsent: Boolean
+  phone: String
+  presentationSummary: String
+  presentationTitle: String
+  privacyConsent: Boolean
+  title: String!
+}
+
+input CreateApsAddOnInput {
+  aPSAddOnsId: ID
+  altLink: String
+  company: String!
+  date: String!
+  description: String!
+  eventId: ID!
+  id: ID
+  limit: Int
+  location: String!
+  subheadline: String
+  time: String!
+  title: String!
+  type: String
+}
+
+input CreateApsAdminAnnouncementInput {
+  body: String!
+  createdAt: AWSDateTime
+  deepLink: String
+  eventId: ID!
+  id: ID
+  title: String
+  updatedAt: AWSDateTime
+}
+
+input CreateApsAgendaInput {
+  eventId: ID!
+  id: ID
+}
+
+input CreateApsAppExhibitorDealInput {
+  aPSExhibitorDealsId: ID
+  apsAppExhibitorProfileDealsId: ID
+  apsAppUserExhibitorDealsId: ID
+  deal: String
+  eventId: ID!
+  exhibitorId: ID!
+  id: ID
+  link: String
+  userId: ID
+}
+
+input CreateApsAppExhibitorHandoutInput {
+  aPSExhibitorHandoutsId: ID
+  apsAppExhibitorProfileHandoutsId: ID
+  eventId: ID!
+  exhibitorId: ID!
+  handout: String
+  id: ID
+}
+
+input CreateApsAppExhibitorPhotoInput {
+  aPSExhibitorPhotosId: ID
+  approved: Boolean
+  apsAppExhibitorProfilePhotosId: ID
+  caption: String
+  eventId: ID!
+  exhibitorId: ID!
+  id: ID
+  photo: String
+}
+
+input CreateApsAppExhibitorProfileInput {
+  aPSCompanyExhibitorProfilesId: ID
+  aPSExhibitorsId: ID
+  boothNumber: String
+  companyId: ID!
+  eventId: ID!
+  id: ID
+  likes: Int
+  phone: String
+  sponsorId: ID
+  title: String
+  video: String
+  videoCaption: String
+  views: Int
+  visits: Int
+}
+
+input CreateApsAppExhibitorPromotionInput {
+  aPSExhibitorPromotionsId: ID
+  apsAppExhibitorProfilePromotionsId: ID
+  eventId: ID!
+  exhibitorId: ID!
+  id: ID
+  link: String
+  promotion: String
+}
+
+input CreateApsAppSessionInput {
+  agendaId: ID
+  apsAgendaItemsId: ID
+  date: String
+  id: ID
+  location: String
+  session: String
+  time: String
+}
+
+input CreateApsAppSessionQuestionInput {
+  apsAppSessionSessionQuestionsId: ID
+  apsAppUserSessionQuestionsId: ID
+  id: ID
+  question: String
+  sessionId: ID!
+  userId: ID!
+}
+
+input CreateApsAppUserContactInput {
+  apsAppUserContactsId: ID
+  contactId: ID!
+  favorite: Boolean
+  id: ID
+  userId: ID!
+}
+
+input CreateApsAppUserInput {
+  id: ID
+  profileId: ID
+  registrantId: ID!
+}
+
+input CreateApsAppUserLeadInput {
+  apsAppUserLeadsId: ID
+  contactId: ID!
+  favorite: Boolean
+  id: ID
+  userId: ID!
+}
+
+input CreateApsAppUserNoteInput {
+  apsAppUserNotesId: ID
+  companyId: ID
+  exhibitorId: ID
+  id: ID
+  note: String
+  profileId: ID
+  registrantId: ID
+  sessionId: ID
+  userId: ID!
+}
+
+input CreateApsAppUserPhotoInput {
+  aPSPhotosId: ID
+  approved: Boolean
+  apsAppUserPhotosId: ID
+  caption: String
+  eventId: ID!
+  id: ID
+  photo: String
+  userId: ID
+}
+
+input CreateApsAppUserProfileInput {
+  attendeeType: RegistrantType
+  bio: String
+  company: String
+  email: String
+  facebook: String
+  firstName: String
+  id: ID
+  instagram: String
+  jobTitle: String
+  lastName: String
+  linkedin: String
+  location: String
+  phone: String
+  profilePicture: String
+  resume: String
+  twitter: String
+  userId: ID!
+  website: [String]
+  youtube: String
+}
+
+input CreateApsDmMessageInput {
+  body: String
+  createdAt: AWSDateTime
+  eventId: ID!
+  id: ID
+  owners: [String!]!
+  senderUserId: ID!
+  threadId: ID!
+  type: String
+  updatedAt: AWSDateTime
+}
+
+input CreateApsDmParticipantStateInput {
+  createdAt: AWSDateTime
+  eventId: ID!
+  id: ID
+  lastMessageAt: AWSDateTime
+  lastReadAt: AWSDateTime
+  threadId: ID!
+  unreadCount: Int
+  updatedAt: AWSDateTime
+  userId: ID!
+}
+
+input CreateApsDmThreadInput {
+  createdAt: AWSDateTime
+  dmKey: String!
+  eventId: ID!
+  id: ID
+  lastMessageAt: AWSDateTime
+  lastMessagePreview: String
+  owners: [String!]!
+  updatedAt: AWSDateTime
+  userAId: ID!
+  userBId: ID!
+}
+
+input CreateApsPushTokenInput {
+  createdAt: AWSDateTime
+  id: ID
+  platform: String
+  token: String!
+  updatedAt: AWSDateTime
+  userId: ID!
+}
+
+input CreateApsRegistrantInput {
+  aPSCompanyRegistrantsId: ID
+  aPSRegistrantsId: ID
+  appUserId: ID
+  approvedAt: String
+  apsID: ID!
+  apsRegistrantSeatingChartRegistrantId: ID
+  aristoStatus: String
+  aristoTransportation: String
+  attendeeType: RegistrantType!
+  billingAddressCity: String
+  billingAddressEmail: String
+  billingAddressFirstName: String
+  billingAddressLastName: String
+  billingAddressPhone: String
+  billingAddressState: String
+  billingAddressStreet: String
+  billingAddressZip: String
+  bio: String
+  companyId: ID
+  discountCode: String
+  email: String!
+  firstName: String
+  headshot: String
+  id: ID
+  interests: [String]
+  jobTitle: String
+  lastName: String
+  learningObjectives: String
+  magnaStatus: String
+  magnaTransportation: String
+  morrisetteStatus: String
+  morrisetteTransportation: String
+  otherInterest: String
+  paymentConfirmation: String
+  paymentLast4: String
+  paymentMethod: String
+  phone: String
+  presentation: String
+  presentationSummary: String
+  presentationTitle: String
+  qrCode: String
+  registrationEmailReceived: Boolean
+  registrationEmailReceivedDate: String
+  registrationEmailSent: Boolean
+  registrationEmailSentDate: String
+  sameAsAttendee: Boolean
+  speakerTopic: String
+  speedNetworking: Boolean
+  speedNetworkingStatus: String
+  status: RegistrantStatus!
+  termsAccepted: Boolean
+  totalAmount: Int
+  welcomeEmailReceived: Boolean
+  welcomeEmailReceivedDate: String
+  welcomeEmailSent: Boolean
+  welcomeEmailSentDate: String
+}
+
+input CreateApsSeatingChartInput {
+  id: ID
+}
+
+input CreateApsSeatingChartRegistrantInput {
+  apsSeatingChartRegistrantsId: ID
+  category: String
+  company: String
+  email: String
+  firstName: String
+  id: ID
+  lastName: String
+  notes: String
+  registrantID: ID!
+  role: String
+  seatingChartID: ID!
+  tableNumber: Int
+}
+
+input CreateApsSponsorInput {
+  aPSCompanySponsorsId: ID
+  aPSSponsorsId: ID
+  apsSponsorProfileId: ID
+  companyId: ID!
+  eventId: ID!
+  id: ID
+}
+
+input CreateProfileAffiliateInput {
+  affiliate: String
+  apsAppUserProfileAffiliatesId: ID
+  endDate: String
+  id: ID
+  profileId: ID!
+  role: String
+  startDate: String
+}
+
+input CreateProfileEducationInput {
+  apsAppUserProfileEducationId: ID
+  degree: String
+  fieldOfStudy: String
+  id: ID
+  profileId: ID!
+  school: String
+}
+
+input CreateProfileInterestInput {
+  apsAppUserProfileInterestsId: ID
+  id: ID
+  interest: String
+  profileId: ID!
+}
+
+input DeleteAPSBoardInput {
+  id: ID!
+}
+
+input DeleteAPSCompanyInput {
+  id: ID!
+}
+
+input DeleteAPSInput {
+  id: ID!
+}
+
+input DeleteAPSSpeakerInput {
+  id: ID!
+}
+
+input DeleteApsAddOnInput {
+  id: ID!
+}
+
+input DeleteApsAdminAnnouncementInput {
+  id: ID!
+}
+
+input DeleteApsAgendaInput {
+  id: ID!
+}
+
+input DeleteApsAppExhibitorDealInput {
+  id: ID!
+}
+
+input DeleteApsAppExhibitorHandoutInput {
+  id: ID!
+}
+
+input DeleteApsAppExhibitorPhotoInput {
+  id: ID!
+}
+
+input DeleteApsAppExhibitorProfileInput {
+  id: ID!
+}
+
+input DeleteApsAppExhibitorPromotionInput {
+  id: ID!
+}
+
+input DeleteApsAppSessionInput {
+  id: ID!
+}
+
+input DeleteApsAppSessionQuestionInput {
+  id: ID!
+}
+
+input DeleteApsAppUserContactInput {
+  id: ID!
+}
+
+input DeleteApsAppUserInput {
+  id: ID!
+}
+
+input DeleteApsAppUserLeadInput {
+  id: ID!
+}
+
+input DeleteApsAppUserNoteInput {
+  id: ID!
+}
+
+input DeleteApsAppUserPhotoInput {
+  id: ID!
+}
+
+input DeleteApsAppUserProfileInput {
+  id: ID!
+}
+
+input DeleteApsDmMessageInput {
+  id: ID!
+}
+
+input DeleteApsDmParticipantStateInput {
+  id: ID!
+}
+
+input DeleteApsDmThreadInput {
+  id: ID!
+}
+
+input DeleteApsPushTokenInput {
+  id: ID!
+}
+
+input DeleteApsRegistrantInput {
+  id: ID!
+}
+
+input DeleteApsSeatingChartInput {
+  id: ID!
+}
+
+input DeleteApsSeatingChartRegistrantInput {
+  id: ID!
+}
+
+input DeleteApsSponsorInput {
+  id: ID!
+}
+
+input DeleteProfileAffiliateInput {
+  id: ID!
+}
+
+input DeleteProfileEducationInput {
+  id: ID!
+}
+
+input DeleteProfileInterestInput {
+  id: ID!
+}
+
+input ModelAPSBoardConditionInput {
+  and: [ModelAPSBoardConditionInput]
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  linkedin: ModelStringInput
+  name: ModelStringInput
+  not: ModelAPSBoardConditionInput
+  or: [ModelAPSBoardConditionInput]
+  profilePic: ModelStringInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelAPSBoardFilterInput {
+  and: [ModelAPSBoardFilterInput]
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  id: ModelIDInput
+  linkedin: ModelStringInput
+  name: ModelStringInput
+  not: ModelAPSBoardFilterInput
+  or: [ModelAPSBoardFilterInput]
+  profilePic: ModelStringInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelAPSCompanyConditionInput {
+  aPSCompaniesId: ModelIDInput
+  address: ModelStringInput
+  and: [ModelAPSCompanyConditionInput]
+  city: ModelStringInput
+  country: ModelStringInput
+  createdAt: ModelStringInput
+  description: ModelStringInput
+  email: ModelStringInput
+  eventId: ModelIDInput
+  logo: ModelStringInput
+  name: ModelStringInput
+  not: ModelAPSCompanyConditionInput
+  or: [ModelAPSCompanyConditionInput]
+  phone: ModelStringInput
+  state: ModelStringInput
+  type: ModelCompanyTypeInput
+  updatedAt: ModelStringInput
+  website: ModelStringInput
+  zip: ModelStringInput
+}
+
+input ModelAPSCompanyFilterInput {
+  aPSCompaniesId: ModelIDInput
+  address: ModelStringInput
+  and: [ModelAPSCompanyFilterInput]
+  city: ModelStringInput
+  country: ModelStringInput
+  createdAt: ModelStringInput
+  description: ModelStringInput
+  email: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  logo: ModelStringInput
+  name: ModelStringInput
+  not: ModelAPSCompanyFilterInput
+  or: [ModelAPSCompanyFilterInput]
+  phone: ModelStringInput
+  state: ModelStringInput
+  type: ModelCompanyTypeInput
+  updatedAt: ModelStringInput
+  website: ModelStringInput
+  zip: ModelStringInput
+}
+
+input ModelAPSConditionInput {
+  aPSAgendaId: ModelIDInput
+  address: ModelStringInput
+  and: [ModelAPSConditionInput]
+  city: ModelStringInput
+  codes: ModelStringInput
+  createdAt: ModelStringInput
+  endDate: ModelStringInput
+  location: ModelStringInput
+  not: ModelAPSConditionInput
+  or: [ModelAPSConditionInput]
+  startDate: ModelStringInput
+  state: ModelStringInput
+  updatedAt: ModelStringInput
+  website: ModelStringInput
+  year: ModelStringInput
+  zip: ModelStringInput
+}
+
+input ModelAPSFilterInput {
+  aPSAgendaId: ModelIDInput
+  address: ModelStringInput
+  and: [ModelAPSFilterInput]
+  city: ModelStringInput
+  codes: ModelStringInput
+  createdAt: ModelStringInput
+  endDate: ModelStringInput
+  id: ModelIDInput
+  location: ModelStringInput
+  not: ModelAPSFilterInput
+  or: [ModelAPSFilterInput]
+  startDate: ModelStringInput
+  state: ModelStringInput
+  updatedAt: ModelStringInput
+  website: ModelStringInput
+  year: ModelStringInput
+  zip: ModelStringInput
+}
+
+input ModelAPSSpeakerConditionInput {
+  aPSSpeakersId: ModelIDInput
+  and: [ModelAPSSpeakerConditionInput]
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  eventId: ModelIDInput
+  firstName: ModelStringInput
+  headshot: ModelStringInput
+  lastName: ModelStringInput
+  linkedin: ModelStringInput
+  mediaConsent: ModelBooleanInput
+  not: ModelAPSSpeakerConditionInput
+  or: [ModelAPSSpeakerConditionInput]
+  phone: ModelStringInput
+  presentationSummary: ModelStringInput
+  presentationTitle: ModelStringInput
+  privacyConsent: ModelBooleanInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelAPSSpeakerFilterInput {
+  aPSSpeakersId: ModelIDInput
+  and: [ModelAPSSpeakerFilterInput]
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  eventId: ModelIDInput
+  firstName: ModelStringInput
+  headshot: ModelStringInput
+  id: ModelIDInput
+  lastName: ModelStringInput
+  linkedin: ModelStringInput
+  mediaConsent: ModelBooleanInput
+  not: ModelAPSSpeakerFilterInput
+  or: [ModelAPSSpeakerFilterInput]
+  phone: ModelStringInput
+  presentationSummary: ModelStringInput
+  presentationTitle: ModelStringInput
+  privacyConsent: ModelBooleanInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAddOnConditionInput {
+  aPSAddOnsId: ModelIDInput
+  altLink: ModelStringInput
+  and: [ModelApsAddOnConditionInput]
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  date: ModelStringInput
+  description: ModelStringInput
+  eventId: ModelIDInput
+  limit: ModelIntInput
+  location: ModelStringInput
+  not: ModelApsAddOnConditionInput
+  or: [ModelApsAddOnConditionInput]
+  subheadline: ModelStringInput
+  time: ModelStringInput
+  title: ModelStringInput
+  type: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAddOnFilterInput {
+  aPSAddOnsId: ModelIDInput
+  altLink: ModelStringInput
+  and: [ModelApsAddOnFilterInput]
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  date: ModelStringInput
+  description: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  limit: ModelIntInput
+  location: ModelStringInput
+  not: ModelApsAddOnFilterInput
+  or: [ModelApsAddOnFilterInput]
+  subheadline: ModelStringInput
+  time: ModelStringInput
+  title: ModelStringInput
+  type: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAdminAnnouncementConditionInput {
+  and: [ModelApsAdminAnnouncementConditionInput]
+  body: ModelStringInput
+  createdAt: ModelStringInput
+  deepLink: ModelStringInput
+  eventId: ModelIDInput
+  not: ModelApsAdminAnnouncementConditionInput
+  or: [ModelApsAdminAnnouncementConditionInput]
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAdminAnnouncementFilterInput {
+  and: [ModelApsAdminAnnouncementFilterInput]
+  body: ModelStringInput
+  createdAt: ModelStringInput
+  deepLink: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsAdminAnnouncementFilterInput
+  or: [ModelApsAdminAnnouncementFilterInput]
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAgendaConditionInput {
+  and: [ModelApsAgendaConditionInput]
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  not: ModelApsAgendaConditionInput
+  or: [ModelApsAgendaConditionInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAgendaFilterInput {
+  and: [ModelApsAgendaFilterInput]
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsAgendaFilterInput
+  or: [ModelApsAgendaFilterInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorDealConditionInput {
+  aPSExhibitorDealsId: ModelIDInput
+  and: [ModelApsAppExhibitorDealConditionInput]
+  apsAppExhibitorProfileDealsId: ModelIDInput
+  apsAppUserExhibitorDealsId: ModelIDInput
+  createdAt: ModelStringInput
+  deal: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  link: ModelStringInput
+  not: ModelApsAppExhibitorDealConditionInput
+  or: [ModelApsAppExhibitorDealConditionInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppExhibitorDealFilterInput {
+  aPSExhibitorDealsId: ModelIDInput
+  and: [ModelApsAppExhibitorDealFilterInput]
+  apsAppExhibitorProfileDealsId: ModelIDInput
+  apsAppUserExhibitorDealsId: ModelIDInput
+  createdAt: ModelStringInput
+  deal: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  id: ModelIDInput
+  link: ModelStringInput
+  not: ModelApsAppExhibitorDealFilterInput
+  or: [ModelApsAppExhibitorDealFilterInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppExhibitorHandoutConditionInput {
+  aPSExhibitorHandoutsId: ModelIDInput
+  and: [ModelApsAppExhibitorHandoutConditionInput]
+  apsAppExhibitorProfileHandoutsId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  handout: ModelStringInput
+  not: ModelApsAppExhibitorHandoutConditionInput
+  or: [ModelApsAppExhibitorHandoutConditionInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorHandoutFilterInput {
+  aPSExhibitorHandoutsId: ModelIDInput
+  and: [ModelApsAppExhibitorHandoutFilterInput]
+  apsAppExhibitorProfileHandoutsId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  handout: ModelStringInput
+  id: ModelIDInput
+  not: ModelApsAppExhibitorHandoutFilterInput
+  or: [ModelApsAppExhibitorHandoutFilterInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorPhotoConditionInput {
+  aPSExhibitorPhotosId: ModelIDInput
+  and: [ModelApsAppExhibitorPhotoConditionInput]
+  approved: ModelBooleanInput
+  apsAppExhibitorProfilePhotosId: ModelIDInput
+  caption: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  not: ModelApsAppExhibitorPhotoConditionInput
+  or: [ModelApsAppExhibitorPhotoConditionInput]
+  photo: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorPhotoFilterInput {
+  aPSExhibitorPhotosId: ModelIDInput
+  and: [ModelApsAppExhibitorPhotoFilterInput]
+  approved: ModelBooleanInput
+  apsAppExhibitorProfilePhotosId: ModelIDInput
+  caption: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsAppExhibitorPhotoFilterInput
+  or: [ModelApsAppExhibitorPhotoFilterInput]
+  photo: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorProfileConditionInput {
+  aPSCompanyExhibitorProfilesId: ModelIDInput
+  aPSExhibitorsId: ModelIDInput
+  and: [ModelApsAppExhibitorProfileConditionInput]
+  boothNumber: ModelStringInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  likes: ModelIntInput
+  not: ModelApsAppExhibitorProfileConditionInput
+  or: [ModelApsAppExhibitorProfileConditionInput]
+  phone: ModelStringInput
+  sponsorId: ModelIDInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+  video: ModelStringInput
+  videoCaption: ModelStringInput
+  views: ModelIntInput
+  visits: ModelIntInput
+}
+
+input ModelApsAppExhibitorProfileFilterInput {
+  aPSCompanyExhibitorProfilesId: ModelIDInput
+  aPSExhibitorsId: ModelIDInput
+  and: [ModelApsAppExhibitorProfileFilterInput]
+  boothNumber: ModelStringInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  likes: ModelIntInput
+  not: ModelApsAppExhibitorProfileFilterInput
+  or: [ModelApsAppExhibitorProfileFilterInput]
+  phone: ModelStringInput
+  sponsorId: ModelIDInput
+  title: ModelStringInput
+  updatedAt: ModelStringInput
+  video: ModelStringInput
+  videoCaption: ModelStringInput
+  views: ModelIntInput
+  visits: ModelIntInput
+}
+
+input ModelApsAppExhibitorPromotionConditionInput {
+  aPSExhibitorPromotionsId: ModelIDInput
+  and: [ModelApsAppExhibitorPromotionConditionInput]
+  apsAppExhibitorProfilePromotionsId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  link: ModelStringInput
+  not: ModelApsAppExhibitorPromotionConditionInput
+  or: [ModelApsAppExhibitorPromotionConditionInput]
+  promotion: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppExhibitorPromotionFilterInput {
+  aPSExhibitorPromotionsId: ModelIDInput
+  and: [ModelApsAppExhibitorPromotionFilterInput]
+  apsAppExhibitorProfilePromotionsId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  exhibitorId: ModelIDInput
+  id: ModelIDInput
+  link: ModelStringInput
+  not: ModelApsAppExhibitorPromotionFilterInput
+  or: [ModelApsAppExhibitorPromotionFilterInput]
+  promotion: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppSessionConditionInput {
+  agendaId: ModelIDInput
+  and: [ModelApsAppSessionConditionInput]
+  apsAgendaItemsId: ModelIDInput
+  createdAt: ModelStringInput
+  date: ModelStringInput
+  location: ModelStringInput
+  not: ModelApsAppSessionConditionInput
+  or: [ModelApsAppSessionConditionInput]
+  session: ModelStringInput
+  time: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppSessionFilterInput {
+  agendaId: ModelIDInput
+  and: [ModelApsAppSessionFilterInput]
+  apsAgendaItemsId: ModelIDInput
+  createdAt: ModelStringInput
+  date: ModelStringInput
+  id: ModelIDInput
+  location: ModelStringInput
+  not: ModelApsAppSessionFilterInput
+  or: [ModelApsAppSessionFilterInput]
+  session: ModelStringInput
+  time: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppSessionQuestionConditionInput {
+  and: [ModelApsAppSessionQuestionConditionInput]
+  apsAppSessionSessionQuestionsId: ModelIDInput
+  apsAppUserSessionQuestionsId: ModelIDInput
+  createdAt: ModelStringInput
+  not: ModelApsAppSessionQuestionConditionInput
+  or: [ModelApsAppSessionQuestionConditionInput]
+  question: ModelStringInput
+  sessionId: ModelIDInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppSessionQuestionFilterInput {
+  and: [ModelApsAppSessionQuestionFilterInput]
+  apsAppSessionSessionQuestionsId: ModelIDInput
+  apsAppUserSessionQuestionsId: ModelIDInput
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  not: ModelApsAppSessionQuestionFilterInput
+  or: [ModelApsAppSessionQuestionFilterInput]
+  question: ModelStringInput
+  sessionId: ModelIDInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserConditionInput {
+  and: [ModelApsAppUserConditionInput]
+  createdAt: ModelStringInput
+  not: ModelApsAppUserConditionInput
+  or: [ModelApsAppUserConditionInput]
+  profileId: ModelIDInput
+  registrantId: ModelIDInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppUserContactConditionInput {
+  and: [ModelApsAppUserContactConditionInput]
+  apsAppUserContactsId: ModelIDInput
+  contactId: ModelIDInput
+  createdAt: ModelStringInput
+  favorite: ModelBooleanInput
+  not: ModelApsAppUserContactConditionInput
+  or: [ModelApsAppUserContactConditionInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserContactFilterInput {
+  and: [ModelApsAppUserContactFilterInput]
+  apsAppUserContactsId: ModelIDInput
+  contactId: ModelIDInput
+  createdAt: ModelStringInput
+  favorite: ModelBooleanInput
+  id: ModelIDInput
+  not: ModelApsAppUserContactFilterInput
+  or: [ModelApsAppUserContactFilterInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserFilterInput {
+  and: [ModelApsAppUserFilterInput]
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  not: ModelApsAppUserFilterInput
+  or: [ModelApsAppUserFilterInput]
+  profileId: ModelIDInput
+  registrantId: ModelIDInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsAppUserLeadConditionInput {
+  and: [ModelApsAppUserLeadConditionInput]
+  apsAppUserLeadsId: ModelIDInput
+  contactId: ModelIDInput
+  createdAt: ModelStringInput
+  favorite: ModelBooleanInput
+  not: ModelApsAppUserLeadConditionInput
+  or: [ModelApsAppUserLeadConditionInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserLeadFilterInput {
+  and: [ModelApsAppUserLeadFilterInput]
+  apsAppUserLeadsId: ModelIDInput
+  contactId: ModelIDInput
+  createdAt: ModelStringInput
+  favorite: ModelBooleanInput
+  id: ModelIDInput
+  not: ModelApsAppUserLeadFilterInput
+  or: [ModelApsAppUserLeadFilterInput]
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserNoteConditionInput {
+  and: [ModelApsAppUserNoteConditionInput]
+  apsAppUserNotesId: ModelIDInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  exhibitorId: ModelIDInput
+  not: ModelApsAppUserNoteConditionInput
+  note: ModelStringInput
+  or: [ModelApsAppUserNoteConditionInput]
+  profileId: ModelIDInput
+  registrantId: ModelIDInput
+  sessionId: ModelIDInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserNoteFilterInput {
+  and: [ModelApsAppUserNoteFilterInput]
+  apsAppUserNotesId: ModelIDInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  exhibitorId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsAppUserNoteFilterInput
+  note: ModelStringInput
+  or: [ModelApsAppUserNoteFilterInput]
+  profileId: ModelIDInput
+  registrantId: ModelIDInput
+  sessionId: ModelIDInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserPhotoConditionInput {
+  aPSPhotosId: ModelIDInput
+  and: [ModelApsAppUserPhotoConditionInput]
+  approved: ModelBooleanInput
+  apsAppUserPhotosId: ModelIDInput
+  caption: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  not: ModelApsAppUserPhotoConditionInput
+  or: [ModelApsAppUserPhotoConditionInput]
+  photo: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserPhotoFilterInput {
+  aPSPhotosId: ModelIDInput
+  and: [ModelApsAppUserPhotoFilterInput]
+  approved: ModelBooleanInput
+  apsAppUserPhotosId: ModelIDInput
+  caption: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsAppUserPhotoFilterInput
+  or: [ModelApsAppUserPhotoFilterInput]
+  photo: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsAppUserProfileConditionInput {
+  and: [ModelApsAppUserProfileConditionInput]
+  attendeeType: ModelRegistrantTypeInput
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  facebook: ModelStringInput
+  firstName: ModelStringInput
+  instagram: ModelStringInput
+  jobTitle: ModelStringInput
+  lastName: ModelStringInput
+  linkedin: ModelStringInput
+  location: ModelStringInput
+  not: ModelApsAppUserProfileConditionInput
+  or: [ModelApsAppUserProfileConditionInput]
+  phone: ModelStringInput
+  profilePicture: ModelStringInput
+  resume: ModelStringInput
+  twitter: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+  website: ModelStringInput
+  youtube: ModelStringInput
+}
+
+input ModelApsAppUserProfileFilterInput {
+  and: [ModelApsAppUserProfileFilterInput]
+  attendeeType: ModelRegistrantTypeInput
+  bio: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  facebook: ModelStringInput
+  firstName: ModelStringInput
+  id: ModelIDInput
+  instagram: ModelStringInput
+  jobTitle: ModelStringInput
+  lastName: ModelStringInput
+  linkedin: ModelStringInput
+  location: ModelStringInput
+  not: ModelApsAppUserProfileFilterInput
+  or: [ModelApsAppUserProfileFilterInput]
+  phone: ModelStringInput
+  profilePicture: ModelStringInput
+  resume: ModelStringInput
+  twitter: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+  website: ModelStringInput
+  youtube: ModelStringInput
+}
+
+input ModelApsDmMessageConditionInput {
+  and: [ModelApsDmMessageConditionInput]
+  body: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  not: ModelApsDmMessageConditionInput
+  or: [ModelApsDmMessageConditionInput]
+  owners: ModelStringInput
+  senderUserId: ModelIDInput
+  threadId: ModelIDInput
+  type: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsDmMessageFilterInput {
+  and: [ModelApsDmMessageFilterInput]
+  body: ModelStringInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsDmMessageFilterInput
+  or: [ModelApsDmMessageFilterInput]
+  owners: ModelStringInput
+  senderUserId: ModelIDInput
+  threadId: ModelIDInput
+  type: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsDmParticipantStateConditionInput {
+  and: [ModelApsDmParticipantStateConditionInput]
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  lastMessageAt: ModelStringInput
+  lastReadAt: ModelStringInput
+  not: ModelApsDmParticipantStateConditionInput
+  or: [ModelApsDmParticipantStateConditionInput]
+  threadId: ModelIDInput
+  unreadCount: ModelIntInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsDmParticipantStateFilterInput {
+  and: [ModelApsDmParticipantStateFilterInput]
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  lastMessageAt: ModelStringInput
+  lastReadAt: ModelStringInput
+  not: ModelApsDmParticipantStateFilterInput
+  or: [ModelApsDmParticipantStateFilterInput]
+  threadId: ModelIDInput
+  unreadCount: ModelIntInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsDmThreadConditionInput {
+  and: [ModelApsDmThreadConditionInput]
+  createdAt: ModelStringInput
+  dmKey: ModelStringInput
+  eventId: ModelIDInput
+  lastMessageAt: ModelStringInput
+  lastMessagePreview: ModelStringInput
+  not: ModelApsDmThreadConditionInput
+  or: [ModelApsDmThreadConditionInput]
+  owners: ModelStringInput
+  updatedAt: ModelStringInput
+  userAId: ModelIDInput
+  userBId: ModelIDInput
+}
+
+input ModelApsDmThreadFilterInput {
+  and: [ModelApsDmThreadFilterInput]
+  createdAt: ModelStringInput
+  dmKey: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  lastMessageAt: ModelStringInput
+  lastMessagePreview: ModelStringInput
+  not: ModelApsDmThreadFilterInput
+  or: [ModelApsDmThreadFilterInput]
+  owners: ModelStringInput
+  updatedAt: ModelStringInput
+  userAId: ModelIDInput
+  userBId: ModelIDInput
+}
+
+input ModelApsPushTokenConditionInput {
+  and: [ModelApsPushTokenConditionInput]
+  createdAt: ModelStringInput
+  not: ModelApsPushTokenConditionInput
+  or: [ModelApsPushTokenConditionInput]
+  platform: ModelStringInput
+  token: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsPushTokenFilterInput {
+  and: [ModelApsPushTokenFilterInput]
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  not: ModelApsPushTokenFilterInput
+  or: [ModelApsPushTokenFilterInput]
+  platform: ModelStringInput
+  token: ModelStringInput
+  updatedAt: ModelStringInput
+  userId: ModelIDInput
+}
+
+input ModelApsRegistrantConditionInput {
+  aPSCompanyRegistrantsId: ModelIDInput
+  aPSRegistrantsId: ModelIDInput
+  and: [ModelApsRegistrantConditionInput]
+  appUserId: ModelIDInput
+  approvedAt: ModelStringInput
+  apsID: ModelIDInput
+  apsRegistrantSeatingChartRegistrantId: ModelIDInput
+  aristoStatus: ModelStringInput
+  aristoTransportation: ModelStringInput
+  attendeeType: ModelRegistrantTypeInput
+  billingAddressCity: ModelStringInput
+  billingAddressEmail: ModelStringInput
+  billingAddressFirstName: ModelStringInput
+  billingAddressLastName: ModelStringInput
+  billingAddressPhone: ModelStringInput
+  billingAddressState: ModelStringInput
+  billingAddressStreet: ModelStringInput
+  billingAddressZip: ModelStringInput
+  bio: ModelStringInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  discountCode: ModelStringInput
+  email: ModelStringInput
+  firstName: ModelStringInput
+  headshot: ModelStringInput
+  interests: ModelStringInput
+  jobTitle: ModelStringInput
+  lastName: ModelStringInput
+  learningObjectives: ModelStringInput
+  magnaStatus: ModelStringInput
+  magnaTransportation: ModelStringInput
+  morrisetteStatus: ModelStringInput
+  morrisetteTransportation: ModelStringInput
+  not: ModelApsRegistrantConditionInput
+  or: [ModelApsRegistrantConditionInput]
+  otherInterest: ModelStringInput
+  paymentConfirmation: ModelStringInput
+  paymentLast4: ModelStringInput
+  paymentMethod: ModelStringInput
+  phone: ModelStringInput
+  presentation: ModelStringInput
+  presentationSummary: ModelStringInput
+  presentationTitle: ModelStringInput
+  qrCode: ModelStringInput
+  registrationEmailReceived: ModelBooleanInput
+  registrationEmailReceivedDate: ModelStringInput
+  registrationEmailSent: ModelBooleanInput
+  registrationEmailSentDate: ModelStringInput
+  sameAsAttendee: ModelBooleanInput
+  speakerTopic: ModelStringInput
+  speedNetworking: ModelBooleanInput
+  speedNetworkingStatus: ModelStringInput
+  status: ModelRegistrantStatusInput
+  termsAccepted: ModelBooleanInput
+  totalAmount: ModelIntInput
+  updatedAt: ModelStringInput
+  welcomeEmailReceived: ModelBooleanInput
+  welcomeEmailReceivedDate: ModelStringInput
+  welcomeEmailSent: ModelBooleanInput
+  welcomeEmailSentDate: ModelStringInput
+}
+
+input ModelApsRegistrantFilterInput {
+  aPSCompanyRegistrantsId: ModelIDInput
+  aPSRegistrantsId: ModelIDInput
+  and: [ModelApsRegistrantFilterInput]
+  appUserId: ModelIDInput
+  approvedAt: ModelStringInput
+  apsID: ModelIDInput
+  apsRegistrantSeatingChartRegistrantId: ModelIDInput
+  aristoStatus: ModelStringInput
+  aristoTransportation: ModelStringInput
+  attendeeType: ModelRegistrantTypeInput
+  billingAddressCity: ModelStringInput
+  billingAddressEmail: ModelStringInput
+  billingAddressFirstName: ModelStringInput
+  billingAddressLastName: ModelStringInput
+  billingAddressPhone: ModelStringInput
+  billingAddressState: ModelStringInput
+  billingAddressStreet: ModelStringInput
+  billingAddressZip: ModelStringInput
+  bio: ModelStringInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  discountCode: ModelStringInput
+  email: ModelStringInput
+  firstName: ModelStringInput
+  headshot: ModelStringInput
+  id: ModelIDInput
+  interests: ModelStringInput
+  jobTitle: ModelStringInput
+  lastName: ModelStringInput
+  learningObjectives: ModelStringInput
+  magnaStatus: ModelStringInput
+  magnaTransportation: ModelStringInput
+  morrisetteStatus: ModelStringInput
+  morrisetteTransportation: ModelStringInput
+  not: ModelApsRegistrantFilterInput
+  or: [ModelApsRegistrantFilterInput]
+  otherInterest: ModelStringInput
+  paymentConfirmation: ModelStringInput
+  paymentLast4: ModelStringInput
+  paymentMethod: ModelStringInput
+  phone: ModelStringInput
+  presentation: ModelStringInput
+  presentationSummary: ModelStringInput
+  presentationTitle: ModelStringInput
+  qrCode: ModelStringInput
+  registrationEmailReceived: ModelBooleanInput
+  registrationEmailReceivedDate: ModelStringInput
+  registrationEmailSent: ModelBooleanInput
+  registrationEmailSentDate: ModelStringInput
+  sameAsAttendee: ModelBooleanInput
+  speakerTopic: ModelStringInput
+  speedNetworking: ModelBooleanInput
+  speedNetworkingStatus: ModelStringInput
+  status: ModelRegistrantStatusInput
+  termsAccepted: ModelBooleanInput
+  totalAmount: ModelIntInput
+  updatedAt: ModelStringInput
+  welcomeEmailReceived: ModelBooleanInput
+  welcomeEmailReceivedDate: ModelStringInput
+  welcomeEmailSent: ModelBooleanInput
+  welcomeEmailSentDate: ModelStringInput
+}
+
+input ModelApsSeatingChartConditionInput {
+  and: [ModelApsSeatingChartConditionInput]
+  createdAt: ModelStringInput
+  not: ModelApsSeatingChartConditionInput
+  or: [ModelApsSeatingChartConditionInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsSeatingChartFilterInput {
+  and: [ModelApsSeatingChartFilterInput]
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  not: ModelApsSeatingChartFilterInput
+  or: [ModelApsSeatingChartFilterInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsSeatingChartRegistrantConditionInput {
+  and: [ModelApsSeatingChartRegistrantConditionInput]
+  apsSeatingChartRegistrantsId: ModelIDInput
+  category: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  not: ModelApsSeatingChartRegistrantConditionInput
+  notes: ModelStringInput
+  or: [ModelApsSeatingChartRegistrantConditionInput]
+  registrantID: ModelIDInput
+  role: ModelStringInput
+  seatingChartID: ModelIDInput
+  tableNumber: ModelIntInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsSeatingChartRegistrantFilterInput {
+  and: [ModelApsSeatingChartRegistrantFilterInput]
+  apsSeatingChartRegistrantsId: ModelIDInput
+  category: ModelStringInput
+  company: ModelStringInput
+  createdAt: ModelStringInput
+  email: ModelStringInput
+  firstName: ModelStringInput
+  id: ModelIDInput
+  lastName: ModelStringInput
+  not: ModelApsSeatingChartRegistrantFilterInput
+  notes: ModelStringInput
+  or: [ModelApsSeatingChartRegistrantFilterInput]
+  registrantID: ModelIDInput
+  role: ModelStringInput
+  seatingChartID: ModelIDInput
+  tableNumber: ModelIntInput
+  updatedAt: ModelStringInput
+}
+
+input ModelApsSponsorConditionInput {
+  aPSCompanySponsorsId: ModelIDInput
+  aPSSponsorsId: ModelIDInput
+  and: [ModelApsSponsorConditionInput]
+  apsSponsorProfileId: ModelIDInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  not: ModelApsSponsorConditionInput
+  or: [ModelApsSponsorConditionInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelApsSponsorFilterInput {
+  aPSCompanySponsorsId: ModelIDInput
+  aPSSponsorsId: ModelIDInput
+  and: [ModelApsSponsorFilterInput]
+  apsSponsorProfileId: ModelIDInput
+  companyId: ModelIDInput
+  createdAt: ModelStringInput
+  eventId: ModelIDInput
+  id: ModelIDInput
+  not: ModelApsSponsorFilterInput
+  or: [ModelApsSponsorFilterInput]
+  updatedAt: ModelStringInput
+}
+
+input ModelBooleanInput {
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  eq: Boolean
+  ne: Boolean
+}
+
+input ModelCompanyTypeInput {
+  eq: CompanyType
+  ne: CompanyType
+}
+
+input ModelFloatInput {
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  between: [Float]
+  eq: Float
+  ge: Float
+  gt: Float
+  le: Float
+  lt: Float
+  ne: Float
+}
+
+input ModelIDInput {
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  beginsWith: ID
+  between: [ID]
+  contains: ID
+  eq: ID
+  ge: ID
+  gt: ID
+  le: ID
+  lt: ID
+  ne: ID
+  notContains: ID
+  size: ModelSizeInput
+}
+
+input ModelIDKeyConditionInput {
+  beginsWith: ID
+  between: [ID]
+  eq: ID
+  ge: ID
+  gt: ID
+  le: ID
+  lt: ID
+}
+
+input ModelIntInput {
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  between: [Int]
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+}
+
+input ModelProfileAffiliateConditionInput {
+  affiliate: ModelStringInput
+  and: [ModelProfileAffiliateConditionInput]
+  apsAppUserProfileAffiliatesId: ModelIDInput
+  createdAt: ModelStringInput
+  endDate: ModelStringInput
+  not: ModelProfileAffiliateConditionInput
+  or: [ModelProfileAffiliateConditionInput]
+  profileId: ModelIDInput
+  role: ModelStringInput
+  startDate: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelProfileAffiliateFilterInput {
+  affiliate: ModelStringInput
+  and: [ModelProfileAffiliateFilterInput]
+  apsAppUserProfileAffiliatesId: ModelIDInput
+  createdAt: ModelStringInput
+  endDate: ModelStringInput
+  id: ModelIDInput
+  not: ModelProfileAffiliateFilterInput
+  or: [ModelProfileAffiliateFilterInput]
+  profileId: ModelIDInput
+  role: ModelStringInput
+  startDate: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelProfileEducationConditionInput {
+  and: [ModelProfileEducationConditionInput]
+  apsAppUserProfileEducationId: ModelIDInput
+  createdAt: ModelStringInput
+  degree: ModelStringInput
+  fieldOfStudy: ModelStringInput
+  not: ModelProfileEducationConditionInput
+  or: [ModelProfileEducationConditionInput]
+  profileId: ModelIDInput
+  school: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelProfileEducationFilterInput {
+  and: [ModelProfileEducationFilterInput]
+  apsAppUserProfileEducationId: ModelIDInput
+  createdAt: ModelStringInput
+  degree: ModelStringInput
+  fieldOfStudy: ModelStringInput
+  id: ModelIDInput
+  not: ModelProfileEducationFilterInput
+  or: [ModelProfileEducationFilterInput]
+  profileId: ModelIDInput
+  school: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input ModelProfileInterestConditionInput {
+  and: [ModelProfileInterestConditionInput]
+  apsAppUserProfileInterestsId: ModelIDInput
+  createdAt: ModelStringInput
+  interest: ModelStringInput
+  not: ModelProfileInterestConditionInput
+  or: [ModelProfileInterestConditionInput]
+  profileId: ModelIDInput
+  updatedAt: ModelStringInput
+}
+
+input ModelProfileInterestFilterInput {
+  and: [ModelProfileInterestFilterInput]
+  apsAppUserProfileInterestsId: ModelIDInput
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  interest: ModelStringInput
+  not: ModelProfileInterestFilterInput
+  or: [ModelProfileInterestFilterInput]
+  profileId: ModelIDInput
+  updatedAt: ModelStringInput
+}
+
+input ModelRegistrantStatusInput {
+  eq: RegistrantStatus
+  ne: RegistrantStatus
+}
+
+input ModelRegistrantTypeInput {
+  eq: RegistrantType
+  ne: RegistrantType
+}
+
+input ModelSizeInput {
+  between: [Int]
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+}
+
+input ModelStringInput {
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  beginsWith: String
+  between: [String]
+  contains: String
+  eq: String
+  ge: String
+  gt: String
+  le: String
+  lt: String
+  ne: String
+  notContains: String
+  size: ModelSizeInput
+}
+
+input ModelStringKeyConditionInput {
+  beginsWith: String
+  between: [String]
+  eq: String
+  ge: String
+  gt: String
+  le: String
+  lt: String
+}
+
+input ModelSubscriptionAPSBoardFilterInput {
+  and: [ModelSubscriptionAPSBoardFilterInput]
+  bio: ModelSubscriptionStringInput
+  company: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  linkedin: ModelSubscriptionStringInput
+  name: ModelSubscriptionStringInput
+  or: [ModelSubscriptionAPSBoardFilterInput]
+  profilePic: ModelSubscriptionStringInput
+  title: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionAPSCompanyFilterInput {
+  aPSCompanyExhibitorProfilesId: ModelSubscriptionIDInput
+  aPSCompanyRegistrantsId: ModelSubscriptionIDInput
+  aPSCompanySponsorsId: ModelSubscriptionIDInput
+  address: ModelSubscriptionStringInput
+  and: [ModelSubscriptionAPSCompanyFilterInput]
+  city: ModelSubscriptionStringInput
+  country: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  logo: ModelSubscriptionStringInput
+  name: ModelSubscriptionStringInput
+  or: [ModelSubscriptionAPSCompanyFilterInput]
+  phone: ModelSubscriptionStringInput
+  state: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  website: ModelSubscriptionStringInput
+  zip: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionAPSFilterInput {
+  aPSAddOnsId: ModelSubscriptionIDInput
+  aPSAgendaId: ModelSubscriptionIDInput
+  aPSCompaniesId: ModelSubscriptionIDInput
+  aPSExhibitorDealsId: ModelSubscriptionIDInput
+  aPSExhibitorHandoutsId: ModelSubscriptionIDInput
+  aPSExhibitorPhotosId: ModelSubscriptionIDInput
+  aPSExhibitorPromotionsId: ModelSubscriptionIDInput
+  aPSExhibitorsId: ModelSubscriptionIDInput
+  aPSPhotosId: ModelSubscriptionIDInput
+  aPSRegistrantsId: ModelSubscriptionIDInput
+  aPSSpeakersId: ModelSubscriptionIDInput
+  aPSSponsorsId: ModelSubscriptionIDInput
+  address: ModelSubscriptionStringInput
+  and: [ModelSubscriptionAPSFilterInput]
+  city: ModelSubscriptionStringInput
+  codes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  endDate: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  location: ModelSubscriptionStringInput
+  or: [ModelSubscriptionAPSFilterInput]
+  startDate: ModelSubscriptionStringInput
+  state: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  website: ModelSubscriptionStringInput
+  year: ModelSubscriptionStringInput
+  zip: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionAPSSpeakerFilterInput {
+  and: [ModelSubscriptionAPSSpeakerFilterInput]
+  bio: ModelSubscriptionStringInput
+  company: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  firstName: ModelSubscriptionStringInput
+  headshot: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  lastName: ModelSubscriptionStringInput
+  linkedin: ModelSubscriptionStringInput
+  mediaConsent: ModelSubscriptionBooleanInput
+  or: [ModelSubscriptionAPSSpeakerFilterInput]
+  phone: ModelSubscriptionStringInput
+  presentationSummary: ModelSubscriptionStringInput
+  presentationTitle: ModelSubscriptionStringInput
+  privacyConsent: ModelSubscriptionBooleanInput
+  title: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAddOnFilterInput {
+  altLink: ModelSubscriptionStringInput
+  and: [ModelSubscriptionApsAddOnFilterInput]
+  company: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  date: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  limit: ModelSubscriptionIntInput
+  location: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAddOnFilterInput]
+  subheadline: ModelSubscriptionStringInput
+  time: ModelSubscriptionStringInput
+  title: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAdminAnnouncementFilterInput {
+  and: [ModelSubscriptionApsAdminAnnouncementFilterInput]
+  body: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  deepLink: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAdminAnnouncementFilterInput]
+  title: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAgendaFilterInput {
+  and: [ModelSubscriptionApsAgendaFilterInput]
+  apsAgendaItemsId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAgendaFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppExhibitorDealFilterInput {
+  and: [ModelSubscriptionApsAppExhibitorDealFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  deal: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  exhibitorId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  link: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAppExhibitorDealFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppExhibitorHandoutFilterInput {
+  and: [ModelSubscriptionApsAppExhibitorHandoutFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  exhibitorId: ModelSubscriptionIDInput
+  handout: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppExhibitorHandoutFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppExhibitorPhotoFilterInput {
+  and: [ModelSubscriptionApsAppExhibitorPhotoFilterInput]
+  approved: ModelSubscriptionBooleanInput
+  caption: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  exhibitorId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppExhibitorPhotoFilterInput]
+  photo: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppExhibitorProfileFilterInput {
+  and: [ModelSubscriptionApsAppExhibitorProfileFilterInput]
+  apsAppExhibitorProfileDealsId: ModelSubscriptionIDInput
+  apsAppExhibitorProfileHandoutsId: ModelSubscriptionIDInput
+  apsAppExhibitorProfilePhotosId: ModelSubscriptionIDInput
+  apsAppExhibitorProfilePromotionsId: ModelSubscriptionIDInput
+  boothNumber: ModelSubscriptionStringInput
+  companyId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  likes: ModelSubscriptionIntInput
+  or: [ModelSubscriptionApsAppExhibitorProfileFilterInput]
+  phone: ModelSubscriptionStringInput
+  sponsorId: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  video: ModelSubscriptionStringInput
+  videoCaption: ModelSubscriptionStringInput
+  views: ModelSubscriptionIntInput
+  visits: ModelSubscriptionIntInput
+}
+
+input ModelSubscriptionApsAppExhibitorPromotionFilterInput {
+  and: [ModelSubscriptionApsAppExhibitorPromotionFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  exhibitorId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  link: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAppExhibitorPromotionFilterInput]
+  promotion: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppSessionFilterInput {
+  agendaId: ModelSubscriptionIDInput
+  and: [ModelSubscriptionApsAppSessionFilterInput]
+  apsAppSessionSessionQuestionsId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  date: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  location: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAppSessionFilterInput]
+  session: ModelSubscriptionStringInput
+  time: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppSessionQuestionFilterInput {
+  and: [ModelSubscriptionApsAppSessionQuestionFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppSessionQuestionFilterInput]
+  question: ModelSubscriptionStringInput
+  sessionId: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppUserContactFilterInput {
+  and: [ModelSubscriptionApsAppUserContactFilterInput]
+  contactId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  favorite: ModelSubscriptionBooleanInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppUserContactFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppUserFilterInput {
+  and: [ModelSubscriptionApsAppUserFilterInput]
+  apsAppUserContactsId: ModelSubscriptionIDInput
+  apsAppUserExhibitorDealsId: ModelSubscriptionIDInput
+  apsAppUserLeadsId: ModelSubscriptionIDInput
+  apsAppUserNotesId: ModelSubscriptionIDInput
+  apsAppUserPhotosId: ModelSubscriptionIDInput
+  apsAppUserSessionQuestionsId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppUserFilterInput]
+  profileId: ModelSubscriptionIDInput
+  registrantId: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsAppUserLeadFilterInput {
+  and: [ModelSubscriptionApsAppUserLeadFilterInput]
+  contactId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  favorite: ModelSubscriptionBooleanInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppUserLeadFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppUserNoteFilterInput {
+  and: [ModelSubscriptionApsAppUserNoteFilterInput]
+  companyId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  exhibitorId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  note: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAppUserNoteFilterInput]
+  profileId: ModelSubscriptionIDInput
+  registrantId: ModelSubscriptionIDInput
+  sessionId: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppUserPhotoFilterInput {
+  and: [ModelSubscriptionApsAppUserPhotoFilterInput]
+  approved: ModelSubscriptionBooleanInput
+  caption: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsAppUserPhotoFilterInput]
+  photo: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsAppUserProfileFilterInput {
+  and: [ModelSubscriptionApsAppUserProfileFilterInput]
+  apsAppUserProfileAffiliatesId: ModelSubscriptionIDInput
+  apsAppUserProfileEducationId: ModelSubscriptionIDInput
+  apsAppUserProfileInterestsId: ModelSubscriptionIDInput
+  attendeeType: ModelSubscriptionStringInput
+  bio: ModelSubscriptionStringInput
+  company: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  facebook: ModelSubscriptionStringInput
+  firstName: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  instagram: ModelSubscriptionStringInput
+  jobTitle: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  linkedin: ModelSubscriptionStringInput
+  location: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsAppUserProfileFilterInput]
+  phone: ModelSubscriptionStringInput
+  profilePicture: ModelSubscriptionStringInput
+  resume: ModelSubscriptionStringInput
+  twitter: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelSubscriptionIDInput
+  website: ModelSubscriptionStringInput
+  youtube: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsDmMessageFilterInput {
+  and: [ModelSubscriptionApsDmMessageFilterInput]
+  body: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsDmMessageFilterInput]
+  owners: ModelStringInput
+  senderUserId: ModelSubscriptionIDInput
+  threadId: ModelSubscriptionIDInput
+  type: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsDmParticipantStateFilterInput {
+  and: [ModelSubscriptionApsDmParticipantStateFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  lastMessageAt: ModelSubscriptionStringInput
+  lastReadAt: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsDmParticipantStateFilterInput]
+  threadId: ModelSubscriptionIDInput
+  unreadCount: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelStringInput
+}
+
+input ModelSubscriptionApsDmThreadFilterInput {
+  and: [ModelSubscriptionApsDmThreadFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  dmKey: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  lastMessageAt: ModelSubscriptionStringInput
+  lastMessagePreview: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsDmThreadFilterInput]
+  owners: ModelStringInput
+  updatedAt: ModelSubscriptionStringInput
+  userAId: ModelSubscriptionIDInput
+  userBId: ModelSubscriptionIDInput
+}
+
+input ModelSubscriptionApsPushTokenFilterInput {
+  and: [ModelSubscriptionApsPushTokenFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsPushTokenFilterInput]
+  platform: ModelSubscriptionStringInput
+  token: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  userId: ModelStringInput
+}
+
+input ModelSubscriptionApsRegistrantFilterInput {
+  and: [ModelSubscriptionApsRegistrantFilterInput]
+  appUserId: ModelSubscriptionIDInput
+  approvedAt: ModelSubscriptionStringInput
+  apsID: ModelSubscriptionIDInput
+  apsRegistrantSeatingChartRegistrantId: ModelSubscriptionIDInput
+  aristoStatus: ModelSubscriptionStringInput
+  aristoTransportation: ModelSubscriptionStringInput
+  attendeeType: ModelSubscriptionStringInput
+  billingAddressCity: ModelSubscriptionStringInput
+  billingAddressEmail: ModelSubscriptionStringInput
+  billingAddressFirstName: ModelSubscriptionStringInput
+  billingAddressLastName: ModelSubscriptionStringInput
+  billingAddressPhone: ModelSubscriptionStringInput
+  billingAddressState: ModelSubscriptionStringInput
+  billingAddressStreet: ModelSubscriptionStringInput
+  billingAddressZip: ModelSubscriptionStringInput
+  bio: ModelSubscriptionStringInput
+  companyId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  discountCode: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  firstName: ModelSubscriptionStringInput
+  headshot: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  interests: ModelSubscriptionStringInput
+  jobTitle: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  learningObjectives: ModelSubscriptionStringInput
+  magnaStatus: ModelSubscriptionStringInput
+  magnaTransportation: ModelSubscriptionStringInput
+  morrisetteStatus: ModelSubscriptionStringInput
+  morrisetteTransportation: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsRegistrantFilterInput]
+  otherInterest: ModelSubscriptionStringInput
+  paymentConfirmation: ModelSubscriptionStringInput
+  paymentLast4: ModelSubscriptionStringInput
+  paymentMethod: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  presentation: ModelSubscriptionStringInput
+  presentationSummary: ModelSubscriptionStringInput
+  presentationTitle: ModelSubscriptionStringInput
+  qrCode: ModelSubscriptionStringInput
+  registrationEmailReceived: ModelSubscriptionBooleanInput
+  registrationEmailReceivedDate: ModelSubscriptionStringInput
+  registrationEmailSent: ModelSubscriptionBooleanInput
+  registrationEmailSentDate: ModelSubscriptionStringInput
+  sameAsAttendee: ModelSubscriptionBooleanInput
+  speakerTopic: ModelSubscriptionStringInput
+  speedNetworking: ModelSubscriptionBooleanInput
+  speedNetworkingStatus: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  termsAccepted: ModelSubscriptionBooleanInput
+  totalAmount: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+  welcomeEmailReceived: ModelSubscriptionBooleanInput
+  welcomeEmailReceivedDate: ModelSubscriptionStringInput
+  welcomeEmailSent: ModelSubscriptionBooleanInput
+  welcomeEmailSentDate: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsSeatingChartFilterInput {
+  and: [ModelSubscriptionApsSeatingChartFilterInput]
+  apsSeatingChartRegistrantsId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsSeatingChartFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsSeatingChartRegistrantFilterInput {
+  and: [ModelSubscriptionApsSeatingChartRegistrantFilterInput]
+  category: ModelSubscriptionStringInput
+  company: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  firstName: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  lastName: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  or: [ModelSubscriptionApsSeatingChartRegistrantFilterInput]
+  registrantID: ModelSubscriptionIDInput
+  role: ModelSubscriptionStringInput
+  seatingChartID: ModelSubscriptionIDInput
+  tableNumber: ModelSubscriptionIntInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionApsSponsorFilterInput {
+  and: [ModelSubscriptionApsSponsorFilterInput]
+  apsSponsorProfileId: ModelSubscriptionIDInput
+  companyId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  eventId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionApsSponsorFilterInput]
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionBooleanInput {
+  eq: Boolean
+  ne: Boolean
+}
+
+input ModelSubscriptionFloatInput {
+  between: [Float]
+  eq: Float
+  ge: Float
+  gt: Float
+  in: [Float]
+  le: Float
+  lt: Float
+  ne: Float
+  notIn: [Float]
+}
+
+input ModelSubscriptionIDInput {
+  beginsWith: ID
+  between: [ID]
+  contains: ID
+  eq: ID
+  ge: ID
+  gt: ID
+  in: [ID]
+  le: ID
+  lt: ID
+  ne: ID
+  notContains: ID
+  notIn: [ID]
+}
+
+input ModelSubscriptionIntInput {
+  between: [Int]
+  eq: Int
+  ge: Int
+  gt: Int
+  in: [Int]
+  le: Int
+  lt: Int
+  ne: Int
+  notIn: [Int]
+}
+
+input ModelSubscriptionProfileAffiliateFilterInput {
+  affiliate: ModelSubscriptionStringInput
+  and: [ModelSubscriptionProfileAffiliateFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  endDate: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionProfileAffiliateFilterInput]
+  profileId: ModelSubscriptionIDInput
+  role: ModelSubscriptionStringInput
+  startDate: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionProfileEducationFilterInput {
+  and: [ModelSubscriptionProfileEducationFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  degree: ModelSubscriptionStringInput
+  fieldOfStudy: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  or: [ModelSubscriptionProfileEducationFilterInput]
+  profileId: ModelSubscriptionIDInput
+  school: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionProfileInterestFilterInput {
+  and: [ModelSubscriptionProfileInterestFilterInput]
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  interest: ModelSubscriptionStringInput
+  or: [ModelSubscriptionProfileInterestFilterInput]
+  profileId: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+}
+
+input ModelSubscriptionStringInput {
+  beginsWith: String
+  between: [String]
+  contains: String
+  eq: String
+  ge: String
+  gt: String
+  in: [String]
+  le: String
+  lt: String
+  ne: String
+  notContains: String
+  notIn: [String]
+}
+
+input UpdateAPSBoardInput {
+  bio: String
+  company: String
+  email: String
+  id: ID!
+  linkedin: String
+  name: String
+  profilePic: String
+  title: String
+}
+
+input UpdateAPSCompanyInput {
+  aPSCompaniesId: ID
+  address: String
+  city: String
+  country: String
+  description: String
+  email: String
+  eventId: ID
+  id: ID!
+  logo: String
+  name: String
+  phone: String
+  state: String
+  type: CompanyType
+  website: String
+  zip: String
+}
+
+input UpdateAPSInput {
+  aPSAgendaId: ID
+  address: String
+  city: String
+  codes: [String]
+  endDate: String
+  id: ID!
+  location: String
+  startDate: String
+  state: String
+  website: String
+  year: String
+  zip: String
+}
+
+input UpdateAPSSpeakerInput {
+  aPSSpeakersId: ID
+  bio: String
+  company: String
+  email: String
+  eventId: ID
+  firstName: String
+  headshot: String
+  id: ID!
+  lastName: String
+  linkedin: String
+  mediaConsent: Boolean
+  phone: String
+  presentationSummary: String
+  presentationTitle: String
+  privacyConsent: Boolean
+  title: String
+}
+
+input UpdateApsAddOnInput {
+  aPSAddOnsId: ID
+  altLink: String
+  company: String
+  date: String
+  description: String
+  eventId: ID
+  id: ID!
+  limit: Int
+  location: String
+  subheadline: String
+  time: String
+  title: String
+  type: String
+}
+
+input UpdateApsAdminAnnouncementInput {
+  body: String
+  createdAt: AWSDateTime
+  deepLink: String
+  eventId: ID
+  id: ID!
+  title: String
+  updatedAt: AWSDateTime
+}
+
+input UpdateApsAgendaInput {
+  eventId: ID
+  id: ID!
+}
+
+input UpdateApsAppExhibitorDealInput {
+  aPSExhibitorDealsId: ID
+  apsAppExhibitorProfileDealsId: ID
+  apsAppUserExhibitorDealsId: ID
+  deal: String
+  eventId: ID
+  exhibitorId: ID
+  id: ID!
+  link: String
+  userId: ID
+}
+
+input UpdateApsAppExhibitorHandoutInput {
+  aPSExhibitorHandoutsId: ID
+  apsAppExhibitorProfileHandoutsId: ID
+  eventId: ID
+  exhibitorId: ID
+  handout: String
+  id: ID!
+}
+
+input UpdateApsAppExhibitorPhotoInput {
+  aPSExhibitorPhotosId: ID
+  approved: Boolean
+  apsAppExhibitorProfilePhotosId: ID
+  caption: String
+  eventId: ID
+  exhibitorId: ID
+  id: ID!
+  photo: String
+}
+
+input UpdateApsAppExhibitorProfileInput {
+  aPSCompanyExhibitorProfilesId: ID
+  aPSExhibitorsId: ID
+  boothNumber: String
+  companyId: ID
+  eventId: ID
+  id: ID!
+  likes: Int
+  phone: String
+  sponsorId: ID
+  title: String
+  video: String
+  videoCaption: String
+  views: Int
+  visits: Int
+}
+
+input UpdateApsAppExhibitorPromotionInput {
+  aPSExhibitorPromotionsId: ID
+  apsAppExhibitorProfilePromotionsId: ID
+  eventId: ID
+  exhibitorId: ID
+  id: ID!
+  link: String
+  promotion: String
+}
+
+input UpdateApsAppSessionInput {
+  agendaId: ID
+  apsAgendaItemsId: ID
+  date: String
+  id: ID!
+  location: String
+  session: String
+  time: String
+}
+
+input UpdateApsAppSessionQuestionInput {
+  apsAppSessionSessionQuestionsId: ID
+  apsAppUserSessionQuestionsId: ID
+  id: ID!
+  question: String
+  sessionId: ID
+  userId: ID
+}
+
+input UpdateApsAppUserContactInput {
+  apsAppUserContactsId: ID
+  contactId: ID
+  favorite: Boolean
+  id: ID!
+  userId: ID
+}
+
+input UpdateApsAppUserInput {
+  id: ID!
+  profileId: ID
+  registrantId: ID
+}
+
+input UpdateApsAppUserLeadInput {
+  apsAppUserLeadsId: ID
+  contactId: ID
+  favorite: Boolean
+  id: ID!
+  userId: ID
+}
+
+input UpdateApsAppUserNoteInput {
+  apsAppUserNotesId: ID
+  companyId: ID
+  exhibitorId: ID
+  id: ID!
+  note: String
+  profileId: ID
+  registrantId: ID
+  sessionId: ID
+  userId: ID
+}
+
+input UpdateApsAppUserPhotoInput {
+  aPSPhotosId: ID
+  approved: Boolean
+  apsAppUserPhotosId: ID
+  caption: String
+  eventId: ID
+  id: ID!
+  photo: String
+  userId: ID
+}
+
+input UpdateApsAppUserProfileInput {
+  attendeeType: RegistrantType
+  bio: String
+  company: String
+  email: String
+  facebook: String
+  firstName: String
+  id: ID!
+  instagram: String
+  jobTitle: String
+  lastName: String
+  linkedin: String
+  location: String
+  phone: String
+  profilePicture: String
+  resume: String
+  twitter: String
+  userId: ID
+  website: [String]
+  youtube: String
+}
+
+input UpdateApsDmMessageInput {
+  body: String
+  createdAt: AWSDateTime
+  eventId: ID
+  id: ID!
+  owners: [String!]
+  senderUserId: ID
+  threadId: ID
+  type: String
+  updatedAt: AWSDateTime
+}
+
+input UpdateApsDmParticipantStateInput {
+  createdAt: AWSDateTime
+  eventId: ID
+  id: ID!
+  lastMessageAt: AWSDateTime
+  lastReadAt: AWSDateTime
+  threadId: ID
+  unreadCount: Int
+  updatedAt: AWSDateTime
+  userId: ID
+}
+
+input UpdateApsDmThreadInput {
+  createdAt: AWSDateTime
+  dmKey: String
+  eventId: ID
+  id: ID!
+  lastMessageAt: AWSDateTime
+  lastMessagePreview: String
+  owners: [String!]
+  updatedAt: AWSDateTime
+  userAId: ID
+  userBId: ID
+}
+
+input UpdateApsPushTokenInput {
+  createdAt: AWSDateTime
+  id: ID!
+  platform: String
+  token: String
+  updatedAt: AWSDateTime
+  userId: ID
+}
+
+input UpdateApsRegistrantInput {
+  aPSCompanyRegistrantsId: ID
+  aPSRegistrantsId: ID
+  appUserId: ID
+  approvedAt: String
+  apsID: ID
+  apsRegistrantSeatingChartRegistrantId: ID
+  aristoStatus: String
+  aristoTransportation: String
+  attendeeType: RegistrantType
+  billingAddressCity: String
+  billingAddressEmail: String
+  billingAddressFirstName: String
+  billingAddressLastName: String
+  billingAddressPhone: String
+  billingAddressState: String
+  billingAddressStreet: String
+  billingAddressZip: String
+  bio: String
+  companyId: ID
+  discountCode: String
+  email: String
+  firstName: String
+  headshot: String
+  id: ID!
+  interests: [String]
+  jobTitle: String
+  lastName: String
+  learningObjectives: String
+  magnaStatus: String
+  magnaTransportation: String
+  morrisetteStatus: String
+  morrisetteTransportation: String
+  otherInterest: String
+  paymentConfirmation: String
+  paymentLast4: String
+  paymentMethod: String
+  phone: String
+  presentation: String
+  presentationSummary: String
+  presentationTitle: String
+  qrCode: String
+  registrationEmailReceived: Boolean
+  registrationEmailReceivedDate: String
+  registrationEmailSent: Boolean
+  registrationEmailSentDate: String
+  sameAsAttendee: Boolean
+  speakerTopic: String
+  speedNetworking: Boolean
+  speedNetworkingStatus: String
+  status: RegistrantStatus
+  termsAccepted: Boolean
+  totalAmount: Int
+  welcomeEmailReceived: Boolean
+  welcomeEmailReceivedDate: String
+  welcomeEmailSent: Boolean
+  welcomeEmailSentDate: String
+}
+
+input UpdateApsSeatingChartInput {
+  id: ID!
+}
+
+input UpdateApsSeatingChartRegistrantInput {
+  apsSeatingChartRegistrantsId: ID
+  category: String
+  company: String
+  email: String
+  firstName: String
+  id: ID!
+  lastName: String
+  notes: String
+  registrantID: ID
+  role: String
+  seatingChartID: ID
+  tableNumber: Int
+}
+
+input UpdateApsSponsorInput {
+  aPSCompanySponsorsId: ID
+  aPSSponsorsId: ID
+  apsSponsorProfileId: ID
+  companyId: ID
+  eventId: ID
+  id: ID!
+}
+
+input UpdateProfileAffiliateInput {
+  affiliate: String
+  apsAppUserProfileAffiliatesId: ID
+  endDate: String
+  id: ID!
+  profileId: ID
+  role: String
+  startDate: String
+}
+
+input UpdateProfileEducationInput {
+  apsAppUserProfileEducationId: ID
+  degree: String
+  fieldOfStudy: String
+  id: ID!
+  profileId: ID
+  school: String
+}
+
+input UpdateProfileInterestInput {
+  apsAppUserProfileInterestsId: ID
+  id: ID!
+  interest: String
+  profileId: ID
+}

@@ -1,8 +1,5 @@
-# This "input" configures a global authorization rule to enable public access to
-# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
-input AMPLIFY {
-  globalAuthRule: AuthRule = { allow: public }
-} # FOR TESTING ONLY!
+# NOTE: Messaging + other user-scoped data must NOT rely on global public auth.
+# Keep auth explicit per-model via @auth rules.
 # Enum: CompanyType
 enum CompanyType {
   OEMTIER1
@@ -17,6 +14,7 @@ enum RegistrantType {
   SPONSOR
   SPEAKER
   STAFF
+  EXHIBITOR
 }
 
 enum RegistrantStatus {
@@ -45,7 +43,6 @@ type APS @model @auth(rules: [{ allow: public }]) {
   Companies: [APSCompany] @hasMany(indexName: "byEvent")
   photos: [ApsAppUserPhoto] @hasMany(indexName: "byEvent")
   exhibitors: [ApsAppExhibitorProfile] @hasMany(indexName: "byEvent")
-  messages: [ApsAppMessage] @hasMany(indexName: "byEvent")
   exhibitorPromotions: [ApsAppExhibitorPromotion] @hasMany(indexName: "byEvent")
   exhibitorDeals: [ApsAppExhibitorDeal] @hasMany(indexName: "byEvent")
   exhibitorPhotos: [ApsAppExhibitorPhoto] @hasMany(indexName: "byEvent")
@@ -129,7 +126,12 @@ type ApsRegistrant @model @auth(rules: [{ allow: public }]) {
   presentationSummary: String
   bio: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
-  appUser: ApsAppUser @hasOne
+
+  # ✅ FIX: make the hasOne key explicit so resolvers can traverse registrant -> appUser
+  appUserId: ID
+  appUser: ApsAppUser @hasOne(fields: ["appUserId"])
+
+  notes: [ApsAppUserNote] @hasMany(indexName: "byRegistrant", fields: ["id"])
   qrCode: String
 }
 
@@ -139,10 +141,59 @@ type ApsAppUser @model @auth(rules: [{ allow: public }]) {
   registrantId: ID! @index(name: "byRegistrant")
   registrant: ApsRegistrant! @belongsTo(fields: ["registrantId"])
   photos: [ApsAppUserPhoto] @hasMany(indexName: "byUser")
-  messages: [ApsAppMessage] @hasMany(indexName: "byUser")
   sessionQuestions: [ApsAppSessionQuestion] @hasMany(indexName: "byUser")
   exhibitorDeals: [ApsAppExhibitorDeal] @hasMany(indexName: "byUser")
-  profile: ApsAppUserProfile @hasOne
+  contacts: [ApsAppUserContact] @hasMany(indexName: "byUser")
+  notes: [ApsAppUserNote] @hasMany(indexName: "byUser")
+  leads: [ApsAppUserLead] @hasMany(indexName: "byUser")
+  sentDmMessages: [ApsDmMessage]
+    @hasMany(indexName: "bySenderCreated", fields: ["id"])
+
+  # ✅ FIX: make the hasOne key explicit so resolvers can traverse user -> profile
+  profileId: ID
+  profile: ApsAppUserProfile @hasOne(fields: ["profileId"])
+}
+
+# App User Contact
+type ApsAppUserContact @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: ID! @index(name: "byUser")
+  user: ApsAppUser! @belongsTo(fields: ["userId"])
+  favorite: Boolean
+  contact: ApsAppUserProfile! @belongsTo(fields: ["contactId"])
+  contactId: ID! @index(name: "byContact")
+}
+
+# App User Note
+type ApsAppUserNote @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: ID! @index(name: "byUser")
+  user: ApsAppUser! @belongsTo(fields: ["userId"])
+  note: String
+  sessionId: ID @index(name: "bySession")
+  session: ApsAppSession @belongsTo(fields: ["sessionId"])
+  exhibitorId: ID @index(name: "byExhibitor")
+  exhibitor: ApsAppExhibitorProfile @belongsTo(fields: ["exhibitorId"])
+  registrantId: ID @index(name: "byRegistrant")
+  registrant: ApsRegistrant @belongsTo(fields: ["registrantId"])
+
+  # Notes about a contact (profile)
+  profileId: ID @index(name: "byProfile")
+  profile: ApsAppUserProfile @belongsTo(fields: ["profileId"])
+
+  # Notes about a company
+  companyId: ID @index(name: "byCompany")
+  company: APSCompany @belongsTo(fields: ["companyId"])
+}
+
+# App User Lead
+type ApsAppUserLead @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: ID! @index(name: "byUser")
+  user: ApsAppUser! @belongsTo(fields: ["userId"])
+  favorite: Boolean
+  contact: ApsAppUserProfile! @belongsTo(fields: ["contactId"])
+  contactId: ID! @index(name: "byContact")
 }
 
 # App User Profile
@@ -170,6 +221,13 @@ type ApsAppUserProfile @model @auth(rules: [{ allow: public }]) {
   education: [ProfileEducation] @hasMany(indexName: "byUser")
   interests: [ProfileInterest] @hasMany(indexName: "byUser")
   resume: String
+
+  # Reverse relationships required for @belongsTo in Contact/Lead
+  contacts: [ApsAppUserContact] @hasMany(indexName: "byContact", fields: ["id"])
+  leads: [ApsAppUserLead] @hasMany(indexName: "byContact", fields: ["id"])
+
+  # Notes about this profile (contact notes)
+  notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
 }
 
 type ProfileAffiliate @model @auth(rules: [{ allow: public }]) {
@@ -220,6 +278,7 @@ type ApsAppSession @model @auth(rules: [{ allow: public }]) {
   agendaId: ID @index(name: "byAgenda")
   agenda: ApsAgenda @belongsTo(fields: ["agendaId"])
   sessionQuestions: [ApsAppSessionQuestion] @hasMany(indexName: "bySession")
+  notes: [ApsAppUserNote] @hasMany(indexName: "bySession", fields: ["id"])
 }
 
 # Session Questions
@@ -282,6 +341,7 @@ type APSCompany @model @auth(rules: [{ allow: public }]) {
   registrants: [ApsRegistrant] @hasMany(indexName: "byCompany")
   sponsors: [ApsSponsor] @hasMany(indexName: "byCompany")
   exhibitorProfiles: [ApsAppExhibitorProfile] @hasMany(indexName: "byCompany")
+  notes: [ApsAppUserNote] @hasMany(indexName: "byCompany", fields: ["id"])
 }
 
 # Exhibitor Profiles
@@ -305,20 +365,7 @@ type ApsAppExhibitorProfile @model @auth(rules: [{ allow: public }]) {
   visits: Int
   views: Int
   likes: Int
-  inquiries: [ApsAppMessage] @hasMany(indexName: "byExhibitor")
-}
-
-# Messages
-type ApsAppMessage @model @auth(rules: [{ allow: public }]) {
-  id: ID!
-  type: String
-  message: String
-  userId: ID @index(name: "byUser")
-  user: ApsAppUser @belongsTo(fields: ["userId"])
-  exhibitorId: ID @index(name: "byExhibitor")
-  exhibitor: ApsAppExhibitorProfile @belongsTo(fields: ["exhibitorId"])
-  eventId: ID! @index(name: "byEvent")
-  event: APS! @belongsTo(fields: ["eventId"])
+  notes: [ApsAppUserNote] @hasMany(indexName: "byExhibitor", fields: ["id"])
 }
 
 # Exhibitor Promotions
@@ -404,4 +451,149 @@ type ApsSeatingChartRegistrant @model @auth(rules: [{ allow: public }]) {
   seatingChart: ApsSeatingChart! @belongsTo(fields: ["seatingChartID"])
   registrantID: ID! @index(name: "byRegistrant")
   registrant: ApsRegistrant! @belongsTo(fields: ["registrantID"])
+}
+
+# Messaging
+
+type ApsDmThread
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "owners"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  eventId: ID!
+  dmKey: String! @index(name: "byDmKey") # unique: u:<a>|u:<b> sorted
+  userAId: ID! # Cognito sub (sorted)
+  userBId: ID! # Cognito sub (sorted)
+  owners: [String!]! # [userAId, userBId] for @auth multi-owner access
+  # Relationships required by Gen1 for @belongsTo on child models
+  participantStates: [ApsDmParticipantState]
+    @hasMany(indexName: "byThread", fields: ["id"])
+  messages: [ApsDmMessage]
+    @hasMany(indexName: "byThreadCreated", fields: ["id"])
+
+  lastMessageAt: AWSDateTime
+  lastMessagePreview: String
+
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ApsDmParticipantState
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "userId"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  eventId: ID!
+
+  threadId: ID! @index(name: "byThread", sortKeyFields: ["userId"])
+  thread: ApsDmThread! @belongsTo(fields: ["threadId"])
+
+  userId: ID! @index(name: "byUserLast", sortKeyFields: ["lastMessageAt"]) # Cognito sub
+  lastReadAt: AWSDateTime
+  unreadCount: Int
+  lastMessageAt: AWSDateTime
+
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ApsDmMessage
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "owners"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  eventId: ID!
+
+  threadId: ID! @index(name: "byThreadCreated", sortKeyFields: ["createdAt"])
+  thread: ApsDmThread! @belongsTo(fields: ["threadId"])
+
+  senderUserId: ID!
+    @index(name: "bySenderCreated", sortKeyFields: ["createdAt"])
+  sender: ApsAppUser! @belongsTo(fields: ["senderUserId"])
+  owners: [String!]! # [thread.userAId, thread.userBId] for @auth multi-owner access
+  type: String # "text" | "image" | "system"
+  body: String
+
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ApsAdminAnnouncement
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"], provider: userPools }
+      { allow: private, operations: [read], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  eventId: ID! @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
+
+  title: String
+  body: String!
+  deepLink: String # optional, e.g. "app://announcements/<id>"
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ApsPushToken
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "userId"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  userId: ID! @index(name: "byUserUpdated", sortKeyFields: ["updatedAt"]) # Cognito sub
+  token: String!
+  platform: String
+  updatedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+}
+
+# --- Auth directive fix ---
+# Amplify Gen1 sometimes generates `ModelApsDmMessageConnection` with `@aws_api_key`
+# only, which breaks USER_POOLS callers when querying `items`.
+# We explicitly declare it here so it supports BOTH auth modes (API key + user pools).
+type ModelApsDmMessageConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsDmMessage]!
+  nextToken: String
 }

@@ -1,6 +1,118 @@
 'use server';
 
 import { requestGraphQL } from '@/lib/appsync';
+import amplifyConfig from '@/src/amplifyconfiguration.json';
+import {
+  AdminCreateUserCommand,
+  AdminGetUserCommand,
+  CognitoIdentityProviderClient,
+} from '@aws-sdk/client-cognito-identity-provider';
+
+type CognitoAttr = { Name?: string; Value?: string };
+
+async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
+  sub: string;
+  username: string;
+}> {
+  const region =
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    amplifyConfig.aws_project_region;
+
+  const userPoolId = amplifyConfig.aws_user_pools_id;
+  if (!userPoolId) {
+    throw new Error(
+      'Missing Cognito user pool id in amplifyconfiguration.json'
+    );
+  }
+
+  // NOTE: This requires AWS credentials in the server environment
+  // (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY or an assumed role).
+  // If running locally, your AWS CLI profile/credential chain is fine; if running
+  // on a host, attach an IAM role. We intentionally do NOT require env creds here.
+
+  const client = new CognitoIdentityProviderClient({ region });
+  const username = email.trim().toLowerCase();
+  const suppressInvite =
+    process.env.APS_SUPPRESS_COGNITO_INVITES === 'true' ||
+    process.env.NEXT_PUBLIC_APS_SUPPRESS_COGNITO_INVITES === 'true';
+
+  const tempPassword = suppressInvite
+    ? `Aps!${Math.random().toString(36).slice(2)}${Math.random()
+        .toString(36)
+        .slice(2)}9Z`
+    : undefined;
+
+  try {
+    const created = await client.send(
+      new AdminCreateUserCommand({
+        UserPoolId: userPoolId,
+        Username: username,
+        UserAttributes: [
+          { Name: 'email', Value: username },
+          { Name: 'email_verified', Value: 'true' },
+        ],
+        // For dummy/test data we suppress the Cognito invite email to avoid spam.
+        MessageAction: suppressInvite ? 'SUPPRESS' : undefined,
+        TemporaryPassword: tempPassword,
+        DesiredDeliveryMediums: suppressInvite ? undefined : ['EMAIL'],
+      })
+    );
+
+    const attrs = (created.User?.Attributes ?? []) as CognitoAttr[];
+    const sub = attrs.find((a: CognitoAttr) => a.Name === 'sub')?.Value;
+    if (!sub) throw new Error('Cognito AdminCreateUser did not return sub');
+    return { sub, username };
+  } catch (e: unknown) {
+    // If user already exists, fetch their sub and proceed idempotently.
+    const errName =
+      typeof e === 'object' && e && 'name' in e
+        ? String((e as { name?: unknown }).name)
+        : null;
+
+    if (errName === 'UsernameExistsException') {
+      const existing = await client.send(
+        new AdminGetUserCommand({
+          UserPoolId: userPoolId,
+          Username: username,
+        })
+      );
+      const existingAttrs = (existing.UserAttributes ?? []) as CognitoAttr[];
+      const sub = existingAttrs.find(
+        (a: CognitoAttr) => a.Name === 'sub'
+      )?.Value;
+      if (!sub) throw new Error('Cognito user exists but sub not found');
+      return { sub, username };
+    }
+    throw e;
+  }
+}
+
+function buildProfileQrUrl(profileId: string): string {
+  // Preferred: explicit template
+  // Example: https://app.autopacksummit.com/profile/{profileId}
+  const template =
+    process.env.APS_PROFILE_QR_URL_TEMPLATE ||
+    process.env.NEXT_PUBLIC_APS_PROFILE_QR_URL_TEMPLATE;
+  if (template?.includes('{profileId}')) {
+    return template.replaceAll('{profileId}', profileId);
+  }
+
+  // Next: base URL + default path
+  const base =
+    process.env.APS_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+
+  if (base) {
+    return `${String(base).replace(/\/$/, '')}/profile/${profileId}`;
+  }
+
+  // Fallback: deep-link style URL (still a URL, works for app routing)
+  return `aps://profile/${profileId}`;
+}
 
 const CREATE_REGISTRANT = /* GraphQL */ `
   mutation CreateApsRegistrant($input: CreateApsRegistrantInput!) {
@@ -29,6 +141,16 @@ const UPDATE_REGISTRANT = /* GraphQL */ `
     updateApsRegistrant(input: $input) {
       id
       qrCode
+      appUserId
+    }
+  }
+`;
+
+const UPDATE_APP_USER = /* GraphQL */ `
+  mutation UpdateApsAppUser($input: UpdateApsAppUserInput!) {
+    updateApsAppUser(input: $input) {
+      id
+      profileId
     }
   }
 `;
@@ -189,6 +311,96 @@ const GET_REGISTRANT = /* GraphQL */ `
       qrCode
       createdAt
       updatedAt
+      appUser {
+        id
+        registrantId
+        profile {
+          id
+          userId
+          firstName
+          lastName
+          email
+          phone
+          company
+          jobTitle
+          attendeeType
+          profilePicture
+          bio
+          linkedin
+          twitter
+          facebook
+          instagram
+          youtube
+          website
+          location
+          resume
+        }
+      }
+    }
+  }
+`;
+
+const LIST_PROFILE_AFFILIATES = /* GraphQL */ `
+  query ListProfileAffiliates(
+    $filter: ModelProfileAffiliateFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listProfileAffiliates(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        affiliate
+        role
+        startDate
+        endDate
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_PROFILE_EDUCATION = /* GraphQL */ `
+  query ListProfileEducations(
+    $filter: ModelProfileEducationFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listProfileEducations(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        school
+        degree
+        fieldOfStudy
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_PROFILE_INTERESTS = /* GraphQL */ `
+  query ListProfileInterests(
+    $filter: ModelProfileInterestFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listProfileInterests(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        interest
+      }
+      nextToken
     }
   }
 `;
@@ -218,6 +430,63 @@ export type Registrant = {
   status: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ProfileAffiliate = {
+  id: string;
+  affiliate?: string | null;
+  role?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+};
+
+export type ProfileEducation = {
+  id: string;
+  school?: string | null;
+  degree?: string | null;
+  fieldOfStudy?: string | null;
+};
+
+export type ProfileInterest = {
+  id: string;
+  interest?: string | null;
+};
+
+export type ApsAppUserProfile = {
+  id: string;
+  userId: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  company?: string | null;
+  jobTitle?: string | null;
+  attendeeType?: string | null;
+  profilePicture?: string | null;
+  bio?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  youtube?: string | null;
+  website?: string[] | null;
+  location?: string | null;
+  resume?: string | null;
+  affiliates?: {
+    items?: ProfileAffiliate[];
+  } | null;
+  education?: {
+    items?: ProfileEducation[];
+  } | null;
+  interests?: {
+    items?: ProfileInterest[];
+  } | null;
+};
+
+export type ApsAppUser = {
+  id: string;
+  registrantId: string;
+  profile?: ApsAppUserProfile | null;
 };
 
 export type RegistrantDetail = Registrant & {
@@ -271,6 +540,7 @@ export type RegistrantDetail = Registrant & {
     website?: string | null;
     type?: string | null;
   } | null;
+  appUser?: ApsAppUser | null;
 };
 
 export type AddOn = {
@@ -438,40 +708,104 @@ export async function createRegistrant(input: {
 
   const registrantId = result.createApsRegistrant.id;
 
-  // Generate and upload QR code
-  try {
-    // Fetch company details if companyId is provided
-    let companyName: string | null = null;
-    let companyWebsite: string | null = null;
+  // Create (or fetch) a Cognito user so ApsAppUser.id can be the stable Cognito sub.
+  const { sub: appUserId } = await ensureCognitoUserForRegistrantEmail(
+    input.email
+  );
 
-    if (input.companyId) {
-      try {
-        const companyResult = await requestGraphQL<{
-          getAPSCompany?: { name: string; website?: string | null };
-        }>(GET_COMPANY, { id: input.companyId });
+  // Create ApsAppUser for this registrant (strict; required for bidirectional querying)
+  const appUserResult = await requestGraphQL<{
+    createApsAppUser?: { id: string; registrantId: string };
+  }>(CREATE_APP_USER, {
+    input: {
+      id: appUserId,
+      registrantId,
+    },
+  });
 
-        if (companyResult.getAPSCompany) {
-          companyName = companyResult.getAPSCompany.name;
-          companyWebsite = companyResult.getAPSCompany.website || null;
-        }
-      } catch (error) {
-        console.warn('Failed to fetch company details for QR code:', error);
-      }
+  if (!appUserResult.createApsAppUser?.id) {
+    throw new Error('Failed to create ApsAppUser for registrant');
+  }
+
+  // Link registrant -> appUser (strict; required for registrant.appUser resolver)
+  const linkRegistrantResult = await requestGraphQL<{
+    updateApsRegistrant?: { id: string; appUserId?: string | null };
+  }>(UPDATE_REGISTRANT, {
+    input: {
+      id: registrantId,
+      appUserId,
+    },
+  });
+
+  if (!linkRegistrantResult.updateApsRegistrant?.id) {
+    throw new Error('Failed to attach appUserId to registrant');
+  }
+
+  // Create ApsAppUserProfile with matching data from registrant (strict; required for user.profile resolver)
+  // Get company name if companyId is provided
+  let companyNameForProfile: string | null = null;
+  if (input.companyId) {
+    try {
+      const companyResult = await requestGraphQL<{
+        getAPSCompany?: { name: string };
+      }>(GET_COMPANY, { id: input.companyId });
+      companyNameForProfile = companyResult.getAPSCompany?.name || null;
+    } catch (error) {
+      console.warn('Failed to fetch company name for profile:', error);
     }
+  }
 
-    // Import the QR code function
-    const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
-
-    // Generate and upload QR code
-    const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
-      firstName: input.firstName,
-      lastName: input.lastName,
+  const profileResult = await requestGraphQL<{
+    createApsAppUserProfile?: { id: string; userId: string };
+  }>(CREATE_APP_USER_PROFILE, {
+    input: {
+      userId: appUserId,
+      firstName: input.firstName || null,
+      lastName: input.lastName || null,
       email: input.email,
-      phone: input.phone,
-      company: companyName,
-      jobTitle: input.jobTitle,
-      website: companyWebsite,
-    });
+      phone: input.phone || null,
+      company: companyNameForProfile || null,
+      jobTitle: input.jobTitle || null,
+      attendeeType: input.attendeeType || null,
+      // Other fields will be filled in by the user later
+    },
+  });
+
+  if (!profileResult.createApsAppUserProfile?.id) {
+    throw new Error('Failed to create ApsAppUserProfile for app user');
+  }
+
+  const profileId = profileResult.createApsAppUserProfile.id;
+
+  // Link appUser -> profile (strict; required for appUser.profile resolver)
+  const linkUserResult = await requestGraphQL<{
+    updateApsAppUser?: { id: string; profileId?: string | null };
+  }>(UPDATE_APP_USER, {
+    input: {
+      id: appUserId,
+      profileId,
+    },
+  });
+
+  if (!linkUserResult.updateApsAppUser?.id) {
+    throw new Error('Failed to attach profileId to app user');
+  }
+
+  // Generate and upload QR code (best-effort)
+  try {
+    // Import the QR code function
+    const { generateAndUploadQRCodeFromText } = await import(
+      '@/lib/qrcode-storage'
+    );
+
+    // Encode profile URL (created after profile is created/linked)
+    const profileUrl = buildProfileQrUrl(profileId);
+
+    // Generate and upload QR code image
+    const qrCodeUrl = await generateAndUploadQRCodeFromText(
+      registrantId,
+      profileUrl
+    );
 
     // Update the registrant with the QR code URL
     await requestGraphQL<{
@@ -485,62 +819,7 @@ export async function createRegistrant(input: {
   } catch (error) {
     console.error('Failed to generate QR code for registrant:', error);
     // Don't fail the entire operation if QR code generation fails
-    // The registrant is already created, we just log the error
-  }
-
-  // Create ApsAppUser for this registrant
-  let appUserId: string | null = null;
-  try {
-    const appUserResult = await requestGraphQL<{
-      createApsAppUser?: { id: string; registrantId: string };
-    }>(CREATE_APP_USER, {
-      input: {
-        registrantId,
-      },
-    });
-
-    if (appUserResult.createApsAppUser) {
-      appUserId = appUserResult.createApsAppUser.id;
-
-      // Create ApsAppUserProfile with matching data from registrant
-      try {
-        // Get company name if companyId is provided
-        let companyName: string | null = null;
-        if (input.companyId) {
-          try {
-            const companyResult = await requestGraphQL<{
-              getAPSCompany?: { name: string };
-            }>(GET_COMPANY, { id: input.companyId });
-            companyName = companyResult.getAPSCompany?.name || null;
-          } catch (error) {
-            console.warn('Failed to fetch company name for profile:', error);
-          }
-        }
-
-        await requestGraphQL<{
-          createApsAppUserProfile?: { id: string; userId: string };
-        }>(CREATE_APP_USER_PROFILE, {
-          input: {
-            userId: appUserId,
-            firstName: input.firstName || null,
-            lastName: input.lastName || null,
-            email: input.email,
-            phone: input.phone || null,
-            company: companyName || null,
-            jobTitle: input.jobTitle || null,
-            attendeeType: input.attendeeType || null,
-            // Other fields will be filled in by the user later
-          },
-        });
-      } catch (error) {
-        console.error('Failed to create ApsAppUserProfile:', error);
-        // Don't fail the entire operation if profile creation fails
-      }
-    }
-  } catch (error) {
-    console.error('Failed to create ApsAppUser for registrant:', error);
-    // Don't fail the entire operation if ApsAppUser creation fails
-    // The registrant is already created, we just log the error
+    // The registrant + app user + profile are already created and linked
   }
 
   return result.createApsRegistrant;
@@ -600,7 +879,80 @@ export async function fetchRegistrantById(
       getApsRegistrant?: RegistrantDetail | null;
     }>(GET_REGISTRANT, { id });
 
-    return response.getApsRegistrant || null;
+    const registrant = response.getApsRegistrant;
+    if (!registrant) {
+      return null;
+    }
+
+    // If there's an appUser with a profile, fetch the nested relationships
+    if (registrant.appUser?.profile?.id) {
+      const profileId = registrant.appUser.profile.id;
+
+      // Fetch affiliates
+      try {
+        const affiliatesResponse = await requestGraphQL<{
+          listProfileAffiliates?: {
+            items?: ProfileAffiliate[];
+            nextToken?: string | null;
+          } | null;
+        }>(LIST_PROFILE_AFFILIATES, {
+          filter: { profileId: { eq: profileId } },
+          limit: 1000,
+        });
+
+        if (registrant.appUser.profile) {
+          registrant.appUser.profile.affiliates = {
+            items: affiliatesResponse.listProfileAffiliates?.items || [],
+          };
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile affiliates:', error);
+      }
+
+      // Fetch education
+      try {
+        const educationResponse = await requestGraphQL<{
+          listProfileEducations?: {
+            items?: ProfileEducation[];
+            nextToken?: string | null;
+          } | null;
+        }>(LIST_PROFILE_EDUCATION, {
+          filter: { profileId: { eq: profileId } },
+          limit: 1000,
+        });
+
+        if (registrant.appUser.profile) {
+          registrant.appUser.profile.education = {
+            items: educationResponse.listProfileEducations?.items || [],
+          };
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile education:', error);
+      }
+
+      // Fetch interests
+      try {
+        const interestsResponse = await requestGraphQL<{
+          listProfileInterests?: {
+            items?: ProfileInterest[];
+            nextToken?: string | null;
+          } | null;
+        }>(LIST_PROFILE_INTERESTS, {
+          filter: { profileId: { eq: profileId } },
+          limit: 1000,
+        });
+
+        if (registrant.appUser.profile) {
+          registrant.appUser.profile.interests = {
+            items: interestsResponse.listProfileInterests?.items || [],
+          };
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile interests:', error);
+      }
+    }
+
+    return registrant;
   } catch (error) {
     console.error(`Failed to fetch registrant ${id}:`, error);
     return null;

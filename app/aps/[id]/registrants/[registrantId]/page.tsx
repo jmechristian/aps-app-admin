@@ -14,7 +14,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
     notFound();
   }
 
-  const fullName = `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() || 'N/A';
+  const fullName =
+    `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() ||
+    'N/A';
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -72,19 +74,25 @@ export default async function RegistrantProfile({ params }: PageProps) {
           <div className='lg:col-span-2 space-y-6'>
             {/* Basic Information */}
             <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-              <h2 className='mb-6 text-xl font-bold text-slate-900'>Basic Information</h2>
+              <h2 className='mb-6 text-xl font-bold text-slate-900'>
+                Basic Information
+              </h2>
               <div className='grid gap-4 md:grid-cols-2'>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     First Name
                   </p>
-                  <p className='mt-1 text-slate-900'>{registrant.firstName || '—'}</p>
+                  <p className='mt-1 text-slate-900'>
+                    {registrant.firstName || '—'}
+                  </p>
                 </div>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Last Name
                   </p>
-                  <p className='mt-1 text-slate-900'>{registrant.lastName || '—'}</p>
+                  <p className='mt-1 text-slate-900'>
+                    {registrant.lastName || '—'}
+                  </p>
                 </div>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -120,13 +128,17 @@ export default async function RegistrantProfile({ params }: PageProps) {
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Job Title
                   </p>
-                  <p className='mt-1 text-slate-900'>{registrant.jobTitle || '—'}</p>
+                  <p className='mt-1 text-slate-900'>
+                    {registrant.jobTitle || '—'}
+                  </p>
                 </div>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Attendee Type
                   </p>
-                  <p className='mt-1 text-slate-900'>{getAttendeeTypeLabel(registrant.attendeeType)}</p>
+                  <p className='mt-1 text-slate-900'>
+                    {getAttendeeTypeLabel(registrant.attendeeType)}
+                  </p>
                 </div>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -134,7 +146,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
                   </p>
                   <p className='mt-1'>
                     <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusColor(registrant.status)}`}
+                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusColor(
+                        registrant.status
+                      )}`}
                     >
                       {registrant.status}
                     </span>
@@ -146,13 +160,17 @@ export default async function RegistrantProfile({ params }: PageProps) {
             {/* Company Information */}
             {registrant.company && (
               <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-                <h2 className='mb-6 text-xl font-bold text-slate-900'>Company</h2>
+                <h2 className='mb-6 text-xl font-bold text-slate-900'>
+                  Company
+                </h2>
                 <div className='space-y-3'>
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                       Company Name
                     </p>
-                    <p className='mt-1 text-slate-900'>{registrant.company.name}</p>
+                    <p className='mt-1 text-slate-900'>
+                      {registrant.company.name}
+                    </p>
                   </div>
                   {registrant.company.email && (
                     <div>
@@ -191,7 +209,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
                       <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                         Company Type
                       </p>
-                      <p className='mt-1 text-slate-900'>{registrant.company.type}</p>
+                      <p className='mt-1 text-slate-900'>
+                        {registrant.company.type}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -202,7 +222,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
             {registrant.bio && (
               <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
                 <h2 className='mb-6 text-xl font-bold text-slate-900'>Bio</h2>
-                <p className='text-slate-700 whitespace-pre-wrap'>{registrant.bio}</p>
+                <p className='text-slate-700 whitespace-pre-wrap'>
+                  {registrant.bio}
+                </p>
               </div>
             )}
 
@@ -212,14 +234,20 @@ export default async function RegistrantProfile({ params }: PageProps) {
               registrant.billingAddressState ||
               registrant.billingAddressZip) && (
               <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-                <h2 className='mb-6 text-xl font-bold text-slate-900'>Billing Address</h2>
+                <h2 className='mb-6 text-xl font-bold text-slate-900'>
+                  Billing Address
+                </h2>
                 <div className='space-y-2 text-slate-700'>
-                  {registrant.billingAddressFirstName && registrant.billingAddressLastName && (
-                    <p>
-                      {registrant.billingAddressFirstName} {registrant.billingAddressLastName}
-                    </p>
+                  {registrant.billingAddressFirstName &&
+                    registrant.billingAddressLastName && (
+                      <p>
+                        {registrant.billingAddressFirstName}{' '}
+                        {registrant.billingAddressLastName}
+                      </p>
+                    )}
+                  {registrant.billingAddressStreet && (
+                    <p>{registrant.billingAddressStreet}</p>
                   )}
-                  {registrant.billingAddressStreet && <p>{registrant.billingAddressStreet}</p>}
                   {(registrant.billingAddressCity ||
                     registrant.billingAddressState ||
                     registrant.billingAddressZip) && (
@@ -256,6 +284,377 @@ export default async function RegistrantProfile({ params }: PageProps) {
                 </div>
               </div>
             )}
+
+            {/* Debug: Show appUser status */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className='rounded-3xl border border-blue-200 bg-blue-50 p-8 shadow-lg'>
+                <h2 className='mb-6 text-xl font-bold text-slate-900'>
+                  Debug Info
+                </h2>
+                <div className='space-y-2 text-sm'>
+                  <p>
+                    <strong>Has appUser:</strong>{' '}
+                    {registrant.appUser ? 'Yes' : 'No'}
+                  </p>
+                  {registrant.appUser && (
+                    <>
+                      <p>
+                        <strong>App User ID:</strong> {registrant.appUser.id}
+                      </p>
+                      <p>
+                        <strong>Has profile:</strong>{' '}
+                        {registrant.appUser.profile ? 'Yes' : 'No'}
+                      </p>
+                      {registrant.appUser.profile && (
+                        <>
+                          <p>
+                            <strong>Profile ID:</strong>{' '}
+                            {registrant.appUser.profile.id}
+                          </p>
+                          <p>
+                            <strong>Profile firstName:</strong>{' '}
+                            {registrant.appUser.profile.firstName || 'null'}
+                          </p>
+                          <p>
+                            <strong>Has affiliates:</strong>{' '}
+                            {registrant.appUser.profile.affiliates?.items
+                              ?.length || 0}
+                          </p>
+                          <p>
+                            <strong>Has education:</strong>{' '}
+                            {registrant.appUser.profile.education?.items
+                              ?.length || 0}
+                          </p>
+                          <p>
+                            <strong>Has interests:</strong>{' '}
+                            {registrant.appUser.profile.interests?.items
+                              ?.length || 0}
+                          </p>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* App User Profile */}
+            {registrant.appUser?.profile && (
+              <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+                <h2 className='mb-6 text-xl font-bold text-slate-900'>
+                  App User Profile
+                </h2>
+                <div className='space-y-6'>
+                  {/* Profile Picture */}
+                  {registrant.appUser.profile.profilePicture && (
+                    <div className='flex justify-center'>
+                      <img
+                        src={registrant.appUser.profile.profilePicture}
+                        alt='Profile Picture'
+                        className='h-32 w-32 rounded-full object-cover'
+                      />
+                    </div>
+                  )}
+
+                  {/* Basic Profile Info */}
+                  <div className='grid gap-4 md:grid-cols-2'>
+                    {registrant.appUser.profile.firstName && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          First Name
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {registrant.appUser.profile.firstName}
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.lastName && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Last Name
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {registrant.appUser.profile.lastName}
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.email && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Email
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          <a
+                            href={`mailto:${registrant.appUser.profile.email}`}
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            {registrant.appUser.profile.email}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.phone && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Phone
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          <a
+                            href={`tel:${registrant.appUser.profile.phone}`}
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            {registrant.appUser.profile.phone}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.company && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Company
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {registrant.appUser.profile.company}
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.jobTitle && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Job Title
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {registrant.appUser.profile.jobTitle}
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.attendeeType && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Attendee Type
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {getAttendeeTypeLabel(
+                            registrant.appUser.profile.attendeeType
+                          )}
+                        </p>
+                      </div>
+                    )}
+                    {registrant.appUser.profile.location && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                          Location
+                        </p>
+                        <p className='mt-1 text-slate-900'>
+                          {registrant.appUser.profile.location}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  {registrant.appUser.profile.bio && (
+                    <div>
+                      <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2'>
+                        Bio
+                      </p>
+                      <p className='text-slate-700 whitespace-pre-wrap'>
+                        {registrant.appUser.profile.bio}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Social Links */}
+                  {(registrant.appUser.profile.linkedin ||
+                    registrant.appUser.profile.twitter ||
+                    registrant.appUser.profile.facebook ||
+                    registrant.appUser.profile.instagram ||
+                    registrant.appUser.profile.youtube ||
+                    registrant.appUser.profile.website?.length) && (
+                    <div>
+                      <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3'>
+                        Social Links
+                      </p>
+                      <div className='flex flex-wrap gap-3'>
+                        {registrant.appUser.profile.linkedin && (
+                          <a
+                            href={registrant.appUser.profile.linkedin}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            LinkedIn
+                          </a>
+                        )}
+                        {registrant.appUser.profile.twitter && (
+                          <a
+                            href={registrant.appUser.profile.twitter}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            Twitter
+                          </a>
+                        )}
+                        {registrant.appUser.profile.facebook && (
+                          <a
+                            href={registrant.appUser.profile.facebook}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            Facebook
+                          </a>
+                        )}
+                        {registrant.appUser.profile.instagram && (
+                          <a
+                            href={registrant.appUser.profile.instagram}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            Instagram
+                          </a>
+                        )}
+                        {registrant.appUser.profile.youtube && (
+                          <a
+                            href={registrant.appUser.profile.youtube}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-slate-900 hover:text-slate-700 hover:underline'
+                          >
+                            YouTube
+                          </a>
+                        )}
+                        {registrant.appUser.profile.website?.map(
+                          (url, index) => (
+                            <a
+                              key={index}
+                              href={url}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='text-slate-900 hover:text-slate-700 hover:underline'
+                            >
+                              Website {index + 1}
+                            </a>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Resume */}
+                  {registrant.appUser.profile.resume && (
+                    <div>
+                      <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2'>
+                        Resume
+                      </p>
+                      <a
+                        href={registrant.appUser.profile.resume}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-slate-900 hover:text-slate-700 hover:underline'
+                      >
+                        View Resume
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Affiliates */}
+                  {registrant.appUser.profile.affiliates?.items &&
+                    registrant.appUser.profile.affiliates.items.length > 0 && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3'>
+                          Affiliates
+                        </p>
+                        <div className='space-y-3'>
+                          {registrant.appUser.profile.affiliates.items.map(
+                            (affiliate) => (
+                              <div
+                                key={affiliate.id}
+                                className='border-l-4 border-slate-300 pl-4'
+                              >
+                                {affiliate.affiliate && (
+                                  <p className='font-semibold text-slate-900'>
+                                    {affiliate.affiliate}
+                                  </p>
+                                )}
+                                {affiliate.role && (
+                                  <p className='text-slate-700'>
+                                    {affiliate.role}
+                                  </p>
+                                )}
+                                {(affiliate.startDate || affiliate.endDate) && (
+                                  <p className='text-sm text-slate-600'>
+                                    {affiliate.startDate || '—'} -{' '}
+                                    {affiliate.endDate || 'Present'}
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Education */}
+                  {registrant.appUser.profile.education?.items &&
+                    registrant.appUser.profile.education.items.length > 0 && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3'>
+                          Education
+                        </p>
+                        <div className='space-y-3'>
+                          {registrant.appUser.profile.education.items.map(
+                            (edu) => (
+                              <div
+                                key={edu.id}
+                                className='border-l-4 border-slate-300 pl-4'
+                              >
+                                {edu.school && (
+                                  <p className='font-semibold text-slate-900'>
+                                    {edu.school}
+                                  </p>
+                                )}
+                                {edu.degree && (
+                                  <p className='text-slate-700'>{edu.degree}</p>
+                                )}
+                                {edu.fieldOfStudy && (
+                                  <p className='text-sm text-slate-600'>
+                                    {edu.fieldOfStudy}
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Interests */}
+                  {registrant.appUser.profile.interests?.items &&
+                    registrant.appUser.profile.interests.items.length > 0 && (
+                      <div>
+                        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3'>
+                          Interests
+                        </p>
+                        <div className='flex flex-wrap gap-2'>
+                          {registrant.appUser.profile.interests.items.map(
+                            (interest) => (
+                              <span
+                                key={interest.id}
+                                className='rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-800'
+                              >
+                                {interest.interest}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -263,7 +662,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
             {/* QR Code */}
             {registrant.qrCode && (
               <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-                <h3 className='mb-4 text-lg font-semibold text-slate-900'>QR Code</h3>
+                <h3 className='mb-4 text-lg font-semibold text-slate-900'>
+                  QR Code
+                </h3>
                 <div className='flex justify-center'>
                   <img
                     src={registrant.qrCode}
@@ -278,22 +679,29 @@ export default async function RegistrantProfile({ params }: PageProps) {
 
             {/* Additional Info */}
             <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-              <h3 className='mb-4 text-lg font-semibold text-slate-900'>Additional Information</h3>
+              <h3 className='mb-4 text-lg font-semibold text-slate-900'>
+                Additional Information
+              </h3>
               <div className='space-y-3 text-sm'>
-                {registrant.totalAmount !== null && registrant.totalAmount !== undefined && (
-                  <div>
-                    <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                      Total Amount
-                    </p>
-                    <p className='mt-1 text-slate-900'>${registrant.totalAmount.toLocaleString()}</p>
-                  </div>
-                )}
+                {registrant.totalAmount !== null &&
+                  registrant.totalAmount !== undefined && (
+                    <div>
+                      <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                        Total Amount
+                      </p>
+                      <p className='mt-1 text-slate-900'>
+                        ${registrant.totalAmount.toLocaleString()}
+                      </p>
+                    </div>
+                  )}
                 {registrant.discountCode && (
                   <div>
                     <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                       Discount Code
                     </p>
-                    <p className='mt-1 text-slate-900'>{registrant.discountCode}</p>
+                    <p className='mt-1 text-slate-900'>
+                      {registrant.discountCode}
+                    </p>
                   </div>
                 )}
                 {registrant.paymentMethod && (
@@ -301,7 +709,9 @@ export default async function RegistrantProfile({ params }: PageProps) {
                     <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                       Payment Method
                     </p>
-                    <p className='mt-1 text-slate-900'>{registrant.paymentMethod}</p>
+                    <p className='mt-1 text-slate-900'>
+                      {registrant.paymentMethod}
+                    </p>
                   </div>
                 )}
                 {registrant.approvedAt && (
@@ -330,4 +740,3 @@ export default async function RegistrantProfile({ params }: PageProps) {
     </div>
   );
 }
-
