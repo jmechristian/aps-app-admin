@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createRegistrant, fetchCompaniesByEventId, fetchAddOnsByEventId, type Company, type AddOn } from '@/app/actions/registrants';
+import CompanyPicker from './company-picker';
 
 type CreateRegistrantModalProps = {
   eventId: string;
@@ -103,6 +104,80 @@ export default function CreateRegistrantModal({
     setSubmitting(true);
     setError(null);
 
+    let jwtForAppSync: string | null = null;
+
+    // #region agent log (debug)
+    // Capture whether the client has an Auth session/token at submit time.
+    // Do NOT log PII or tokens; only booleans and high-level state.
+    fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'debug-session',
+        runId: 'pre-fix',
+        hypothesisId: 'C',
+        location: 'app/aps/[id]/create-registrant-modal.tsx:handleSubmit:entry',
+        message: 'CreateRegistrantModal submit clicked',
+        data: {
+          hasEventId: !!eventId,
+          hasCompanyId: !!formData.companyId,
+          hasAttendeeType: !!formData.attendeeType,
+          hasStatus: !!formData.status,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+
+    try {
+      const { fetchAuthSession } = await import('aws-amplify/auth');
+      const session = await fetchAuthSession();
+      jwtForAppSync =
+        session.tokens?.accessToken?.toString() ??
+        session.tokens?.idToken?.toString() ??
+        null;
+      fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: 'pre-fix',
+          hypothesisId: 'C',
+          location: 'app/aps/[id]/create-registrant-modal.tsx:handleSubmit:authSession',
+          message: 'fetchAuthSession result (redacted)',
+          data: {
+            hasIdentityId: !!session.identityId,
+            hasCredentials: !!session.credentials,
+            hasTokens: !!session.tokens,
+            hasIdToken: !!session.tokens?.idToken,
+            hasAccessToken: !!session.tokens?.accessToken,
+            hasJwtForAppSync: !!jwtForAppSync,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+    } catch {
+      fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: 'pre-fix',
+          hypothesisId: 'C',
+          location: 'app/aps/[id]/create-registrant-modal.tsx:handleSubmit:authSessionError',
+          message: 'fetchAuthSession threw',
+          data: {},
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+    }
+    // #endregion agent log (debug)
+
+    if (!jwtForAppSync) {
+      setError('Not signed in (missing auth token). Please log in again.');
+      setSubmitting(false);
+      return;
+    }
+
     if (!formData.attendeeType) {
       setError('Please select an attendee type');
       setSubmitting(false);
@@ -161,7 +236,7 @@ export default function CreateRegistrantModal({
         presentationTitle: formData.presentationTitle || null,
         presentationSummary: formData.presentationSummary || null,
         bio: formData.bio || null,
-      });
+      }, { jwt: jwtForAppSync });
 
       onSuccess();
       onClose();
@@ -229,7 +304,7 @@ export default function CreateRegistrantModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="relative page-container max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
           <h2 className="text-2xl font-bold text-slate-900">Create Registrant</h2>
           <button
@@ -313,18 +388,22 @@ export default function CreateRegistrantModal({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
-                    <select
+                    <CompanyPicker
+                      companies={companies.map((c) => ({ id: c.id, name: c.name }))}
                       value={formData.companyId}
-                      onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
-                    >
-                      <option value="">Select a company</option>
-                      {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
-                          {company.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(companyId) => setFormData({ ...formData, companyId })}
+                      placeholder="Select a company"
+                      disabled={loading || submitting}
+                    />
+                    {formData.companyId ? (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, companyId: '' })}
+                        className="mt-1 text-xs text-slate-600 underline hover:text-slate-900"
+                      >
+                        Clear selection
+                      </button>
+                    ) : null}
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Add-Ons</label>
@@ -380,6 +459,7 @@ export default function CreateRegistrantModal({
                       <option value="SPONSOR">Sponsor</option>
                       <option value="SPEAKER">Speaker</option>
                       <option value="STAFF">Staff</option>
+                      <option value="EXHIBITOR">Exhibitor</option>
                     </select>
                   </div>
                   <div>

@@ -247,6 +247,31 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
   }
 `;
 
+const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
+  query ApsRegistrantsByApsID($apsID: ID!, $limit: Int, $nextToken: String) {
+    apsRegistrantsByApsID(apsID: $apsID, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        firstName
+        lastName
+        email
+        phone
+        companyId
+        company {
+          id
+          name
+        }
+        jobTitle
+        attendeeType
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
 const GET_REGISTRANT = /* GraphQL */ `
   query GetApsRegistrant($id: ID!) {
     getApsRegistrant(id: $id) {
@@ -635,64 +660,93 @@ export async function fetchAddOnsByEventId(eventId: string): Promise<AddOn[]> {
 /**
  * Create a new registrant
  */
-export async function createRegistrant(input: {
-  apsID: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  email: string;
-  phone?: string | null;
-  companyId?: string | null;
-  jobTitle?: string | null;
-  attendeeType:
-    | 'OEM'
-    | 'TIER1'
-    | 'SOLUTIONPROVIDER'
-    | 'SPONSOR'
-    | 'SPEAKER'
-    | 'STAFF';
-  termsAccepted?: boolean | null;
-  interests?: string[] | null;
-  otherInterest?: string | null;
-  speedNetworking?: boolean | null;
-  speedNetworkingStatus?: string | null;
-  billingAddressFirstName?: string | null;
-  billingAddressLastName?: string | null;
-  billingAddressEmail?: string | null;
-  billingAddressPhone?: string | null;
-  billingAddressStreet?: string | null;
-  billingAddressCity?: string | null;
-  billingAddressState?: string | null;
-  billingAddressZip?: string | null;
-  sameAsAttendee?: boolean | null;
-  speakerTopic?: string | null;
-  learningObjectives?: string | null;
-  totalAmount?: number | null;
-  discountCode?: string | null;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  morrisetteTransportation?: string | null;
-  morrisetteStatus?: string | null;
-  aristoTransportation?: string | null;
-  aristoStatus?: string | null;
-  magnaTransportation?: string | null;
-  magnaStatus?: string | null;
-  paymentConfirmation?: string | null;
-  registrationEmailSent?: boolean | null;
-  registrationEmailSentDate?: string | null;
-  registrationEmailReceived?: boolean | null;
-  registrationEmailReceivedDate?: string | null;
-  welcomeEmailSent?: boolean | null;
-  welcomeEmailSentDate?: string | null;
-  welcomeEmailReceived?: boolean | null;
-  welcomeEmailReceivedDate?: string | null;
-  paymentMethod?: string | null;
-  paymentLast4?: string | null;
-  approvedAt?: string | null;
-  headshot?: string | null;
-  presentation?: string | null;
-  presentationTitle?: string | null;
-  presentationSummary?: string | null;
-  bio?: string | null;
-}): Promise<{ id: string; email: string; companyId: string | null }> {
+export async function createRegistrant(
+  input: {
+    apsID: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    email: string;
+    phone?: string | null;
+    companyId?: string | null;
+    jobTitle?: string | null;
+    attendeeType:
+      | 'OEM'
+      | 'TIER1'
+      | 'SOLUTIONPROVIDER'
+      | 'SPONSOR'
+      | 'SPEAKER'
+      | 'STAFF'
+      | 'EXHIBITOR';
+    termsAccepted?: boolean | null;
+    interests?: string[] | null;
+    otherInterest?: string | null;
+    speedNetworking?: boolean | null;
+    speedNetworkingStatus?: string | null;
+    billingAddressFirstName?: string | null;
+    billingAddressLastName?: string | null;
+    billingAddressEmail?: string | null;
+    billingAddressPhone?: string | null;
+    billingAddressStreet?: string | null;
+    billingAddressCity?: string | null;
+    billingAddressState?: string | null;
+    billingAddressZip?: string | null;
+    sameAsAttendee?: boolean | null;
+    speakerTopic?: string | null;
+    learningObjectives?: string | null;
+    totalAmount?: number | null;
+    discountCode?: string | null;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    morrisetteTransportation?: string | null;
+    morrisetteStatus?: string | null;
+    aristoTransportation?: string | null;
+    aristoStatus?: string | null;
+    magnaTransportation?: string | null;
+    magnaStatus?: string | null;
+    paymentConfirmation?: string | null;
+    registrationEmailSent?: boolean | null;
+    registrationEmailSentDate?: string | null;
+    registrationEmailReceived?: boolean | null;
+    registrationEmailReceivedDate?: string | null;
+    welcomeEmailSent?: boolean | null;
+    welcomeEmailSentDate?: string | null;
+    welcomeEmailReceived?: boolean | null;
+    welcomeEmailReceivedDate?: string | null;
+    paymentMethod?: string | null;
+    paymentLast4?: string | null;
+    approvedAt?: string | null;
+    headshot?: string | null;
+    presentation?: string | null;
+    presentationTitle?: string | null;
+    presentationSummary?: string | null;
+    bio?: string | null;
+  },
+  opts?: { jwt?: string }
+): Promise<{ id: string; email: string; companyId: string | null }> {
+  // #region agent log (debug)
+  fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: 'debug-session',
+      runId: 'pre-fix',
+      hypothesisId: 'A',
+      location: 'app/actions/registrants.ts:createRegistrant:entry',
+      message: 'createRegistrant called (server action)',
+      data: {
+        hasCompanyId: !!input.companyId,
+        hasEmail: !!input.email,
+        attendeeType: input.attendeeType,
+        status: input.status,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion agent log (debug)
+
+  const authOpts = opts?.jwt
+    ? { authMode: 'userPools' as const, jwt: opts.jwt }
+    : undefined;
+
   // First, create the registrant to get the ID
   const result = await requestGraphQL<{
     createApsRegistrant?: {
@@ -700,7 +754,7 @@ export async function createRegistrant(input: {
       email: string;
       companyId: string | null;
     };
-  }>(CREATE_REGISTRANT, { input });
+  }>(CREATE_REGISTRANT, { input }, authOpts);
 
   if (!result.createApsRegistrant) {
     throw new Error('Failed to create registrant');
@@ -716,12 +770,16 @@ export async function createRegistrant(input: {
   // Create ApsAppUser for this registrant (strict; required for bidirectional querying)
   const appUserResult = await requestGraphQL<{
     createApsAppUser?: { id: string; registrantId: string };
-  }>(CREATE_APP_USER, {
-    input: {
-      id: appUserId,
-      registrantId,
+  }>(
+    CREATE_APP_USER,
+    {
+      input: {
+        id: appUserId,
+        registrantId,
+      },
     },
-  });
+    authOpts
+  );
 
   if (!appUserResult.createApsAppUser?.id) {
     throw new Error('Failed to create ApsAppUser for registrant');
@@ -730,12 +788,16 @@ export async function createRegistrant(input: {
   // Link registrant -> appUser (strict; required for registrant.appUser resolver)
   const linkRegistrantResult = await requestGraphQL<{
     updateApsRegistrant?: { id: string; appUserId?: string | null };
-  }>(UPDATE_REGISTRANT, {
-    input: {
-      id: registrantId,
-      appUserId,
+  }>(
+    UPDATE_REGISTRANT,
+    {
+      input: {
+        id: registrantId,
+        appUserId,
+      },
     },
-  });
+    authOpts
+  );
 
   if (!linkRegistrantResult.updateApsRegistrant?.id) {
     throw new Error('Failed to attach appUserId to registrant');
@@ -748,7 +810,7 @@ export async function createRegistrant(input: {
     try {
       const companyResult = await requestGraphQL<{
         getAPSCompany?: { name: string };
-      }>(GET_COMPANY, { id: input.companyId });
+      }>(GET_COMPANY, { id: input.companyId }, authOpts);
       companyNameForProfile = companyResult.getAPSCompany?.name || null;
     } catch (error) {
       console.warn('Failed to fetch company name for profile:', error);
@@ -757,19 +819,23 @@ export async function createRegistrant(input: {
 
   const profileResult = await requestGraphQL<{
     createApsAppUserProfile?: { id: string; userId: string };
-  }>(CREATE_APP_USER_PROFILE, {
-    input: {
-      userId: appUserId,
-      firstName: input.firstName || null,
-      lastName: input.lastName || null,
-      email: input.email,
-      phone: input.phone || null,
-      company: companyNameForProfile || null,
-      jobTitle: input.jobTitle || null,
-      attendeeType: input.attendeeType || null,
-      // Other fields will be filled in by the user later
+  }>(
+    CREATE_APP_USER_PROFILE,
+    {
+      input: {
+        userId: appUserId,
+        firstName: input.firstName || null,
+        lastName: input.lastName || null,
+        email: input.email,
+        phone: input.phone || null,
+        company: companyNameForProfile || null,
+        jobTitle: input.jobTitle || null,
+        attendeeType: input.attendeeType || null,
+        // Other fields will be filled in by the user later
+      },
     },
-  });
+    authOpts
+  );
 
   if (!profileResult.createApsAppUserProfile?.id) {
     throw new Error('Failed to create ApsAppUserProfile for app user');
@@ -780,12 +846,16 @@ export async function createRegistrant(input: {
   // Link appUser -> profile (strict; required for appUser.profile resolver)
   const linkUserResult = await requestGraphQL<{
     updateApsAppUser?: { id: string; profileId?: string | null };
-  }>(UPDATE_APP_USER, {
-    input: {
-      id: appUserId,
-      profileId,
+  }>(
+    UPDATE_APP_USER,
+    {
+      input: {
+        id: appUserId,
+        profileId,
+      },
     },
-  });
+    authOpts
+  );
 
   if (!linkUserResult.updateApsAppUser?.id) {
     throw new Error('Failed to attach profileId to app user');
@@ -810,12 +880,16 @@ export async function createRegistrant(input: {
     // Update the registrant with the QR code URL
     await requestGraphQL<{
       updateApsRegistrant?: { id: string; qrCode: string | null };
-    }>(UPDATE_REGISTRANT, {
-      input: {
-        id: registrantId,
-        qrCode: qrCodeUrl,
+    }>(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: registrantId,
+          qrCode: qrCodeUrl,
+        },
       },
-    });
+      authOpts
+    );
   } catch (error) {
     console.error('Failed to generate QR code for registrant:', error);
     // Don't fail the entire operation if QR code generation fails
@@ -866,6 +940,38 @@ export async function fetchRegistrantsByApsId(
     const dateB = new Date(b.createdAt).getTime();
     return dateB - dateA;
   });
+}
+
+export async function fetchRegistrantsByApsIdPage(
+  apsId: string,
+  opts?: { limit?: number; nextToken?: string | null }
+): Promise<{ items: Registrant[]; nextToken?: string | null }> {
+  const response = await requestGraphQL<{
+    apsRegistrantsByApsID?: {
+      items?: Array<Registrant | null> | null;
+      nextToken?: string | null;
+    } | null;
+  }>(APS_REGISTRANTS_BY_APS_ID, {
+    apsID: apsId,
+    limit: opts?.limit ?? 50,
+    nextToken: opts?.nextToken ?? undefined,
+  });
+
+  const items = (response.apsRegistrantsByApsID?.items ?? []).filter(
+    Boolean
+  ) as Registrant[];
+
+  // Best-effort: sort the page by createdAt descending.
+  items.sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA;
+  });
+
+  return {
+    items,
+    nextToken: response.apsRegistrantsByApsID?.nextToken ?? null,
+  };
 }
 
 /**

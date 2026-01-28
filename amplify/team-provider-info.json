@@ -20,6 +20,15 @@
       },
       "storage": {
         "apsapp": {}
+      },
+      "function": {
+        "apsPushFanout": {
+          "deploymentBucketName": "amplify-autopacksummitapp-dev-99bc6-deployment",
+          "s3Key": "amplify-builds/apsPushFanout-3275793277616b735478-build.zip",
+          "expoAccessToken": "Q1LUAfW7AsaL43RmTssDtPRkxagdP59OVjMrsHCY",
+          "pushTokenGsiName": "byUserUpdated",
+          "pushTokenTableName": "ApsPushToken-lkbfurpd5bhvtewpiqr5xhye6u-dev"
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchRegistrantById } from '@/app/actions/registrants';
+import ProfilePicture from './profile-picture';
 
 type PageProps = {
   params: Promise<{ id: string; registrantId: string }>;
@@ -45,6 +46,8 @@ export default async function RegistrantProfile({ params }: PageProps) {
         return 'Speaker';
       case 'STAFF':
         return 'Staff';
+      case 'EXHIBITOR':
+        return 'Exhibitor';
       default:
         return type;
     }
@@ -52,7 +55,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
-      <main className='mx-auto flex w-full max-w-6xl flex-col gap-8'>
+      <main className='page-container flex flex-col gap-8'>
         <header className='flex items-center justify-between gap-4'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -348,10 +351,10 @@ export default async function RegistrantProfile({ params }: PageProps) {
                   {/* Profile Picture */}
                   {registrant.appUser.profile.profilePicture && (
                     <div className='flex justify-center'>
-                      <img
-                        src={registrant.appUser.profile.profilePicture}
-                        alt='Profile Picture'
-                        className='h-32 w-32 rounded-full object-cover'
+                      <ProfilePicture
+                        storageKey={registrant.appUser.profile.profilePicture}
+                        alt='Profile picture'
+                        size={128}
                       />
                     </div>
                   )}

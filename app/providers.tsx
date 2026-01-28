@@ -20,6 +20,31 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   // call Auth/API without racing configuration.
   ensureAmplifyConfigured();
 
+  const setAuthCookie = (jwt: string) => {
+    const secure = window.location.protocol === 'https:';
+    document.cookie = [
+      `apsAdminJwt=${encodeURIComponent(jwt)}`,
+      'Path=/',
+      'SameSite=Lax',
+      secure ? 'Secure' : '',
+    ]
+      .filter(Boolean)
+      .join('; ');
+  };
+
+  const clearAuthCookie = () => {
+    const secure = window.location.protocol === 'https:';
+    document.cookie = [
+      'apsAdminJwt=',
+      'Path=/',
+      'Max-Age=0',
+      'SameSite=Lax',
+      secure ? 'Secure' : '',
+    ]
+      .filter(Boolean)
+      .join('; ');
+  };
+
   useEffect(() => {
     if (isLoginRoute) {
       setDeniedReason(null);
@@ -33,6 +58,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       try {
         await getCurrentUser();
         const session = await fetchAuthSession();
+        const jwt = session.tokens?.idToken?.toString();
+        if (jwt) setAuthCookie(jwt);
         const groups =
           (session.tokens?.idToken?.payload?.['cognito:groups'] as
             | string[]
@@ -51,6 +78,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       } catch (e) {
         if (cancelled) return;
         setDeniedReason(e instanceof Error ? e.message : 'Unauthorized');
+        clearAuthCookie();
         setReady(false);
         router.replace('/login');
       }
@@ -68,7 +96,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-        <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="page-container rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="text-sm font-semibold text-slate-700">
             Checking admin access…
           </div>
@@ -83,7 +111,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="border-b border-slate-200 bg-white px-6 py-3">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
+        <div className="page-container flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="text-sm font-semibold text-slate-800">APS Admin</div>
             <nav className="flex items-center gap-3 text-xs font-semibold text-slate-600">
@@ -104,6 +132,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             onClick={async () => {
               ensureAmplifyConfigured();
               await signOut();
+              clearAuthCookie();
               router.replace('/login');
             }}
           >

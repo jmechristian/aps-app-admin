@@ -2,6 +2,28 @@ type GraphQLError = { message: string };
 
 export type AppSyncAuthMode = 'apiKey' | 'userPools';
 
+class AppSyncUnauthorizedError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'AppSyncUnauthorizedError';
+    this.status = status;
+  }
+}
+
+async function readJwtFromCookies(): Promise<string | null> {
+  try {
+    // Only available in Next.js server runtime.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { cookies } = require('next/headers') as typeof import('next/headers');
+    const store = await cookies();
+    return store.get('apsAdminJwt')?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function loadAppSyncConfigFromAwsExports(): {
   endpoint: string;
   apiKey: string;
@@ -56,7 +78,31 @@ export async function requestGraphQL<T>(
   opts?: { authMode?: AppSyncAuthMode; jwt?: string }
 ): Promise<T> {
   const cfg = getAppSyncConfig();
-  const authMode: AppSyncAuthMode = opts?.authMode ?? 'apiKey';
+  const jwtFromCookie = await readJwtFromCookies();
+  const authMode: AppSyncAuthMode =
+    opts?.authMode ?? (jwtFromCookie ? 'userPools' : 'apiKey');
+
+  // #region agent log (debug)
+  fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: 'debug-session',
+      runId: 'pre-fix',
+      hypothesisId: 'A',
+      location: 'lib/appsync.ts:requestGraphQL:entry',
+      message: 'requestGraphQL entry',
+      data: {
+        authMode,
+        hasVars: !!variables,
+        endpointHost: cfg?.endpoint ? new URL(cfg.endpoint).host : null,
+        hasApiKey: !!cfg?.apiKey,
+        hasJwt: !!opts?.jwt,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion agent log (debug)
 
   if (!cfg?.endpoint) {
     throw new Error(
@@ -76,7 +122,7 @@ export async function requestGraphQL<T>(
     }
     headers['x-api-key'] = cfg.apiKey;
   } else {
-    const jwt = opts?.jwt;
+    const jwt = opts?.jwt ?? jwtFromCookie;
     if (!jwt) {
       throw new Error(
         'Missing Cognito JWT for AppSync USER_POOLS auth. Pass opts.jwt.'
@@ -85,6 +131,26 @@ export async function requestGraphQL<T>(
     // AppSync USER_POOLS expects the raw JWT in the Authorization header.
     headers['Authorization'] = jwt;
   }
+
+  // #region agent log (debug)
+  fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: 'debug-session',
+      runId: 'pre-fix',
+      hypothesisId: 'D',
+      location: 'lib/appsync.ts:requestGraphQL:headers',
+      message: 'requestGraphQL prepared headers',
+      data: {
+        authMode,
+        hasApiKeyHeader: typeof headers['x-api-key'] === 'string',
+        hasAuthorizationHeader: typeof headers['Authorization'] === 'string',
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion agent log (debug)
 
   const res = await fetch(cfg.endpoint, {
     method: 'POST',
@@ -98,11 +164,48 @@ export async function requestGraphQL<T>(
     errors?: GraphQLError[];
   };
 
+  // #region agent log (debug)
+  fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: 'debug-session',
+      runId: 'pre-fix',
+      hypothesisId: 'B',
+      location: 'lib/appsync.ts:requestGraphQL:response',
+      message: 'requestGraphQL response received',
+      data: {
+        status: res.status,
+        ok: res.ok,
+        errorCount: json.errors?.length ?? 0,
+        errorMessages: (json.errors ?? []).map((e) => e.message).slice(0, 5),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion agent log (debug)
+
+  if (res.status === 401 || res.status === 403) {
+    throw new AppSyncUnauthorizedError(
+      res.status,
+      'AppSync request unauthorized'
+    );
+  }
+
   if (!res.ok) {
     throw new Error(`AppSync request failed: ${res.statusText}`);
   }
 
   if (json.errors?.length) {
+    const unauthorized = json.errors.some((e) =>
+      e.message.toLowerCase().includes('unauthorized')
+    );
+    if (unauthorized) {
+      throw new AppSyncUnauthorizedError(
+        res.status || 401,
+        'AppSync request unauthorized'
+      );
+    }
     throw new Error(json.errors.map((e) => e.message).join(', '));
   }
 

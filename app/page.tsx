@@ -29,11 +29,45 @@ async function fetchEvents(): Promise<APS[]> {
 }
 
 export default async function Home() {
-  const events = await fetchEvents();
+  let events: APS[] = [];
+  let authError = false;
+
+  try {
+    events = await fetchEvents();
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AppSyncUnauthorizedError') {
+      authError = true;
+    } else {
+      throw err;
+    }
+  }
+
+  if (authError) {
+    return (
+      <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
+        <main className='page-container flex flex-col gap-6'>
+          <section className='rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm'>
+            <h2 className='text-lg font-semibold text-amber-900'>
+              Session expired
+            </h2>
+            <p className='mt-2 text-sm text-amber-800'>
+              Your session is no longer valid. Please sign in again to continue.
+            </p>
+            <Link
+              href='/login'
+              className='mt-4 inline-flex items-center justify-center rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white shadow-sm'
+            >
+              Sign in again
+            </Link>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
-      <main className='mx-auto flex w-full max-w-6xl flex-col gap-10'>
+      <main className='page-container flex flex-col gap-10'>
         <header className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>

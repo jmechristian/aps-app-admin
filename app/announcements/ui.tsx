@@ -157,7 +157,7 @@ export default function AnnouncementsClient() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+      <main className="page-container flex flex-col gap-8">
         <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -244,6 +244,8 @@ export default function AnnouncementsClient() {
                     body: JSON.stringify({
                       title: title.trim() || 'New announcement',
                       body: body.trim(),
+                      eventId,
+                      announcementId: createdId ?? null,
                       deepLink:
                         deepLink.trim() ||
                         (createdId ? `aps://announcements/${createdId}` : null),

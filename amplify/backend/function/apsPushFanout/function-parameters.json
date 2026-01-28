@@ -1,0 +1,24 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "expoAccessToken",
+      "environmentVariableName": "EXPO_ACCESS_TOKEN"
+    },
+    {
+      "cloudFormationParameterName": "pushTokenGsiName",
+      "environmentVariableName": "PUSH_TOKEN_GSI_NAME"
+    },
+    {
+      "cloudFormationParameterName": "pushTokenTableName",
+      "environmentVariableName": "PUSH_TOKEN_TABLE_NAME"
+    }
+  ],
+  "permissions": {
+    "api": {
+      "autopacksummitapp": [
+        "Query"
+      ]
+    }
+  }
+}

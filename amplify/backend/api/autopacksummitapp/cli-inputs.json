@@ -8,9 +8,9 @@
     },
     "additionalAuthTypes": [
       {
-        "mode": "API_KEY",
-        "expirationTime": 7
-      }
+      "mode": "API_KEY",
+      "expirationTime": 7
+    }
     ]
   }
 }

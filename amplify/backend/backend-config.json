@@ -57,6 +57,66 @@
       "service": "Cognito"
     }
   },
+  "function": {
+    "apsPushFanout": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ],
+          "category": "api",
+          "resourceName": "autopacksummitapp"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_apsPushFanout_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_expoAccessToken": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_pushTokenGsiName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_pushTokenTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    }
+  },
   "storage": {
     "apsapp": {
       "dependsOn": [],

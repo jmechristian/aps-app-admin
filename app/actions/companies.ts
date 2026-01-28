@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requestGraphQL } from "@/lib/appsync";
 import { readFile } from "fs/promises";
 import { join } from "path";
@@ -14,6 +15,34 @@ type CompanyInput = {
   eventId: string;
 };
 
+type Company = {
+  id: string;
+  name: string;
+  email: string;
+  type: CompanyType;
+  description?: string | null;
+  website?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  country?: string | null;
+  logo?: string | null;
+  eventId: string;
+};
+
+type CompanyContact = {
+  id: string;
+  companyId: string;
+  name?: string | null;
+  email: string;
+  phone?: string | null;
+  title?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 const CREATE_COMPANY = /* GraphQL */ `
   mutation CreateAPSCompany($input: CreateAPSCompanyInput!) {
     createAPSCompany(input: $input) {
@@ -21,6 +50,108 @@ const CREATE_COMPANY = /* GraphQL */ `
       name
       email
       type
+    }
+  }
+`;
+
+const UPDATE_COMPANY = /* GraphQL */ `
+  mutation UpdateAPSCompany($input: UpdateAPSCompanyInput!) {
+    updateAPSCompany(input: $input) {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      eventId
+    }
+  }
+`;
+
+const GET_COMPANY = /* GraphQL */ `
+  query GetAPSCompany($id: ID!) {
+    getAPSCompany(id: $id) {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      eventId
+    }
+  }
+`;
+
+const LIST_COMPANY_CONTACTS = /* GraphQL */ `
+  query ListAPSCompanyContacts(
+    $filter: ModelAPSCompanyContactFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listAPSCompanyContacts(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        companyId
+        name
+        email
+        phone
+        title
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+const CREATE_COMPANY_CONTACT = /* GraphQL */ `
+  mutation CreateAPSCompanyContact($input: CreateAPSCompanyContactInput!) {
+    createAPSCompanyContact(input: $input) {
+      id
+      companyId
+      name
+      email
+      phone
+      title
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPDATE_COMPANY_CONTACT = /* GraphQL */ `
+  mutation UpdateAPSCompanyContact($input: UpdateAPSCompanyContactInput!) {
+    updateAPSCompanyContact(input: $input) {
+      id
+      companyId
+      name
+      email
+      phone
+      title
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const DELETE_COMPANY_CONTACT = /* GraphQL */ `
+  mutation DeleteAPSCompanyContact($input: DeleteAPSCompanyContactInput!) {
+    deleteAPSCompanyContact(input: $input) {
+      id
     }
   }
 `;
@@ -66,6 +197,149 @@ function parseCompanyType(type: string): CompanyType {
     return upperType as CompanyType;
   }
   return null;
+}
+
+function parseNullableString(raw: FormDataEntryValue | null): string | null {
+  if (!raw) return null;
+  const value = raw.toString().trim();
+  return value ? value : null;
+}
+
+export async function fetchCompanyById(companyId: string): Promise<Company> {
+  const data = await requestGraphQL<{ getAPSCompany?: Company | null }>(
+    GET_COMPANY,
+    { id: companyId }
+  );
+  if (!data.getAPSCompany) {
+    throw new Error("Company not found");
+  }
+  return data.getAPSCompany;
+}
+
+export async function updateCompany(formData: FormData) {
+  const id = formData.get("id")?.toString();
+  const eventId = formData.get("eventId")?.toString();
+  const name = formData.get("name")?.toString().trim() || "";
+  const email = formData.get("email")?.toString().trim() || "";
+  const type = parseCompanyType(formData.get("type")?.toString() || "");
+
+  if (!id) throw new Error("Missing company id");
+  if (!eventId) throw new Error("Missing event id");
+  if (!name) throw new Error("Company name is required");
+  if (!email) throw new Error("Company email is required");
+
+  const input = {
+    id,
+    eventId,
+    name,
+    email,
+    type,
+    description: parseNullableString(formData.get("description")),
+    website: parseNullableString(formData.get("website")),
+    phone: parseNullableString(formData.get("phone")),
+    address: parseNullableString(formData.get("address")),
+    city: parseNullableString(formData.get("city")),
+    state: parseNullableString(formData.get("state")),
+    zip: parseNullableString(formData.get("zip")),
+    country: parseNullableString(formData.get("country")),
+    logo: parseNullableString(formData.get("logo")),
+  };
+
+  await requestGraphQL(UPDATE_COMPANY, { input });
+  revalidatePath(`/aps/${eventId}/companies/${id}`);
+  revalidatePath(`/aps/${eventId}/sponsors`);
+}
+
+export async function fetchCompanyContacts(
+  companyId: string
+): Promise<CompanyContact[]> {
+  let nextToken: string | null | undefined = null;
+  const contacts: CompanyContact[] = [];
+
+  do {
+    const data = await requestGraphQL<{
+      listAPSCompanyContacts?: {
+        items?: CompanyContact[] | null;
+        nextToken?: string | null;
+      } | null;
+    }>(LIST_COMPANY_CONTACTS, {
+      filter: { companyId: { eq: companyId } },
+      limit: 1000,
+      nextToken,
+    });
+
+    const items = data.listAPSCompanyContacts?.items ?? [];
+    contacts.push(...items.filter(Boolean));
+    nextToken = data.listAPSCompanyContacts?.nextToken ?? null;
+  } while (nextToken);
+
+  return contacts;
+}
+
+export async function createCompanyContact(formData: FormData) {
+  const companyId = formData.get("companyId")?.toString();
+  const eventId = formData.get("eventId")?.toString();
+  const email = formData.get("email")?.toString().trim() || "";
+  const name = parseNullableString(formData.get("name"));
+  const phone = parseNullableString(formData.get("phone"));
+  const title = parseNullableString(formData.get("title"));
+
+  if (!companyId) throw new Error("Missing company id");
+  if (!eventId) throw new Error("Missing event id");
+  if (!email) throw new Error("Contact email is required");
+
+  await requestGraphQL(CREATE_COMPANY_CONTACT, {
+    input: {
+      companyId,
+      email,
+      name,
+      phone,
+      title,
+    },
+  });
+
+  revalidatePath(`/aps/${eventId}/companies/${companyId}`);
+}
+
+export async function updateCompanyContact(formData: FormData) {
+  const id = formData.get("id")?.toString();
+  const companyId = formData.get("companyId")?.toString();
+  const eventId = formData.get("eventId")?.toString();
+  const email = formData.get("email")?.toString().trim() || "";
+  const name = parseNullableString(formData.get("name"));
+  const phone = parseNullableString(formData.get("phone"));
+  const title = parseNullableString(formData.get("title"));
+
+  if (!id) throw new Error("Missing contact id");
+  if (!companyId) throw new Error("Missing company id");
+  if (!eventId) throw new Error("Missing event id");
+  if (!email) throw new Error("Contact email is required");
+
+  await requestGraphQL(UPDATE_COMPANY_CONTACT, {
+    input: {
+      id,
+      companyId,
+      email,
+      name,
+      phone,
+      title,
+    },
+  });
+
+  revalidatePath(`/aps/${eventId}/companies/${companyId}`);
+}
+
+export async function deleteCompanyContact(formData: FormData) {
+  const id = formData.get("id")?.toString();
+  const companyId = formData.get("companyId")?.toString();
+  const eventId = formData.get("eventId")?.toString();
+
+  if (!id) throw new Error("Missing contact id");
+  if (!companyId) throw new Error("Missing company id");
+  if (!eventId) throw new Error("Missing event id");
+
+  await requestGraphQL(DELETE_COMPANY_CONTACT, { input: { id } });
+  revalidatePath(`/aps/${eventId}/companies/${companyId}`);
 }
 
 export async function importCompaniesFromCSV(eventId: string): Promise<{

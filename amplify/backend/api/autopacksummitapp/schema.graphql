@@ -23,8 +23,21 @@ enum RegistrantStatus {
   REJECTED
 }
 
+enum SponsorType {
+  BOOTH
+  TABLE
+  NONE
+}
+
 # Main Event Type
-type APS @model @auth(rules: [{ allow: public }]) {
+type APS
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   year: String!
   codes: [String]
@@ -51,7 +64,14 @@ type APS @model @auth(rules: [{ allow: public }]) {
 }
 
 # Board Members
-type APSBoard @model @auth(rules: [{ allow: public }]) {
+type APSBoard
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   name: String!
   title: String
@@ -63,7 +83,14 @@ type APSBoard @model @auth(rules: [{ allow: public }]) {
 }
 
 # Agenda
-type ApsAgenda @model @auth(rules: [{ allow: public }]) {
+type ApsAgenda
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
@@ -71,7 +98,14 @@ type ApsAgenda @model @auth(rules: [{ allow: public }]) {
 }
 
 # Registrants
-type ApsRegistrant @model @auth(rules: [{ allow: public }]) {
+type ApsRegistrant
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   apsID: ID! @index(name: "byAPS")
   aps: APS! @belongsTo(fields: ["apsID"])
@@ -136,7 +170,14 @@ type ApsRegistrant @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User (for mobile app)
-type ApsAppUser @model @auth(rules: [{ allow: public }]) {
+type ApsAppUser
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   registrantId: ID! @index(name: "byRegistrant")
   registrant: ApsRegistrant! @belongsTo(fields: ["registrantId"])
@@ -155,7 +196,14 @@ type ApsAppUser @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User Contact
-type ApsAppUserContact @model @auth(rules: [{ allow: public }]) {
+type ApsAppUserContact
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   userId: ID! @index(name: "byUser")
   user: ApsAppUser! @belongsTo(fields: ["userId"])
@@ -165,8 +213,17 @@ type ApsAppUserContact @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User Note
-type ApsAppUserNote @model @auth(rules: [{ allow: public }]) {
+type ApsAppUserNote
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
   id: ID!
+  owner: String
   userId: ID! @index(name: "byUser")
   user: ApsAppUser! @belongsTo(fields: ["userId"])
   note: String
@@ -187,7 +244,14 @@ type ApsAppUserNote @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User Lead
-type ApsAppUserLead @model @auth(rules: [{ allow: public }]) {
+type ApsAppUserLead
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   userId: ID! @index(name: "byUser")
   user: ApsAppUser! @belongsTo(fields: ["userId"])
@@ -197,7 +261,14 @@ type ApsAppUserLead @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User Profile
-type ApsAppUserProfile @model @auth(rules: [{ allow: public }]) {
+type ApsAppUserProfile
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   userId: ID! @index(name: "byUser")
   user: ApsAppUser! @belongsTo(fields: ["userId"])
@@ -208,6 +279,8 @@ type ApsAppUserProfile @model @auth(rules: [{ allow: public }]) {
   company: String
   jobTitle: String
   attendeeType: RegistrantType
+  # User-scoped UI prefs (e.g., hub quick tools order)
+  quickTools: [String]
   affiliates: [ProfileAffiliate] @hasMany(indexName: "byUser")
   profilePicture: String
   bio: String
@@ -230,7 +303,14 @@ type ApsAppUserProfile @model @auth(rules: [{ allow: public }]) {
   notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
 }
 
-type ProfileAffiliate @model @auth(rules: [{ allow: public }]) {
+type ProfileAffiliate
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   profileId: ID! @index(name: "byUser")
   profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
@@ -240,7 +320,14 @@ type ProfileAffiliate @model @auth(rules: [{ allow: public }]) {
   endDate: String
 }
 
-type ProfileEducation @model @auth(rules: [{ allow: public }]) {
+type ProfileEducation
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   profileId: ID! @index(name: "byUser")
   profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
@@ -249,7 +336,14 @@ type ProfileEducation @model @auth(rules: [{ allow: public }]) {
   fieldOfStudy: String
 }
 
-type ProfileInterest @model @auth(rules: [{ allow: public }]) {
+type ProfileInterest
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   profileId: ID! @index(name: "byUser")
   profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
@@ -257,7 +351,14 @@ type ProfileInterest @model @auth(rules: [{ allow: public }]) {
 }
 
 # App User Photos
-type ApsAppUserPhoto @model @auth(rules: [{ allow: public }]) {
+type ApsAppUserPhoto
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   userId: ID @index(name: "byUser")
   user: ApsAppUser @belongsTo(fields: ["userId"])
@@ -269,20 +370,39 @@ type ApsAppUserPhoto @model @auth(rules: [{ allow: public }]) {
 }
 
 # Sessions
-type ApsAppSession @model @auth(rules: [{ allow: public }]) {
+type ApsAppSession
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
-  session: String
+  title: String
   date: String
-  time: String
+  startTime: String
+  endTime: String
   location: String
+  description: String
   agendaId: ID @index(name: "byAgenda")
   agenda: ApsAgenda @belongsTo(fields: ["agendaId"])
-  sessionQuestions: [ApsAppSessionQuestion] @hasMany(indexName: "bySession")
+  sessionQuestions: [ApsAppSessionQuestion]
+    @hasMany(indexName: "bySession", fields: ["id"])
   notes: [ApsAppUserNote] @hasMany(indexName: "bySession", fields: ["id"])
+  speakers: [APSSpeaker] @manyToMany(relationName: "SessionSpeakers")
+  sponsors: [ApsSponsor] @manyToMany(relationName: "SessionSponsors")
 }
 
 # Session Questions
-type ApsAppSessionQuestion @model @auth(rules: [{ allow: public }]) {
+type ApsAppSessionQuestion
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   sessionId: ID! @index(name: "bySession")
   session: ApsAppSession! @belongsTo(fields: ["sessionId"])
@@ -292,7 +412,14 @@ type ApsAppSessionQuestion @model @auth(rules: [{ allow: public }]) {
 }
 
 # Speakers
-type APSSpeaker @model @auth(rules: [{ allow: public }]) {
+type APSSpeaker
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   firstName: String!
   lastName: String!
@@ -309,20 +436,37 @@ type APSSpeaker @model @auth(rules: [{ allow: public }]) {
   privacyConsent: Boolean
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
+  sessions: [ApsAppSession] @manyToMany(relationName: "SessionSpeakers")
 }
 
 # Sponsors
-type ApsSponsor @model @auth(rules: [{ allow: public }]) {
+type ApsSponsor
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   companyId: ID! @index(name: "byCompany")
   company: APSCompany! @belongsTo(fields: ["companyId"])
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   profile: ApsAppExhibitorProfile @hasOne
+  sessions: [ApsAppSession] @manyToMany(relationName: "SessionSponsors")
+  type: SponsorType
 }
 
 # Companies
-type APSCompany @model @auth(rules: [{ allow: public }]) {
+type APSCompany
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   name: String!
   email: String!
@@ -339,20 +483,48 @@ type APSCompany @model @auth(rules: [{ allow: public }]) {
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   registrants: [ApsRegistrant] @hasMany(indexName: "byCompany")
-  sponsors: [ApsSponsor] @hasMany(indexName: "byCompany")
-  exhibitorProfiles: [ApsAppExhibitorProfile] @hasMany(indexName: "byCompany")
+  sponsorId: ID
+  sponsor: ApsSponsor @hasOne(fields: ["sponsorId"])
+  exhibitorProfileId: ID
+  exhibitorProfile: ApsAppExhibitorProfile @hasOne(fields: ["exhibitorProfileId"])
   notes: [ApsAppUserNote] @hasMany(indexName: "byCompany", fields: ["id"])
+  contacts: [APSCompanyContact] @hasMany(indexName: "byCompany", fields: ["id"])
+}
+
+# Company contacts (multiple contacts per company)
+type APSCompanyContact
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
+  id: ID!
+  companyId: ID! @index(name: "byCompany", sortKeyFields: ["createdAt"])
+  company: APSCompany! @belongsTo(fields: ["companyId"])
+  name: String
+  email: String!
+  phone: String
+  title: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # Exhibitor Profiles
-type ApsAppExhibitorProfile @model @auth(rules: [{ allow: public }]) {
+type ApsAppExhibitorProfile
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   companyId: ID! @index(name: "byCompany")
   company: APSCompany! @belongsTo(fields: ["companyId"])
   sponsorId: ID @index(name: "bySponsor")
   sponsor: ApsSponsor @belongsTo(fields: ["sponsorId"])
-  title: String
-  phone: String
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   deals: [ApsAppExhibitorDeal] @hasMany(indexName: "byExhibitor")
@@ -369,7 +541,14 @@ type ApsAppExhibitorProfile @model @auth(rules: [{ allow: public }]) {
 }
 
 # Exhibitor Promotions
-type ApsAppExhibitorPromotion @model @auth(rules: [{ allow: public }]) {
+type ApsAppExhibitorPromotion
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   exhibitorId: ID! @index(name: "byExhibitor")
   exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
@@ -380,7 +559,14 @@ type ApsAppExhibitorPromotion @model @auth(rules: [{ allow: public }]) {
 }
 
 # Exhibitor Deals
-type ApsAppExhibitorDeal @model @auth(rules: [{ allow: public }]) {
+type ApsAppExhibitorDeal
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   exhibitorId: ID! @index(name: "byExhibitor")
   exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
@@ -393,7 +579,14 @@ type ApsAppExhibitorDeal @model @auth(rules: [{ allow: public }]) {
 }
 
 # Exhibitor Photos
-type ApsAppExhibitorPhoto @model @auth(rules: [{ allow: public }]) {
+type ApsAppExhibitorPhoto
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   exhibitorId: ID! @index(name: "byExhibitor")
   exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
@@ -405,7 +598,14 @@ type ApsAppExhibitorPhoto @model @auth(rules: [{ allow: public }]) {
 }
 
 # Exhibitor Handouts
-type ApsAppExhibitorHandout @model @auth(rules: [{ allow: public }]) {
+type ApsAppExhibitorHandout
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   exhibitorId: ID! @index(name: "byExhibitor")
   exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
@@ -415,7 +615,14 @@ type ApsAppExhibitorHandout @model @auth(rules: [{ allow: public }]) {
 }
 
 # Add Ons
-type ApsAddOn @model @auth(rules: [{ allow: public }]) {
+type ApsAddOn
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   title: String!
   description: String!
@@ -432,12 +639,26 @@ type ApsAddOn @model @auth(rules: [{ allow: public }]) {
 }
 
 # Seating Charts
-type ApsSeatingChart @model @auth(rules: [{ allow: public }]) {
+type ApsSeatingChart
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   registrants: [ApsSeatingChartRegistrant] @hasMany(indexName: "bySeatingChart")
 }
 
-type ApsSeatingChartRegistrant @model @auth(rules: [{ allow: public }]) {
+type ApsSeatingChartRegistrant
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
   id: ID!
   category: String
   firstName: String
@@ -454,6 +675,53 @@ type ApsSeatingChartRegistrant @model @auth(rules: [{ allow: public }]) {
 }
 
 # Messaging
+
+# Contact / chat gating
+#
+# Goal: user A cannot DM user B until user B has accepted A's contact/chat request.
+# This is enforced at the application layer (AppSync @auth cannot express cross-model
+# conditional checks). The model below is the canonical "is this pair accepted?"
+# record the app checks before creating/using a DM thread.
+#
+# requestKey is deterministic and unique per event + user pair, so both sides can
+# read/update the same record once created.
+type ApsContactRequest
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "owners"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  eventId: ID!
+
+  # unique: e:<eventId>|u:<a>|u:<b> where a/b are sorted Cognito subs
+  requestKey: String! @index(name: "byRequestKey")
+
+  userAId: ID! # Cognito sub (sorted)
+  userBId: ID! # Cognito sub (sorted)
+  owners: [String!]! # [userAId, userBId] for @auth multi-owner access
+  # who initiated this request (must be either userAId or userBId)
+  requestedByUserId: ID!
+    @index(name: "byRequester", sortKeyFields: ["createdAt"])
+
+  # PENDING | ACCEPTED | DECLINED | BLOCKED
+  status: String! @index(name: "byStatusUpdated", sortKeyFields: ["updatedAt"])
+
+  acceptedAt: AWSDateTime
+  declinedAt: AWSDateTime
+  blockedAt: AWSDateTime
+
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
 
 type ApsDmThread
   @model
@@ -563,6 +831,31 @@ type ApsAdminAnnouncement
   title: String
   body: String!
   deepLink: String # optional, e.g. "app://announcements/<id>"
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Per-user engage read state (for accurate unread badge counts).
+# v1: announcements are "mark all read when opened" using lastSeenAnnouncementAt.
+type ApsUserEngageState
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "userId"
+        identityClaim: "sub"
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  # Deterministic id recommended: e:<eventId>|u:<sub>
+  id: ID!
+  eventId: ID!
+  userId: ID!
+  lastSeenAnnouncementAt: AWSDateTime
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }

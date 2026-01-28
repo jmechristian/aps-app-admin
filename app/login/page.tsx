@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Amplify } from 'aws-amplify';
-import { signIn } from 'aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser, signIn, signOut } from 'aws-amplify/auth';
 import awsExports from '@/src/aws-exports';
 
 let configured = false;
@@ -11,6 +11,31 @@ function ensureAmplifyConfigured() {
   if (configured) return;
   Amplify.configure(awsExports);
   configured = true;
+}
+
+function setAuthCookie(jwt: string) {
+  const secure = window.location.protocol === 'https:';
+  document.cookie = [
+    `apsAdminJwt=${encodeURIComponent(jwt)}`,
+    'Path=/',
+    'SameSite=Lax',
+    secure ? 'Secure' : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
+}
+
+function clearAuthCookie() {
+  const secure = window.location.protocol === 'https:';
+  document.cookie = [
+    'apsAdminJwt=',
+    'Path=/',
+    'Max-Age=0',
+    'SameSite=Lax',
+    secure ? 'Secure' : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
 }
 
 export default function LoginPage() {
@@ -22,11 +47,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     ensureAmplifyConfigured();
+    (async () => {
+      try {
+        await getCurrentUser();
+        router.replace('/');
+      } catch {
+        // no active session
+      }
+    })();
   }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="page-container rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">Admin sign in</h1>
         <p className="mt-2 text-sm text-slate-600">
           Use your Cognito admin credentials.
@@ -55,9 +88,45 @@ export default function LoginPage() {
                 );
               }
 
+              const session = await fetchAuthSession();
+              const jwt = session.tokens?.idToken?.toString();
+              if (jwt) setAuthCookie(jwt);
+
               router.replace('/');
             } catch (err) {
-              setError(err instanceof Error ? err.message : 'Sign-in failed');
+              const message =
+                err instanceof Error ? err.message : 'Sign-in failed';
+              if (message.includes('There is already a signed in user')) {
+                try {
+                  await signOut({ global: false });
+                  clearAuthCookie();
+                  const res = await signIn({
+                    username: email.trim(),
+                    password,
+                  });
+                  if (
+                    res.nextStep.signInStep &&
+                    res.nextStep.signInStep !== 'DONE'
+                  ) {
+                    throw new Error(
+                      `Additional sign-in step required: ${res.nextStep.signInStep}`
+                    );
+                  }
+                  const session = await fetchAuthSession();
+                  const jwt = session.tokens?.idToken?.toString();
+                  if (jwt) setAuthCookie(jwt);
+                  router.replace('/');
+                  return;
+                } catch (retryErr) {
+                  setError(
+                    retryErr instanceof Error
+                      ? retryErr.message
+                      : 'Sign-in failed'
+                  );
+                  return;
+                }
+              }
+              setError(message);
             } finally {
               setSubmitting(false);
             }

@@ -7,9 +7,18 @@ import { type Registrant } from '@/app/actions/registrants';
 type RegistrantsTableProps = {
   registrants: Registrant[];
   eventId: string;
+  nextToken?: string | null;
+  isFirstPage?: boolean;
+  pageSize?: number;
 };
 
-export default function RegistrantsTable({ registrants, eventId }: RegistrantsTableProps) {
+export default function RegistrantsTable({
+  registrants,
+  eventId,
+  nextToken = null,
+  isFirstPage = true,
+  pageSize = 50,
+}: RegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredRegistrants = useMemo(() => {
@@ -64,6 +73,8 @@ export default function RegistrantsTable({ registrants, eventId }: RegistrantsTa
         return 'Speaker';
       case 'STAFF':
         return 'Staff';
+      case 'EXHIBITOR':
+        return 'Exhibitor';
       default:
         return type;
     }
@@ -75,7 +86,9 @@ export default function RegistrantsTable({ registrants, eventId }: RegistrantsTa
         <div>
           <h2 className='text-xl font-bold text-slate-900'>Registrants</h2>
           <p className='mt-1 text-sm text-slate-600'>
-            {filteredRegistrants.length} of {registrants.length} registrants
+            Showing {filteredRegistrants.length} registrant
+            {filteredRegistrants.length === 1 ? '' : 's'}
+            {searchQuery.trim() ? ' (filtered on this page)' : ''}
           </p>
         </div>
         <div className='w-64'>
@@ -160,6 +173,38 @@ export default function RegistrantsTable({ registrants, eventId }: RegistrantsTa
           </table>
         </div>
       )}
+
+      {registrants.length > 0 ? (
+        <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <p className='text-xs text-slate-500'>
+            Page size: {registrants.length}
+            {typeof pageSize === 'number' ? ` / ${pageSize}` : ''}
+          </p>
+          <div className='flex items-center gap-2'>
+            {!isFirstPage ? (
+              <Link
+                href={`/aps/${eventId}`}
+                className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+              >
+                ← First page
+              </Link>
+            ) : null}
+
+            {nextToken ? (
+              <Link
+                href={`/aps/${eventId}?nextToken=${encodeURIComponent(nextToken)}`}
+                className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
+              >
+                Next {pageSize ?? 50} →
+              </Link>
+            ) : (
+              <span className='rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500'>
+                No more pages
+              </span>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

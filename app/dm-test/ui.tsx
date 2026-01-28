@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { graphqlClient as client } from '@/src/amplify-client';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 type APS = { id: string; year: string };
 type Registrant = {
@@ -32,6 +33,23 @@ type Message = {
 function dmKeyFor(a: string, b: string) {
   const [x, y] = [a, b].sort();
   return `u:${x}|u:${y}`;
+}
+
+type ContactRequest = {
+  id: string;
+  requestKey: string;
+  userAId: string;
+  userBId: string;
+  requestedByUserId: string;
+  status: string;
+  acceptedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function contactRequestKeyFor(eventId: string, a: string, b: string) {
+  const [x, y] = [a, b].sort();
+  return `e:${eventId}|u:${x}|u:${y}`;
 }
 
 const LIST_APS = /* GraphQL */ `
@@ -178,6 +196,56 @@ const LIST_MESSAGES = /* GraphQL */ `
   }
 `;
 
+const CONTACT_REQUEST_BY_KEY = /* GraphQL */ `
+  query ApsContactRequestsByRequestKey($requestKey: String!, $limit: Int) {
+    apsContactRequestsByRequestKey(requestKey: $requestKey, limit: $limit) {
+      items {
+        id
+        requestKey
+        userAId
+        userBId
+        requestedByUserId
+        status
+        acceptedAt
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;
+
+const CREATE_CONTACT_REQUEST = /* GraphQL */ `
+  mutation CreateApsContactRequest($input: CreateApsContactRequestInput!) {
+    createApsContactRequest(input: $input) {
+      id
+      requestKey
+      userAId
+      userBId
+      requestedByUserId
+      status
+      acceptedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPDATE_CONTACT_REQUEST = /* GraphQL */ `
+  mutation UpdateApsContactRequest($input: UpdateApsContactRequestInput!) {
+    updateApsContactRequest(input: $input) {
+      id
+      requestKey
+      userAId
+      userBId
+      requestedByUserId
+      status
+      acceptedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export default function DmTestClient() {
   const [events, setEvents] = useState<APS[]>([]);
   const [eventId, setEventId] = useState('');
@@ -188,6 +256,9 @@ export default function DmTestClient() {
 
   const [thread, setThread] = useState<Thread | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [contactRequest, setContactRequest] = useState<ContactRequest | null>(
+    null
+  );
 
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -205,6 +276,104 @@ export default function DmTestClient() {
     const r = registrants.find((x) => x.appUserId === userB);
     return r ? `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim() || r.email : '';
   }, [registrants, userB]);
+
+  async function loadContactRequest() {
+    if (!eventId || !userA || !userB || userA === userB) {
+      setContactRequest(null);
+      return;
+    }
+    const key = contactRequestKeyFor(eventId, userA, userB);
+    const res = await client.graphql({
+      query: CONTACT_REQUEST_BY_KEY,
+      variables: { requestKey: key, limit: 1 },
+      authMode: 'userPool',
+    });
+    const items = (res as any).data?.apsContactRequestsByRequestKey?.items ?? [];
+    const r = (items?.[0] as ContactRequest | undefined) ?? null;
+    setContactRequest(r);
+  }
+
+  async function ensureContactRequestPending() {
+    if (!eventId) throw new Error('Pick an event');
+    if (!userA || !userB) throw new Error('Pick two users');
+    if (userA === userB) throw new Error('Users must be different');
+
+    // Refresh first so we don't create duplicates.
+    await loadContactRequest();
+    if (contactRequest?.id) return contactRequest.id;
+
+    const [a, b] = [userA, userB].sort();
+    const requestKey = contactRequestKeyFor(eventId, userA, userB);
+
+    const created = await client.graphql({
+      query: CREATE_CONTACT_REQUEST,
+      variables: {
+        input: {
+          eventId,
+          requestKey,
+          userAId: a,
+          userBId: b,
+          owners: [a, b],
+          requestedByUserId: userA, // simulate "A requested B"
+          status: 'PENDING',
+        },
+      },
+      authMode: 'userPool',
+    });
+    const r = (created as any).data?.createApsContactRequest as
+      | ContactRequest
+      | undefined;
+    if (!r?.id) throw new Error('Failed to create contact request');
+    setContactRequest(r);
+
+    // Simulate closed-app badge push for the recipient (user B) in admin test.
+    try {
+      const session = await fetchAuthSession();
+      const jwt = session.tokens?.idToken?.toString();
+      if (jwt) {
+        await fetch('/api/push/request', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            eventId,
+            recipientUserId: userB,
+            requestId: r.id,
+            title: 'New request',
+            body: 'You have a new contact request',
+          }),
+        });
+      }
+    } catch {
+      // best-effort in admin test tool
+    }
+
+    return r.id;
+  }
+
+  async function acceptContactRequest() {
+    if (!contactRequest?.id) throw new Error('No contact request to accept yet');
+    const now = new Date().toISOString();
+    const updated = await client.graphql({
+      query: UPDATE_CONTACT_REQUEST,
+      variables: {
+        input: {
+          id: contactRequest.id,
+          status: 'ACCEPTED',
+          acceptedAt: now,
+        },
+      },
+      authMode: 'userPool',
+    });
+    const r = (updated as any).data?.updateApsContactRequest as
+      | ContactRequest
+      | undefined;
+    if (!r?.id) throw new Error('Failed to accept contact request');
+    setContactRequest(r);
+    return r.id;
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -275,6 +444,26 @@ export default function DmTestClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function refresh() {
+      try {
+        await loadContactRequest();
+      } catch (e) {
+        if (!cancelled) {
+          setError(
+            e instanceof Error ? e.message : 'Failed to load contact request'
+          );
+        }
+      }
+    }
+    void refresh();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, userA, userB]);
+
   async function loadThreadAndMessages(threadId: string) {
     const res = await client.graphql({
       query: LIST_MESSAGES,
@@ -294,6 +483,21 @@ export default function DmTestClient() {
     if (!eventId) throw new Error('Pick an event');
     if (!userA || !userB) throw new Error('Pick two users');
     if (userA === userB) throw new Error('Users must be different');
+
+    // Messaging gate: require an accepted contact request before allowing DMs.
+    await loadContactRequest();
+    if (!contactRequest?.id) {
+      // Create the pending request for convenience in this admin test tool.
+      await ensureContactRequestPending();
+      throw new Error(
+        'Contact request created (PENDING). Accept it (as the other user) before creating the DM thread.'
+      );
+    }
+    if (contactRequest.status !== 'ACCEPTED') {
+      throw new Error(
+        `Contact request not accepted yet (status=${contactRequest.status}). Accept it before creating the DM thread.`
+      );
+    }
 
     const key = dmKeyFor(userA, userB);
     const [a, b] = [userA, userB].sort();
@@ -434,13 +638,37 @@ export default function DmTestClient() {
         : Promise.resolve(),
     ]);
 
+    // Simulate closed-app badge push for the recipient in admin test.
+    try {
+      const session = await fetchAuthSession();
+      const jwt = session.tokens?.idToken?.toString();
+      if (jwt) {
+        await fetch('/api/push/dm', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify({
+            eventId,
+            recipientUserId,
+            threadId,
+            title: 'New message',
+            body: msgBody.slice(0, 180),
+          }),
+        });
+      }
+    } catch {
+      // best-effort in admin test tool
+    }
+
     setBody('');
     await loadThreadAndMessages(threadId);
   }
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+      <main className="page-container flex flex-col gap-8">
         <header className="space-y-2">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Admin
@@ -515,6 +743,71 @@ export default function DmTestClient() {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Contact gate:{' '}
+              <span className="font-semibold">
+                {contactRequest?.status ?? 'NONE'}
+              </span>
+              {contactRequest?.id ? (
+                <>
+                  {' '}
+                  · <span className="font-mono">{contactRequest.id}</span>
+                </>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 disabled:opacity-60"
+              disabled={sending || !userA || !userB}
+              onClick={async () => {
+                setSending(true);
+                setError(null);
+                try {
+                  await ensureContactRequestPending();
+                } catch (e) {
+                  setError(
+                    e instanceof Error
+                      ? e.message
+                      : 'Failed to create contact request'
+                  );
+                } finally {
+                  setSending(false);
+                }
+              }}
+            >
+              Create contact request (A → B)
+            </button>
+
+            <button
+              type="button"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 disabled:opacity-60"
+              disabled={
+                sending ||
+                !userA ||
+                !userB ||
+                !contactRequest?.id ||
+                contactRequest.status === 'ACCEPTED'
+              }
+              onClick={async () => {
+                setSending(true);
+                setError(null);
+                try {
+                  await acceptContactRequest();
+                } catch (e) {
+                  setError(
+                    e instanceof Error
+                      ? e.message
+                      : 'Failed to accept contact request'
+                  );
+                } finally {
+                  setSending(false);
+                }
+              }}
+            >
+              Accept request (as B)
+            </button>
+
             <button
               type="button"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 disabled:opacity-60"

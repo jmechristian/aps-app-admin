@@ -1,0 +1,19 @@
+[
+  {
+    "Action": [
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem"
+    ],
+    "Resource": [
+      "arn:aws:dynamodb:*:*:table/ApsAppUserContact-*",
+      "arn:aws:dynamodb:*:*:table/ApsAppUser-*",
+      "arn:aws:dynamodb:*:*:table/ApsAppUserProfile-*",
+      "arn:aws:dynamodb:*:*:table/ApsAppUserProfile-*/index/*",
+      "arn:aws:dynamodb:*:*:table/ApsPushToken-*",
+      "arn:aws:dynamodb:*:*:table/ApsPushToken-*/index/*"
+    ]
+  }
+]

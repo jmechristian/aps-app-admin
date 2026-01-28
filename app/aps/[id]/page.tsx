@@ -3,9 +3,8 @@ import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
 import RegistrantsTable from './registrants-table';
-import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
-import { updateAps, addCodeToAps, removeCodeFromAps } from '@/app/actions/aps';
-import CodesSection from './codes-section';
+import { fetchRegistrantsByApsIdPage } from '@/app/actions/registrants';
+import { updateAps } from '@/app/actions/aps';
 
 type APS = {
   id: string;
@@ -46,20 +45,36 @@ async function fetchAps(id: string): Promise<APS | null> {
 
 export default async function ApsDetail({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ nextToken?: string | string[] }>;
 }) {
   const { id } = await params;
-  const [aps, registrants] = await Promise.all([
+
+  const sp = searchParams ? await searchParams : undefined;
+  const incomingNextToken = Array.isArray(sp?.nextToken)
+    ? sp?.nextToken?.[0]
+    : sp?.nextToken;
+
+  const [aps, registrantsPage] = await Promise.all([
     fetchAps(id),
-    fetchRegistrantsByApsId(id),
+    fetchRegistrantsByApsIdPage(id, { limit: 50, nextToken: incomingNextToken ?? null }),
   ]);
 
   if (!aps) {
     notFound();
   }
 
-  return <ApsDetailClient aps={aps} eventId={id} registrants={registrants} />;
+  return (
+    <ApsDetailClient
+      aps={aps}
+      eventId={id}
+      registrants={registrantsPage.items}
+      nextToken={registrantsPage.nextToken ?? null}
+      isFirstPage={!incomingNextToken}
+    />
+  );
 }
 
 // Client component wrapper
@@ -67,14 +82,18 @@ function ApsDetailClient({
   aps,
   eventId,
   registrants,
+  nextToken,
+  isFirstPage,
 }: {
   aps: APS;
   eventId: string;
-  registrants: Awaited<ReturnType<typeof fetchRegistrantsByApsId>>;
+  registrants: Awaited<ReturnType<typeof fetchRegistrantsByApsIdPage>>['items'];
+  nextToken: string | null;
+  isFirstPage: boolean;
 }) {
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
-      <main className='mx-auto flex w-full max-w-5xl flex-col gap-10'>
+      <main className='page-container flex flex-col gap-10'>
         <header className='flex items-center justify-between gap-4'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -224,32 +243,47 @@ function ApsDetailClient({
             </p>
             <div className='mt-2 flex flex-col gap-3'>
               <Link
-                href='/'
+                href={`/aps/${eventId}/exhibitors`}
                 className='inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
               >
-                Manage events
+                Exhibitors
               </Link>
-              <a
-                href='mailto:ops@autopacksummit.com'
+              <Link
+                href={`/aps/${eventId}/sponsors`}
                 className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
               >
-                Contact support
-              </a>
+                Sponsors
+              </Link>
+              <Link
+                href={`/aps/${eventId}/speakers`}
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
+              >
+                Speakers
+              </Link>
+              <Link
+                href={`/aps/${eventId}/agenda`}
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
+              >
+                Agenda
+              </Link>
+              <Link
+                href={`/aps/${eventId}/codes`}
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
+              >
+                Codes
+              </Link>
             </div>
           </div>
         </section>
 
         <section>
-          <CodesSection
+          <RegistrantsTable
+            registrants={registrants}
             eventId={eventId}
-            codes={aps.codes ?? []}
-            onAddCode={addCodeToAps}
-            onRemoveCode={removeCodeFromAps}
+            nextToken={nextToken}
+            isFirstPage={isFirstPage}
+            pageSize={50}
           />
-        </section>
-
-        <section>
-          <RegistrantsTable registrants={registrants} eventId={eventId} />
         </section>
       </main>
     </div>
