@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ensureAmplifyConfigured } from '@/src/amplify-client';
-import awsExports from '@/src/aws-exports';
 
 function isProbablyUrl(value: string) {
   return (
@@ -16,9 +15,9 @@ function isProbablyUrl(value: string) {
 function tryExtractPublicKeyFromS3Url(urlString: string): string | null {
   try {
     const url = new URL(urlString);
-    const bucket = (awsExports as any)?.aws_user_files_s3_bucket as
-      | string
-      | undefined;
+    const bucket =
+      process.env.NEXT_PUBLIC_AWS_USER_FILES_S3_BUCKET ||
+      process.env.NEXT_PUBLIC_AWS_S3_BUCKET;
     if (!bucket) return null;
 
     // Only handle our own bucket URLs.

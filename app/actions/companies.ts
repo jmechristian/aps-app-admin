@@ -257,12 +257,12 @@ export async function fetchCompanyContacts(
   const contacts: CompanyContact[] = [];
 
   do {
-    const data = await requestGraphQL<{
+    const data: {
       listAPSCompanyContacts?: {
         items?: CompanyContact[] | null;
         nextToken?: string | null;
       } | null;
-    }>(LIST_COMPANY_CONTACTS, {
+    } = await requestGraphQL(LIST_COMPANY_CONTACTS, {
       filter: { companyId: { eq: companyId } },
       limit: 1000,
       nextToken,

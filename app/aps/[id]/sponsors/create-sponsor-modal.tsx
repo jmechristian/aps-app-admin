@@ -15,6 +15,7 @@ import {
   apsAppExhibitorProfilesByCompanyId,
   apsSponsorsByCompanyId,
 } from '@/src/graphql/queries';
+import { CompanyType } from '@/src/API';
 
 type CreateSponsorModalProps = {
   eventId: string;
@@ -37,9 +38,9 @@ export default function CreateSponsorModal({
   const [showNewCompany, setShowNewCompany] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
   const [newCompanyEmail, setNewCompanyEmail] = useState('');
-  const [newCompanyType, setNewCompanyType] = useState<
-    'SPONSOR' | 'OEMTIER1' | 'SOLUTIONPROVIDER'
-  >('SPONSOR');
+  const [newCompanyType, setNewCompanyType] = useState<CompanyType>(
+    CompanyType.SPONSOR
+  );
   const [alsoExhibitor, setAlsoExhibitor] = useState(false);
 
   const selectedCompanyName = useMemo(
@@ -97,7 +98,7 @@ export default function CreateSponsorModal({
       setShowNewCompany(false);
       setNewCompanyName('');
       setNewCompanyEmail('');
-      setNewCompanyType('SPONSOR');
+      setNewCompanyType(CompanyType.SPONSOR);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create company');
     } finally {
@@ -276,15 +277,15 @@ export default function CreateSponsorModal({
                       className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
                       value={newCompanyType}
                       onChange={(e) =>
-                        setNewCompanyType(
-                          e.target.value as 'SPONSOR' | 'OEMTIER1' | 'SOLUTIONPROVIDER'
-                        )
+                        setNewCompanyType(e.target.value as CompanyType)
                       }
                       disabled={submitting}
                     >
-                      <option value='SPONSOR'>SPONSOR</option>
-                      <option value='OEMTIER1'>OEM/Tier 1</option>
-                      <option value='SOLUTIONPROVIDER'>Solution Provider</option>
+                      <option value={CompanyType.SPONSOR}>SPONSOR</option>
+                      <option value={CompanyType.OEMTIER1}>OEM/Tier 1</option>
+                      <option value={CompanyType.SOLUTIONPROVIDER}>
+                        Solution Provider
+                      </option>
                     </select>
                   </label>
                 </div>

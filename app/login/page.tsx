@@ -2,16 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Amplify } from 'aws-amplify';
 import { fetchAuthSession, getCurrentUser, signIn, signOut } from 'aws-amplify/auth';
-import awsExports from '@/src/aws-exports';
-
-let configured = false;
-function ensureAmplifyConfigured() {
-  if (configured) return;
-  Amplify.configure(awsExports);
-  configured = true;
-}
+import { ensureAmplifyConfigured } from '@/src/amplify-client';
 
 function setAuthCookie(jwt: string) {
   const secure = window.location.protocol === 'https:';
