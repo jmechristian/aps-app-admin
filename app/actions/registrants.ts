@@ -1,7 +1,6 @@
 'use server';
 
 import { requestGraphQL } from '@/lib/appsync';
-import amplifyConfig from '@/src/amplifyconfiguration.json';
 import {
   AdminCreateUserCommand,
   AdminGetUserCommand,
@@ -17,13 +16,16 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
   const region =
     process.env.AWS_REGION ||
     process.env.AWS_DEFAULT_REGION ||
-    amplifyConfig.aws_project_region;
+    process.env.NEXT_PUBLIC_AWS_REGION;
 
-  const userPoolId = amplifyConfig.aws_user_pools_id;
+  const userPoolId =
+    process.env.AWS_USER_POOLS_ID || process.env.NEXT_PUBLIC_AWS_USER_POOLS_ID;
   if (!userPoolId) {
-    throw new Error(
-      'Missing Cognito user pool id in amplifyconfiguration.json'
-    );
+    throw new Error('Missing Cognito user pool id (AWS_USER_POOLS_ID)');
+  }
+
+  if (!region) {
+    throw new Error('Missing AWS region (AWS_REGION)');
   }
 
   // NOTE: This requires AWS credentials in the server environment
