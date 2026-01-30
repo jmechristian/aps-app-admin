@@ -3,7 +3,6 @@
 import { requestGraphQL } from '@/lib/appsync';
 import { fetchRegistrantById } from '@/app/actions/registrants';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
-import amplifyConfig from '@/src/amplifyconfiguration.json';
 
 const CREATE_APS_SPEAKER = /* GraphQL */ `
   mutation CreateAPSSpeaker($input: CreateAPSSpeakerInput!) {
@@ -147,7 +146,10 @@ export async function syncSpeakerHeadshotFromRegistrant(input: {
 
   // Only sync if headshot is missing/placeholder.
   const headshot = (speaker.headshot ?? '').trim();
-  const bucket = amplifyConfig.aws_user_files_s3_bucket;
+  const bucket =
+    process.env.AWS_S3_BUCKET ||
+    process.env.NEXT_PUBLIC_AWS_USER_FILES_S3_BUCKET ||
+    process.env.NEXT_PUBLIC_AWS_S3_BUCKET;
   const isRawS3BucketUrl =
     !!bucket &&
     headshot.includes(`${bucket}.s3.`) &&
