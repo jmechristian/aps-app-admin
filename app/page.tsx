@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createAps, deleteAps, updateAps } from './actions/aps';
 import { requestGraphQL } from '@/lib/appsync';
 
+export const dynamic = 'force-dynamic';
+
 type APS = {
   id: string;
   year: string;
