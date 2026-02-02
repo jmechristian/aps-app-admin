@@ -15,7 +15,7 @@ import {
   apsAppExhibitorProfilesByCompanyId,
   apsSponsorsByCompanyId,
 } from '@/src/graphql/queries';
-import { CompanyType } from '@/src/API';
+import { CompanyType, SponsorType } from '@/src/API';
 
 type CreateSponsorModalProps = {
   eventId: string;
@@ -134,7 +134,13 @@ export default function CreateSponsorModal({
 
       const res = await graphqlClient.graphql({
         query: createApsSponsor,
-        variables: { input: { eventId, companyId } },
+        variables: {
+          input: {
+            eventId,
+            companyId,
+            ...(alsoExhibitor ? { type: SponsorType.BOOTH } : {}),
+          },
+        },
         authMode: 'userPool',
       });
 

@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import { fetchCompaniesByEventId, fetchRegistrantsByApsId } from './registrants';
 
@@ -145,6 +146,7 @@ export type SponsorListItem = {
   id: string;
   eventId: string;
   companyId: string;
+  type?: string | null;
   company?: { id: string; name: string } | null;
 };
 
@@ -168,6 +170,7 @@ export async function fetchSponsorsByEventId(eventId: string) {
           id
           eventId
           companyId
+          type
           company {
             id
             name
@@ -187,6 +190,33 @@ export async function fetchSponsorsByEventId(eventId: string) {
   return items.sort((a, b) =>
     (a.company?.name ?? '').localeCompare(b.company?.name ?? '')
   );
+}
+
+const UPDATE_SPONSOR_TYPE = /* GraphQL */ `
+  mutation UpdateApsSponsor($input: UpdateApsSponsorInput!) {
+    updateApsSponsor(input: $input) {
+      id
+      type
+    }
+  }
+`;
+
+export type SponsorTypeValue = 'BOOTH' | 'TABLE' | 'NONE';
+
+export async function updateSponsorType(
+  sponsorId: string,
+  eventId: string,
+  type: SponsorTypeValue | null
+) {
+  const data = await requestGraphQL<{
+    updateApsSponsor?: { id: string; type?: string | null } | null;
+  }>(UPDATE_SPONSOR_TYPE, {
+    input: { id: sponsorId, type: type ?? null },
+  });
+  if (!data.updateApsSponsor?.id) {
+    throw new Error('Failed to update sponsor type');
+  }
+  revalidatePath(`/aps/${eventId}/sponsors`);
 }
 
 export type SpeakerRegistrantListItem = {

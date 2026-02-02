@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { fetchSponsorsByEventId } from '@/app/actions/event-content';
 import { fetchCompaniesByEventId } from '@/app/actions/registrants';
 import CreateSponsorButton from './create-sponsor-button';
+import SponsorTypeSelect from './sponsor-type-select';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -44,6 +45,7 @@ export default async function SponsorsPage({ params }: PageProps) {
               <thead className='bg-slate-50 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600'>
                 <tr>
                   <th className='px-4 py-3'>Company</th>
+                  <th className='px-4 py-3'>Type</th>
                   <th className='px-4 py-3'>Sponsor ID</th>
                 </tr>
               </thead>
@@ -61,6 +63,13 @@ export default async function SponsorsPage({ params }: PageProps) {
                       ) : (
                         sponsor.company?.name ?? 'Unknown company'
                       )}
+                    </td>
+                    <td className='px-4 py-3'>
+                      <SponsorTypeSelect
+                        sponsorId={sponsor.id}
+                        eventId={eventId}
+                        value={sponsor.type}
+                      />
                     </td>
                     <td className='px-4 py-3 font-mono text-xs text-slate-700'>
                       {sponsor.id}
