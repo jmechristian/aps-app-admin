@@ -14,7 +14,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [deniedReason, setDeniedReason] = useState<string | null>(null);
 
-  const isLoginRoute = useMemo(() => pathname === '/login', [pathname]);
+  const isLoginRoute = useMemo(
+    () => pathname === '/login' || pathname === '/change-password' || pathname === '/forgot-password',
+    [pathname]
+  );
 
   // Configure Amplify immediately (not in an effect) so downstream modules can safely
   // call Auth/API without racing configuration.

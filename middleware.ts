@@ -22,6 +22,8 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname === '/login' ||
+    pathname === '/change-password' ||
+    pathname === '/forgot-password' ||
     pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
