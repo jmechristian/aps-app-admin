@@ -128,15 +128,6 @@ export default function LoginPage() {
 
       if (signInStep === RESET_PASSWORD_STEP) {
         setStep('forgotPassword');
-        try {
-          await resetPassword({ username: email.trim() });
-        } catch (resetErr) {
-          setError(
-            resetErr instanceof Error
-              ? resetErr.message
-              : 'Failed to send reset code'
-          );
-        }
         setSubmitting(false);
         return;
       }
@@ -151,15 +142,6 @@ export default function LoginPage() {
     } catch (err) {
       if (isPasswordResetRequiredError(err)) {
         setStep('forgotPassword');
-        try {
-          await resetPassword({ username: email.trim() });
-        } catch (resetErr) {
-          setError(
-            resetErr instanceof Error
-              ? resetErr.message
-              : 'Failed to send reset code'
-          );
-        }
         setSubmitting(false);
         return;
       }
@@ -211,15 +193,6 @@ export default function LoginPage() {
       }
       if (isPasswordResetRequiredError(err)) {
         setStep('forgotPassword');
-        try {
-          await resetPassword({ username: email.trim() });
-        } catch (resetErr) {
-          setError(
-            resetErr instanceof Error
-              ? resetErr.message
-              : 'Failed to send reset code'
-          );
-        }
         return;
       }
       setError(
@@ -353,7 +326,7 @@ export default function LoginPage() {
           <>
             <h1 className="text-xl font-bold text-slate-900">Reset password</h1>
             <p className="mt-2 text-sm text-slate-600">
-              Enter the code from your email and choose a new password.
+              Enter the code you already have and choose a new password.
             </p>
             <p className="mt-1 text-sm text-slate-500">
               Email: <strong>{email}</strong>
@@ -376,7 +349,7 @@ export default function LoginPage() {
                 />
               </label>
               <div className="text-sm text-slate-600">
-                Didn’t get a code?{' '}
+                Need a new code?{' '}
                 <button
                   type="button"
                   onClick={handleResendResetCode}
