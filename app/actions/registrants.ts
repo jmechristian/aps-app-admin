@@ -2,10 +2,26 @@
 
 import { requestGraphQL } from '@/lib/appsync';
 import {
+  deleteApsAppExhibitorDeal,
+  deleteApsAppSessionQuestion,
+  deleteApsAppUser,
+  deleteApsAppUserContact,
+  deleteApsAppUserLead,
+  deleteApsAppUserNote,
+  deleteApsAppUserPhoto,
+  deleteApsAppUserProfile,
+  deleteApsDmMessage,
+  deleteApsRegistrant,
+  deleteProfileAffiliate,
+  deleteProfileEducation,
+  deleteProfileInterest,
+} from '@/src/graphql/mutations';
+import {
   AdminCreateUserCommand,
   AdminGetUserCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { revalidatePath } from 'next/cache';
 
 type CognitoAttr = { Name?: string; Value?: string };
 
@@ -153,6 +169,14 @@ const UPDATE_APP_USER = /* GraphQL */ `
     updateApsAppUser(input: $input) {
       id
       profileId
+    }
+  }
+`;
+
+const UPDATE_APP_USER_PROFILE = /* GraphQL */ `
+  mutation UpdateApsAppUserProfile($input: UpdateApsAppUserProfileInput!) {
+    updateApsAppUserProfile(input: $input) {
+      id
     }
   }
 `;
@@ -426,6 +450,127 @@ const LIST_PROFILE_INTERESTS = /* GraphQL */ `
       items {
         id
         interest
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_PHOTOS = /* GraphQL */ `
+  query ListApsAppUserPhotos(
+    $filter: ModelApsAppUserPhotoFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppUserPhotos(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_NOTES = /* GraphQL */ `
+  query ListApsAppUserNotes(
+    $filter: ModelApsAppUserNoteFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppUserNotes(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_CONTACTS = /* GraphQL */ `
+  query ListApsAppUserContacts(
+    $filter: ModelApsAppUserContactFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppUserContacts(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_LEADS = /* GraphQL */ `
+  query ListApsAppUserLeads(
+    $filter: ModelApsAppUserLeadFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppUserLeads(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_SESSION_QUESTIONS = /* GraphQL */ `
+  query ListApsAppSessionQuestions(
+    $filter: ModelApsAppSessionQuestionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppSessionQuestions(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APP_USER_EXHIBITOR_DEALS = /* GraphQL */ `
+  query ListApsAppExhibitorDeals(
+    $filter: ModelApsAppExhibitorDealFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsAppExhibitorDeals(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_DM_MESSAGES = /* GraphQL */ `
+  query ListApsDmMessages(
+    $filter: ModelApsDmMessageFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listApsDmMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
       }
       nextToken
     }
@@ -819,6 +964,15 @@ export async function createRegistrant(
     }
   }
 
+  const locationParts = [
+    input.billingAddressCity,
+    input.billingAddressState,
+    input.billingAddressZip,
+  ]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean);
+  const profileLocation = locationParts.length > 0 ? locationParts.join(', ') : null;
+
   const profileResult = await requestGraphQL<{
     createApsAppUserProfile?: { id: string; userId: string };
   }>(
@@ -833,6 +987,7 @@ export async function createRegistrant(
         company: companyNameForProfile || null,
         jobTitle: input.jobTitle || null,
         attendeeType: input.attendeeType || null,
+        location: profileLocation,
         // Other fields will be filled in by the user later
       },
     },
@@ -1064,5 +1219,354 @@ export async function fetchRegistrantById(
   } catch (error) {
     console.error(`Failed to fetch registrant ${id}:`, error);
     return null;
+  }
+}
+
+type ActionState = {
+  ok: boolean;
+  message: string;
+};
+
+function readStringField(
+  formData: FormData,
+  key: string
+): string | null | undefined {
+  const value = formData.get(key);
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+function readStringArrayField(
+  formData: FormData,
+  key: string
+): string[] | null | undefined {
+  const value = readStringField(formData, key);
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const list = value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return list.length > 0 ? list : null;
+}
+
+async function listAllIds(
+  query: string,
+  responseKey: string,
+  filter: Record<string, unknown>
+): Promise<string[]> {
+  const ids: string[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response = await requestGraphQL<Record<string, unknown>>(query, {
+      filter,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const listResult = response?.[responseKey] as
+      | { items?: Array<{ id?: string | null } | null> | null; nextToken?: string | null }
+      | null
+      | undefined;
+
+    const items = listResult?.items ?? [];
+    for (const item of items) {
+      if (item?.id) {
+        ids.push(item.id);
+      }
+    }
+    nextToken = listResult?.nextToken ?? null;
+
+    if (nextToken) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  } while (nextToken);
+
+  return ids;
+}
+
+async function deleteIds(
+  ids: Iterable<string>,
+  mutation: string,
+  label: string
+): Promise<void> {
+  for (const id of ids) {
+    try {
+      await requestGraphQL(mutation, { input: { id } });
+    } catch (error) {
+      console.error(`Failed to delete ${label} ${id}:`, error);
+      throw error;
+    }
+  }
+}
+
+export async function updateRegistrant(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const registrantId = readStringField(formData, 'registrantId');
+    const eventId = readStringField(formData, 'eventId');
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    const input: Record<string, unknown> = { id: registrantId };
+    const fields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'jobTitle',
+      'attendeeType',
+      'status',
+      'bio',
+      'billingAddressFirstName',
+      'billingAddressLastName',
+      'billingAddressEmail',
+      'billingAddressPhone',
+      'billingAddressStreet',
+      'billingAddressCity',
+      'billingAddressState',
+      'billingAddressZip',
+    ];
+
+    for (const field of fields) {
+      const value = readStringField(formData, field);
+      if (value !== undefined) {
+        input[field] = value;
+      }
+    }
+
+    await requestGraphQL(UPDATE_REGISTRANT, { input });
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+    }
+
+    return { ok: true, message: 'Registrant updated.' };
+  } catch (error) {
+    console.error('Failed to update registrant:', error);
+    return { ok: false, message: 'Failed to update registrant.' };
+  }
+}
+
+export async function updateAppUserProfile(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const profileId = readStringField(formData, 'profileId');
+    const eventId = readStringField(formData, 'eventId');
+    const registrantId = readStringField(formData, 'registrantId');
+    if (!profileId) {
+      return { ok: false, message: 'Missing profile id.' };
+    }
+
+    const input: Record<string, unknown> = { id: profileId };
+    const fields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'company',
+      'jobTitle',
+      'attendeeType',
+      'bio',
+      'linkedin',
+      'twitter',
+      'facebook',
+      'instagram',
+      'youtube',
+      'location',
+    ];
+
+    for (const field of fields) {
+      const value = readStringField(formData, field);
+      if (value !== undefined) {
+        input[field] = value;
+      }
+    }
+
+    const website = readStringArrayField(formData, 'website');
+    if (website !== undefined) {
+      input.website = website;
+    }
+
+    await requestGraphQL(UPDATE_APP_USER_PROFILE, { input });
+
+    if (eventId && registrantId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+    }
+
+    return { ok: true, message: 'App user profile updated.' };
+  } catch (error) {
+    console.error('Failed to update app user profile:', error);
+    return { ok: false, message: 'Failed to update app user profile.' };
+  }
+}
+
+export async function deleteRegistrantCascade({
+  registrantId,
+  eventId,
+}: {
+  registrantId: string;
+  eventId?: string | null;
+}): Promise<ActionState> {
+  try {
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    const registrant = await fetchRegistrantById(registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    const appUserId = registrant.appUser?.id ?? null;
+    const profileId = registrant.appUser?.profile?.id ?? null;
+
+    if (profileId) {
+      const affiliateIds = await listAllIds(
+        LIST_PROFILE_AFFILIATES,
+        'listProfileAffiliates',
+        { profileId: { eq: profileId } }
+      );
+      await deleteIds(affiliateIds, deleteProfileAffiliate, 'profile affiliate');
+
+      const educationIds = await listAllIds(
+        LIST_PROFILE_EDUCATION,
+        'listProfileEducations',
+        { profileId: { eq: profileId } }
+      );
+      await deleteIds(educationIds, deleteProfileEducation, 'profile education');
+
+      const interestIds = await listAllIds(
+        LIST_PROFILE_INTERESTS,
+        'listProfileInterests',
+        { profileId: { eq: profileId } }
+      );
+      await deleteIds(interestIds, deleteProfileInterest, 'profile interest');
+    }
+
+    const noteIds = new Set<string>();
+    if (appUserId) {
+      const ids = await listAllIds(LIST_APP_USER_NOTES, 'listApsAppUserNotes', {
+        userId: { eq: appUserId },
+      });
+      ids.forEach((id) => noteIds.add(id));
+    }
+    if (profileId) {
+      const ids = await listAllIds(LIST_APP_USER_NOTES, 'listApsAppUserNotes', {
+        profileId: { eq: profileId },
+      });
+      ids.forEach((id) => noteIds.add(id));
+    }
+    const registrantNoteIds = await listAllIds(
+      LIST_APP_USER_NOTES,
+      'listApsAppUserNotes',
+      { registrantId: { eq: registrantId } }
+    );
+    registrantNoteIds.forEach((id) => noteIds.add(id));
+    await deleteIds(noteIds, deleteApsAppUserNote, 'app user note');
+
+    const contactIds = new Set<string>();
+    if (appUserId) {
+      const ids = await listAllIds(
+        LIST_APP_USER_CONTACTS,
+        'listApsAppUserContacts',
+        { userId: { eq: appUserId } }
+      );
+      ids.forEach((id) => contactIds.add(id));
+    }
+    if (profileId) {
+      const ids = await listAllIds(
+        LIST_APP_USER_CONTACTS,
+        'listApsAppUserContacts',
+        { contactId: { eq: profileId } }
+      );
+      ids.forEach((id) => contactIds.add(id));
+    }
+    await deleteIds(contactIds, deleteApsAppUserContact, 'app user contact');
+
+    const leadIds = new Set<string>();
+    if (appUserId) {
+      const ids = await listAllIds(
+        LIST_APP_USER_LEADS,
+        'listApsAppUserLeads',
+        { userId: { eq: appUserId } }
+      );
+      ids.forEach((id) => leadIds.add(id));
+    }
+    if (profileId) {
+      const ids = await listAllIds(
+        LIST_APP_USER_LEADS,
+        'listApsAppUserLeads',
+        { contactId: { eq: profileId } }
+      );
+      ids.forEach((id) => leadIds.add(id));
+    }
+    await deleteIds(leadIds, deleteApsAppUserLead, 'app user lead');
+
+    if (appUserId) {
+      const photoIds = await listAllIds(
+        LIST_APP_USER_PHOTOS,
+        'listApsAppUserPhotos',
+        { userId: { eq: appUserId } }
+      );
+      await deleteIds(photoIds, deleteApsAppUserPhoto, 'app user photo');
+
+      const sessionQuestionIds = await listAllIds(
+        LIST_APP_USER_SESSION_QUESTIONS,
+        'listApsAppSessionQuestions',
+        { userId: { eq: appUserId } }
+      );
+      await deleteIds(
+        sessionQuestionIds,
+        deleteApsAppSessionQuestion,
+        'app session question'
+      );
+
+      const exhibitorDealIds = await listAllIds(
+        LIST_APP_USER_EXHIBITOR_DEALS,
+        'listApsAppExhibitorDeals',
+        { userId: { eq: appUserId } }
+      );
+      await deleteIds(
+        exhibitorDealIds,
+        deleteApsAppExhibitorDeal,
+        'app exhibitor deal'
+      );
+
+      const messageIds = await listAllIds(
+        LIST_DM_MESSAGES,
+        'listApsDmMessages',
+        { senderUserId: { eq: appUserId } }
+      );
+      await deleteIds(messageIds, deleteApsDmMessage, 'dm message');
+    }
+
+    if (profileId) {
+      await requestGraphQL(deleteApsAppUserProfile, { input: { id: profileId } });
+    }
+    if (appUserId) {
+      await requestGraphQL(deleteApsAppUser, { input: { id: appUserId } });
+    }
+
+    await requestGraphQL(deleteApsRegistrant, { input: { id: registrantId } });
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+    }
+
+    return { ok: true, message: 'Registrant deleted.' };
+  } catch (error) {
+    console.error('Failed to delete registrant cascade:', error);
+    return { ok: false, message: 'Failed to delete registrant.' };
   }
 }

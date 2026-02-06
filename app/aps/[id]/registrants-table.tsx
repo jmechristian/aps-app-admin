@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
-import { type Registrant } from '@/app/actions/registrants';
+import { useRouter } from 'next/navigation';
+import { deleteRegistrantCascade, type Registrant } from '@/app/actions/registrants';
 
 type RegistrantsTableProps = {
   registrants: Registrant[];
@@ -20,6 +21,9 @@ export default function RegistrantsTable({
   pageSize = 50,
 }: RegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filteredRegistrants = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -80,6 +84,26 @@ export default function RegistrantsTable({
     }
   };
 
+  const handleDelete = (registrantId: string, name: string) => {
+    const confirmed = window.confirm(
+      `Delete ${name || 'this registrant'}? This will remove their app user and profile data.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(registrantId);
+    startTransition(async () => {
+      const result = await deleteRegistrantCascade({
+        registrantId,
+        eventId,
+      });
+      if (!result.ok) {
+        window.alert(result.message || 'Failed to delete registrant.');
+      }
+      setDeletingId(null);
+      router.refresh();
+    });
+  };
+
   return (
     <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg'>
       <div className='mb-4 flex items-center justify-between'>
@@ -131,6 +155,9 @@ export default function RegistrantsTable({
                 <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Status
                 </th>
+                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className='divide-y divide-slate-100'>
@@ -165,6 +192,16 @@ export default function RegistrantsTable({
                       >
                         {registrant.status}
                       </span>
+                    </td>
+                    <td className='px-4 py-3'>
+                      <button
+                        type='button'
+                        onClick={() => handleDelete(registrant.id, name)}
+                        disabled={isPending && deletingId === registrant.id}
+                        className='inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60'
+                      >
+                        {isPending && deletingId === registrant.id ? 'Deleting...' : 'Delete'}
+                      </button>
                     </td>
                   </tr>
                 );

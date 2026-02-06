@@ -50,7 +50,8 @@ function isPasswordResetRequiredError(err: unknown): boolean {
         ? obj.message
         : String(err);
   const isPasswordResetMessage =
-    msg.includes('Password reset required') || msg.includes('PasswordResetRequired');
+    msg.includes('Password reset required') ||
+    msg.includes('PasswordResetRequired');
   return (
     isPasswordResetMessage ||
     obj?.__type === 'PasswordResetRequiredException' ||
@@ -70,7 +71,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'signIn' | 'newPassword' | 'forgotPassword'>(
-    'signIn'
+    'signIn',
   );
 
   useEffect(() => {
@@ -145,8 +146,7 @@ export default function LoginPage() {
         setSubmitting(false);
         return;
       }
-      const message =
-        err instanceof Error ? err.message : 'Sign-in failed';
+      const message = err instanceof Error ? err.message : 'Sign-in failed';
       setError(message);
     } finally {
       setSubmitting(false);
@@ -196,7 +196,7 @@ export default function LoginPage() {
         return;
       }
       setError(
-        err instanceof Error ? err.message : 'Failed to update password'
+        err instanceof Error ? err.message : 'Failed to update password',
       );
     } finally {
       setSubmitting(false);
@@ -236,7 +236,10 @@ export default function LoginPage() {
         return;
       }
       const signInStep = res.nextStep?.signInStep;
-      if (signInStep === NEW_PASSWORD_REQUIRED_STEP || signInStep === RESET_PASSWORD_STEP) {
+      if (
+        signInStep === NEW_PASSWORD_REQUIRED_STEP ||
+        signInStep === RESET_PASSWORD_STEP
+      ) {
         setStep('newPassword');
         setSubmitting(false);
         return;
@@ -248,9 +251,7 @@ export default function LoginPage() {
       }
       await finishSignIn();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to reset password'
-      );
+      setError(err instanceof Error ? err.message : 'Failed to reset password');
     } finally {
       setSubmitting(false);
     }
@@ -263,7 +264,7 @@ export default function LoginPage() {
       await resetPassword({ username: email.trim() });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to resend reset code'
+        err instanceof Error ? err.message : 'Failed to resend reset code',
       );
     } finally {
       setSubmitting(false);
@@ -271,52 +272,54 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <div className="page-container rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className='min-h-screen bg-slate-50 px-6 py-12 text-slate-900'>
+      <div className='max-w-md mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
         {step === 'signIn' ? (
           <>
-            <h1 className="text-xl font-bold text-slate-900">Admin sign in</h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <h1 className='text-xl font-bold text-slate-900'>Admin sign in</h1>
+            <p className='mt-2 text-sm text-slate-600'>
               Use your Cognito admin credentials.
             </p>
 
-            <form className="mt-6 space-y-4" onSubmit={handleSignIn}>
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Email</span>
+            <form className='mt-6 space-y-4' onSubmit={handleSignIn}>
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
+                  Email
+                </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="username"
-                  inputMode="email"
+                  autoComplete='username'
+                  inputMode='email'
                   required
                 />
               </label>
 
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   Password
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
-                  type="password"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  type='password'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete='current-password'
                   required
                 />
               </label>
 
               {error ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                <div className='rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700'>
                   {error}
                 </div>
               ) : null}
 
               <button
-                type="submit"
+                type='submit'
                 disabled={submitting}
-                className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+                className='w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60'
               >
                 {submitting ? 'Signing in…' : 'Sign in'}
               </button>
@@ -324,81 +327,84 @@ export default function LoginPage() {
           </>
         ) : step === 'forgotPassword' ? (
           <>
-            <h1 className="text-xl font-bold text-slate-900">Reset password</h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <h1 className='text-xl font-bold text-slate-900'>Reset password</h1>
+            <p className='mt-2 text-sm text-slate-600'>
               Enter the code you already have and choose a new password.
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className='mt-1 text-sm text-slate-500'>
               Email: <strong>{email}</strong>
             </p>
 
-            <form className="mt-6 space-y-4" onSubmit={handleForgotPasswordSubmit}>
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+            <form
+              className='mt-6 space-y-4'
+              onSubmit={handleForgotPasswordSubmit}
+            >
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   Code from email
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400 font-mono"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400 font-mono'
+                  type='text'
+                  inputMode='numeric'
+                  autoComplete='one-time-code'
                   value={resetCode}
                   onChange={(e) => setResetCode(e.target.value)}
-                  placeholder="e.g. 123456"
+                  placeholder='e.g. 123456'
                   required
                 />
               </label>
-              <div className="text-sm text-slate-600">
+              <div className='text-sm text-slate-600'>
                 Need a new code?{' '}
                 <button
-                  type="button"
+                  type='button'
                   onClick={handleResendResetCode}
-                  className="font-semibold text-slate-900 hover:underline"
+                  className='font-semibold text-slate-900 hover:underline'
                   disabled={submitting}
                 >
                   Resend code
                 </button>
               </div>
 
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   New password
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
-                  type="password"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  type='password'
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
+                  autoComplete='new-password'
                   minLength={8}
                   required
                 />
               </label>
 
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   Confirm new password
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
-                  type="password"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  type='password'
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  autoComplete="new-password"
+                  autoComplete='new-password'
                   minLength={8}
                   required
                 />
               </label>
 
               {error ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                <div className='rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700'>
                   {error}
                 </div>
               ) : null}
 
-              <div className="flex gap-3">
+              <div className='flex gap-3'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => {
                     setStep('signIn');
                     setResetCode('');
@@ -406,14 +412,14 @@ export default function LoginPage() {
                     setNewPasswordConfirm('');
                     setError(null);
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className='rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50'
                 >
                   Back
                 </button>
                 <button
-                  type="submit"
+                  type='submit'
                   disabled={submitting}
-                  className="flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+                  className='flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60'
                 >
                   {submitting ? 'Updating…' : 'Set new password'}
                 </button>
@@ -422,55 +428,57 @@ export default function LoginPage() {
           </>
         ) : (
           <>
-            <h1 className="text-xl font-bold text-slate-900">Set new password</h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <h1 className='text-xl font-bold text-slate-900'>
+              Set new password
+            </h1>
+            <p className='mt-2 text-sm text-slate-600'>
               Your account requires a new password. Choose a password that is at
               least 8 characters.
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className='mt-1 text-sm text-slate-500'>
               Signed in as <strong>{email}</strong>
             </p>
 
-            <form className="mt-6 space-y-4" onSubmit={handleNewPasswordSubmit}>
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+            <form className='mt-6 space-y-4' onSubmit={handleNewPasswordSubmit}>
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   New password
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
-                  type="password"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  type='password'
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
+                  autoComplete='new-password'
                   minLength={8}
                   required
                 />
               </label>
 
-              <label className="block">
-                <span className="text-sm font-semibold text-slate-700">
+              <label className='block'>
+                <span className='text-sm font-semibold text-slate-700'>
                   Confirm new password
                 </span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
-                  type="password"
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  type='password'
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  autoComplete="new-password"
+                  autoComplete='new-password'
                   minLength={8}
                   required
                 />
               </label>
 
               {error ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                <div className='rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700'>
                   {error}
                 </div>
               ) : null}
 
-              <div className="flex gap-3">
+              <div className='flex gap-3'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => {
                     setStep('signIn');
                     setPassword('');
@@ -478,14 +486,14 @@ export default function LoginPage() {
                     setNewPasswordConfirm('');
                     setError(null);
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className='rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50'
                 >
                   Back
                 </button>
                 <button
-                  type="submit"
+                  type='submit'
                   disabled={submitting}
-                  className="flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+                  className='flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-60'
                 >
                   {submitting ? 'Updating…' : 'Set new password'}
                 </button>
@@ -497,5 +505,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

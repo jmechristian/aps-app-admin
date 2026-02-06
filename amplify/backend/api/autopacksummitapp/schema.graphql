@@ -34,7 +34,7 @@ type APS
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -87,7 +87,7 @@ type ApsAgenda
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -102,7 +102,7 @@ type ApsRegistrant
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -174,7 +174,7 @@ type ApsAppUser
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -200,7 +200,7 @@ type ApsAppUserContact
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -248,7 +248,7 @@ type ApsAppUserLead
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -265,7 +265,7 @@ type ApsAppUserProfile
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -307,7 +307,7 @@ type ProfileAffiliate
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -324,7 +324,7 @@ type ProfileEducation
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -340,7 +340,7 @@ type ProfileInterest
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -355,7 +355,7 @@ type ApsAppUserPhoto
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -374,7 +374,7 @@ type ApsAppSession
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -399,7 +399,7 @@ type ApsAppSessionQuestion
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -416,7 +416,7 @@ type APSSpeaker
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -444,7 +444,7 @@ type ApsSponsor
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -463,7 +463,7 @@ type APSCompany
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -496,7 +496,7 @@ type APSCompanyContact
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -516,7 +516,7 @@ type ApsAppExhibitorProfile
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -545,7 +545,7 @@ type ApsAppExhibitorPromotion
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -563,7 +563,7 @@ type ApsAppExhibitorDeal
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -583,7 +583,7 @@ type ApsAppExhibitorPhoto
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -602,7 +602,7 @@ type ApsAppExhibitorHandout
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -619,7 +619,7 @@ type ApsAddOn
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -643,7 +643,7 @@ type ApsSeatingChart
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -655,7 +655,7 @@ type ApsSeatingChartRegistrant
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {

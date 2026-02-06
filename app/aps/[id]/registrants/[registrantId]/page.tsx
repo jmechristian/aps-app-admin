@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchRegistrantById } from '@/app/actions/registrants';
 import ProfilePicture from './profile-picture';
+import RegistrantEditForm from './registrant-edit-form';
 
 type PageProps = {
   params: Promise<{ id: string; registrantId: string }>;
@@ -71,6 +72,8 @@ export default async function RegistrantProfile({ params }: PageProps) {
             ← Back to event
           </Link>
         </header>
+
+        <RegistrantEditForm registrant={registrant} eventId={eventId} />
 
         <div className='grid gap-6 lg:grid-cols-3'>
           {/* Main Content */}
