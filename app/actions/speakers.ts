@@ -218,9 +218,15 @@ export async function cleanupOrphanedSessionSpeakers() {
   let nextToken: string | null | undefined = null;
 
   do {
-    const response = await requestGraphQL<{
-      listAPSSpeakers?: { items?: Array<{ id?: string | null } | null>; nextToken?: string | null } | null;
-    }>(LIST_APS_SPEAKERS, { limit: 1000, nextToken: nextToken || undefined });
+    const response: {
+      listAPSSpeakers?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(LIST_APS_SPEAKERS, {
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
     const items = response.listAPSSpeakers?.items ?? [];
     for (const item of items) {
       if (item?.id) speakerIds.add(item.id);
