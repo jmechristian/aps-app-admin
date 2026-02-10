@@ -250,6 +250,44 @@ export async function updateCompany(formData: FormData) {
   revalidatePath(`/aps/${eventId}/sponsors`);
 }
 
+type ActionState = { ok: boolean; message: string };
+
+export async function updateCompanyLogo(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const id = formData.get("id")?.toString();
+    const eventId = formData.get("eventId")?.toString();
+    const registrantId = formData.get("registrantId")?.toString();
+    const logo = parseNullableString(formData.get("logo"));
+
+    if (!id) {
+      return { ok: false, message: "Missing company id" };
+    }
+
+    await requestGraphQL(UPDATE_COMPANY, {
+      input: {
+        id,
+        logo,
+      },
+    });
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/companies/${id}`);
+      if (registrantId) {
+        revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+      }
+    }
+
+    return { ok: true, message: "Company logo updated." };
+  } catch (error) {
+    console.error("Failed to update company logo:", error);
+    return { ok: false, message: "Failed to update company logo." };
+  }
+}
+
 export async function fetchCompanyContacts(
   companyId: string
 ): Promise<CompanyContact[]> {

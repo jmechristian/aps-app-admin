@@ -314,6 +314,7 @@ const GET_REGISTRANT = /* GraphQL */ `
         email
         website
         type
+        logo
       }
       jobTitle
       attendeeType
@@ -711,6 +712,7 @@ export type RegistrantDetail = Registrant & {
     email: string;
     website?: string | null;
     type?: string | null;
+    logo?: string | null;
   } | null;
   appUser?: ApsAppUser | null;
 };
@@ -1016,6 +1018,21 @@ export async function createRegistrant(
 
   if (!linkUserResult.updateApsAppUser?.id) {
     throw new Error('Failed to attach profileId to app user');
+  }
+
+  if (input.attendeeType === 'SPEAKER') {
+    try {
+      const { createSpeakerFromRegistrantId } = await import(
+        '@/app/actions/speakers'
+      );
+      await createSpeakerFromRegistrantId({
+        eventId: input.apsID,
+        registrantId,
+      });
+    } catch (error) {
+      console.error('Failed to create APSSpeaker for registrant:', error);
+      throw error;
+    }
   }
 
   // Generate and upload QR code (best-effort)
@@ -1375,6 +1392,7 @@ export async function updateAppUserProfile(
       'company',
       'jobTitle',
       'attendeeType',
+      'profilePicture',
       'bio',
       'linkedin',
       'twitter',

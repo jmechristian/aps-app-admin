@@ -10,12 +10,15 @@ import {
   createApsAppSession,
   createSessionSpeakers,
   createSessionSponsors,
+  deleteApsAppSession,
+  deleteApsAppSessionQuestion,
   deleteSessionSpeakers,
   deleteSessionSponsors,
   updateApsAppSession,
   updateAPS,
 } from '@/src/graphql/mutations';
 import {
+  apsAppSessionQuestionsBySessionId,
   sessionSpeakersByApsAppSessionId,
   sessionSponsorsByApsAppSessionId,
 } from '@/src/graphql/queries';
@@ -361,6 +364,93 @@ export default function SessionModal({
     }
   }
 
+  async function handleDelete() {
+    if (mode !== 'edit' || !sessionId) return;
+    const confirmed = window.confirm(
+      'Delete this session? This will remove its speaker/sponsor links and questions.'
+    );
+    if (!confirmed) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      ensureAmplifyConfigured();
+      await fetchAuthSession();
+
+      const [speakerLinks, sponsorLinks, questions] = await Promise.all([
+        graphqlClient.graphql({
+          query: sessionSpeakersByApsAppSessionId,
+          variables: { apsAppSessionId: sessionId, limit: 1000 },
+          authMode: 'userPool',
+        }),
+        graphqlClient.graphql({
+          query: sessionSponsorsByApsAppSessionId,
+          variables: { apsAppSessionId: sessionId, limit: 1000 },
+          authMode: 'userPool',
+        }),
+        graphqlClient.graphql({
+          query: apsAppSessionQuestionsBySessionId,
+          variables: { sessionId, limit: 1000 },
+          authMode: 'userPool',
+        }),
+      ]);
+
+      const speakerItems =
+        (speakerLinks as any).data?.sessionSpeakersByApsAppSessionId?.items ?? [];
+      const sponsorItems =
+        (sponsorLinks as any).data?.sessionSponsorsByApsAppSessionId?.items ?? [];
+      const questionItems =
+        (questions as any).data?.apsAppSessionQuestionsBySessionId?.items ?? [];
+
+      await Promise.all([
+        ...speakerItems
+          .map((x: any) => x?.id)
+          .filter(Boolean)
+          .map((id: string) =>
+            graphqlClient.graphql({
+              query: deleteSessionSpeakers,
+              variables: { input: { id } },
+              authMode: 'userPool',
+            })
+          ),
+        ...sponsorItems
+          .map((x: any) => x?.id)
+          .filter(Boolean)
+          .map((id: string) =>
+            graphqlClient.graphql({
+              query: deleteSessionSponsors,
+              variables: { input: { id } },
+              authMode: 'userPool',
+            })
+          ),
+        ...questionItems
+          .map((x: any) => x?.id)
+          .filter(Boolean)
+          .map((id: string) =>
+            graphqlClient.graphql({
+              query: deleteApsAppSessionQuestion,
+              variables: { input: { id } },
+              authMode: 'userPool',
+            })
+          ),
+      ]);
+
+      await graphqlClient.graphql({
+        query: deleteApsAppSession,
+        variables: { input: { id: sessionId } },
+        authMode: 'userPool',
+      });
+
+      onClose();
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -585,22 +675,36 @@ export default function SessionModal({
             </div>
           </div>
 
-          <div className='mt-6 flex items-center justify-end gap-3'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
-              disabled={submitting}
-            >
-              Cancel
-            </button>
-            <button
-              type='submit'
-              disabled={submitting}
-              className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md disabled:opacity-60'
-            >
-              {submitting ? 'Saving…' : mode === 'create' ? 'Create session' : 'Save changes'}
-            </button>
+          <div className='mt-6 flex items-center justify-between gap-3'>
+            {mode === 'edit' ? (
+              <button
+                type='button'
+                onClick={handleDelete}
+                disabled={submitting}
+                className='rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-md disabled:opacity-60'
+              >
+                {submitting ? 'Deleting…' : 'Delete session'}
+              </button>
+            ) : (
+              <span />
+            )}
+            <div className='flex items-center justify-end gap-3'>
+              <button
+                type='button'
+                onClick={onClose}
+                className='rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                type='submit'
+                disabled={submitting}
+                className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md disabled:opacity-60'
+              >
+                {submitting ? 'Saving…' : mode === 'create' ? 'Create session' : 'Save changes'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

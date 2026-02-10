@@ -505,11 +505,29 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
     } | null;
   };
 
-  const items = await paginate<SessionQueryItem>({
-    query: LIST_SESSIONS_BY_AGENDA,
-    variables: { agendaId },
-    getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
-  });
+  let items: SessionQueryItem[];
+  try {
+    items = await paginate<SessionQueryItem>({
+      query: LIST_SESSIONS_BY_AGENDA,
+      variables: { agendaId },
+      getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('APSSpeaker') && message.includes('SessionSpeakers')) {
+      const { cleanupOrphanedSessionSpeakers } = await import(
+        '@/app/actions/speakers'
+      );
+      await cleanupOrphanedSessionSpeakers();
+      items = await paginate<SessionQueryItem>({
+        query: LIST_SESSIONS_BY_AGENDA,
+        variables: { agendaId },
+        getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
+      });
+    } else {
+      throw error;
+    }
+  }
 
   const withNames: AgendaSessionListItem[] = items.map((s) => {
     const speakerNames =

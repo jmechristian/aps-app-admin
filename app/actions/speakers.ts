@@ -47,6 +47,37 @@ const UPDATE_APS_REGISTRANT = /* GraphQL */ `
   }
 `;
 
+const LIST_APS_SPEAKERS = /* GraphQL */ `
+  query ListAPSSpeakers($filter: ModelAPSSpeakerFilterInput, $limit: Int, $nextToken: String) {
+    listAPSSpeakers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_SESSION_SPEAKERS = /* GraphQL */ `
+  query ListSessionSpeakers($filter: ModelSessionSpeakersFilterInput, $limit: Int, $nextToken: String) {
+    listSessionSpeakers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        aPSSpeakerId
+      }
+      nextToken
+    }
+  }
+`;
+
+const DELETE_SESSION_SPEAKERS = /* GraphQL */ `
+  mutation DeleteSessionSpeakers($input: DeleteSessionSpeakersInput!) {
+    deleteSessionSpeakers(input: $input) {
+      id
+    }
+  }
+`;
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -180,6 +211,47 @@ export async function syncSpeakerHeadshotFromRegistrant(input: {
     ...speaker,
     headshot: updated.updateAPSSpeaker?.headshot ?? key,
   };
+}
+
+export async function cleanupOrphanedSessionSpeakers() {
+  const speakerIds = new Set<string>();
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response = await requestGraphQL<{
+      listAPSSpeakers?: { items?: Array<{ id?: string | null } | null>; nextToken?: string | null } | null;
+    }>(LIST_APS_SPEAKERS, { limit: 1000, nextToken: nextToken || undefined });
+    const items = response.listAPSSpeakers?.items ?? [];
+    for (const item of items) {
+      if (item?.id) speakerIds.add(item.id);
+    }
+    nextToken = response.listAPSSpeakers?.nextToken ?? null;
+  } while (nextToken);
+
+  let removed = 0;
+  nextToken = null;
+  do {
+    const response = await requestGraphQL<{
+      listSessionSpeakers?: {
+        items?: Array<{ id?: string | null; aPSSpeakerId?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    }>(LIST_SESSION_SPEAKERS, { limit: 1000, nextToken: nextToken || undefined });
+    const items = response.listSessionSpeakers?.items ?? [];
+    for (const item of items) {
+      const speakerId = item?.aPSSpeakerId ?? null;
+      if (!item?.id) continue;
+      if (!speakerId || !speakerIds.has(speakerId)) {
+        await requestGraphQL(DELETE_SESSION_SPEAKERS, {
+          input: { id: item.id },
+        });
+        removed += 1;
+      }
+    }
+    nextToken = response.listSessionSpeakers?.nextToken ?? null;
+  } while (nextToken);
+
+  return { removed };
 }
 
 

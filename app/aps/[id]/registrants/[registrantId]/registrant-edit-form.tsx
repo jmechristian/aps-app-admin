@@ -1,8 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useMemo, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { uploadData } from 'aws-amplify/storage';
+import heic2any from 'heic2any';
+import { ensureAmplifyConfigured } from '@/src/amplify-client';
+import StorageImage from '@/app/components/storage-image';
 import {
   updateAppUserProfile,
   updateRegistrant,
@@ -39,13 +43,13 @@ export default function RegistrantEditForm({
   eventId,
 }: RegistrantEditFormProps) {
   const router = useRouter();
-  const [registrantState, registrantAction] = useFormState(
+  const [registrantState, registrantAction] = useActionState(
     updateRegistrant,
-    initialState
+    initialState,
   );
-  const [profileState, profileAction] = useFormState(
+  const [profileState, profileAction] = useActionState(
     updateAppUserProfile,
-    initialState
+    initialState,
   );
 
   useEffect(() => {
@@ -55,12 +59,71 @@ export default function RegistrantEditForm({
   }, [registrantState.ok, profileState.ok, router]);
 
   const profile = registrant.appUser?.profile ?? null;
+  const [profilePicture, setProfilePicture] = useState(
+    profile?.profilePicture ?? ''
+  );
+  const [uploadStatus, setUploadStatus] = useState<
+    'idle' | 'uploading' | 'error'
+  >('idle');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const previewValue = useMemo(() => profilePicture.trim(), [profilePicture]);
+
+  function isHeicFile(file: File) {
+    const lowerName = file.name.toLowerCase();
+    return (
+      file.type === 'image/heic' ||
+      file.type === 'image/heif' ||
+      lowerName.endsWith('.heic') ||
+      lowerName.endsWith('.heif')
+    );
+  }
+
+  async function handleProfilePictureUpload(file: File | null) {
+    if (!file || !profile) return;
+    setUploadStatus('uploading');
+    setUploadError(null);
+
+    try {
+      ensureAmplifyConfigured();
+      let uploadFile = file;
+      if (isHeicFile(file)) {
+        const converted = (await heic2any({
+          blob: file,
+          toType: 'image/jpeg',
+          quality: 0.9,
+        })) as Blob;
+        uploadFile = new File(
+          [converted],
+          file.name.replace(/\.(heic|heif)$/i, '.jpg'),
+          { type: 'image/jpeg' }
+        );
+      }
+
+      const ext = uploadFile.name.split('.').pop() || 'jpg';
+      const key = `profile-pictures/${profile.id}/${Date.now()}.${ext}`;
+      const result = await uploadData({
+        key,
+        data: uploadFile,
+        options: {
+          accessLevel: 'guest',
+          contentType: uploadFile.type || 'image/jpeg',
+        },
+      }).result;
+      setProfilePicture(result.key);
+      setUploadStatus('idle');
+    } catch (err) {
+      setUploadStatus('error');
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+    }
+  }
 
   return (
     <div className='space-y-6'>
       <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
         <div className='mb-6 flex items-center justify-between'>
-          <h2 className='text-xl font-bold text-slate-900'>Edit Registrant</h2>
+          <h2 className='text-xl font-bold text-slate-900'>
+            Edit Registration Details
+          </h2>
           {registrantState.message ? (
             <p
               className={`text-sm ${
@@ -295,6 +358,57 @@ export default function RegistrantEditForm({
             <input type='hidden' name='profileId' value={profile.id} />
             <input type='hidden' name='eventId' value={eventId} />
             <input type='hidden' name='registrantId' value={registrant.id} />
+
+            <div className='rounded-2xl border border-slate-100 bg-slate-50 p-5'>
+              <h3 className='mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                Profile Picture
+              </h3>
+              <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+                <div className='h-24 w-24 overflow-hidden rounded-2xl border border-slate-200 bg-white'>
+                  {previewValue ? (
+                    <StorageImage
+                      srcOrKey={previewValue}
+                      alt='Profile picture'
+                      className='h-full w-full object-cover'
+                      accessLevel='guest'
+                    />
+                  ) : null}
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Upload image
+                    <input
+                      type='file'
+                      accept='image/*,.heic,.heif'
+                      onChange={(e) => {
+                        void handleProfilePictureUpload(
+                          e.target.files?.[0] ?? null
+                        );
+                        e.currentTarget.value = '';
+                      }}
+                      disabled={uploadStatus === 'uploading'}
+                      className='mt-2 block w-full text-sm text-slate-600'
+                    />
+                  </label>
+                  {uploadStatus === 'uploading' ? (
+                    <div className='text-xs text-slate-500'>Uploading…</div>
+                  ) : null}
+                  {uploadStatus === 'error' && uploadError ? (
+                    <div className='text-xs text-rose-600'>{uploadError}</div>
+                  ) : null}
+                </div>
+              </div>
+              <label className='mt-4 block text-sm font-medium text-slate-700'>
+                Profile picture key or URL
+                <input
+                  name='profilePicture'
+                  value={profilePicture}
+                  onChange={(e) => setProfilePicture(e.target.value)}
+                  placeholder='Paste a URL or use upload'
+                  className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                />
+              </label>
+            </div>
 
             <div className='grid gap-4 md:grid-cols-2'>
               <label className='space-y-1 text-sm text-slate-700'>
