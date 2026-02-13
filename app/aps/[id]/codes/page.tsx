@@ -1,11 +1,44 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { requestGraphQL } from '@/lib/appsync';
+import CodesSection from '../codes-section';
+import { addCodeToAps, addCodesToAps, removeCodeFromAps } from '@/app/actions/aps';
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+type APSCodes = {
+  id: string;
+  year: string;
+  codes?: string[] | null;
+};
+
+const GET_APS_CODES = /* GraphQL */ `
+  query GetAPS($id: ID!) {
+    getAPS(id: $id) {
+      id
+      year
+      codes
+    }
+  }
+`;
+
+async function fetchApsCodes(id: string): Promise<APSCodes | null> {
+  const data = await requestGraphQL<{ getAPS?: APSCodes | null }>(
+    GET_APS_CODES,
+    { id }
+  );
+  return data.getAPS ?? null;
+}
+
 export default async function CodesPage({ params }: PageProps) {
   const { id: eventId } = await params;
+  const aps = await fetchApsCodes(eventId);
+
+  if (!aps) {
+    notFound();
+  }
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
@@ -15,9 +48,11 @@ export default async function CodesPage({ params }: PageProps) {
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
               Event Management
             </p>
-            <h1 className='text-4xl font-bold text-slate-900'>Codes</h1>
+            <h1 className='text-4xl font-bold text-slate-900'>
+              Codes for APS {aps.year}
+            </h1>
             <p className='text-slate-600'>
-              Placeholder page — we’ll move/manage event codes here later.
+              Create, edit, and remove discount codes for this event.
             </p>
           </div>
           <Link
@@ -28,16 +63,14 @@ export default async function CodesPage({ params }: PageProps) {
           </Link>
         </header>
 
-        <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-          <h2 className='text-xl font-bold text-slate-900'>Coming soon</h2>
-          <p className='mt-2 text-slate-600'>
-            We removed the codes block from the event overview to keep that page
-            focused. This is where we’ll build code management next.
-          </p>
-        </section>
+        <CodesSection
+          eventId={eventId}
+          codes={aps.codes ?? []}
+          onAddCode={addCodeToAps}
+          onAddCodes={addCodesToAps}
+          onRemoveCode={removeCodeFromAps}
+        />
       </main>
     </div>
   );
 }
-
-

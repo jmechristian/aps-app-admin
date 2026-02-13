@@ -6,6 +6,7 @@ type CodesSectionProps = {
   eventId: string;
   codes: string[];
   onAddCode: (id: string, code: string) => Promise<void>;
+  onAddCodes?: (id: string, codes: string[]) => Promise<void>;
   onRemoveCode: (id: string, code: string) => Promise<void>;
 };
 
@@ -13,6 +14,7 @@ export default function CodesSection({
   eventId,
   codes,
   onAddCode,
+  onAddCodes,
   onRemoveCode,
 }: CodesSectionProps) {
   const [newCode, setNewCode] = useState('');
@@ -23,20 +25,47 @@ export default function CodesSection({
     e.preventDefault();
     setError(null);
 
-    const codeToAdd = newCode.trim();
-    if (!codeToAdd) {
+    const normalizedInput = newCode
+      .replace(/\r/g, '\n')
+      .replace(/\n+/g, '\n')
+      .replace(/,\s*/g, '\n')
+      .replace(/\s+/g, ' ')
+      .replace(/([A-Za-z])\s+(\d)/g, '$1\n$2')
+      .replace(/([A-Za-z])(\d)/g, '$1\n$2')
+      .replace(/\n{2,}/g, '\n')
+      .trim();
+
+    const parsedCodes = normalizedInput
+      .split(/[\n]+/)
+      .map((code) => code.trim())
+      .filter(Boolean);
+    if (parsedCodes.length === 0) {
       setError('Please enter a code');
       return;
     }
 
-    if (codes.includes(codeToAdd)) {
-      setError('This code already exists');
-      return;
-    }
+    const uniqueCodes = Array.from(new Set(parsedCodes));
+    const duplicates = uniqueCodes.filter((code) => codes.includes(code));
+    const toAdd = uniqueCodes.filter((code) => !codes.includes(code));
 
     startTransition(async () => {
       try {
-        await onAddCode(eventId, codeToAdd);
+        if (toAdd.length === 0) {
+          setError(
+            duplicates.length > 0
+              ? 'All provided codes already exist'
+              : 'No valid codes to add'
+          );
+          return;
+        }
+
+        if (onAddCodes && toAdd.length > 1) {
+          await onAddCodes(eventId, toAdd);
+        } else {
+          for (const code of toAdd) {
+            await onAddCode(eventId, code);
+          }
+        }
         setNewCode('');
         setError(null);
       } catch (err) {
@@ -76,21 +105,21 @@ export default function CodesSection({
       </div>
 
       <form onSubmit={handleAddCode} className='mb-6'>
-        <div className='flex gap-3'>
-          <input
-            type='text'
+        <div className='flex flex-col gap-3 sm:flex-row'>
+          <textarea
             value={newCode}
             onChange={(e) => setNewCode(e.target.value)}
-            placeholder='Enter code (e.g., VIP, EARLY, PARTNER)'
+            placeholder='Enter one or more codes, separated by commas or new lines'
             disabled={isPending}
-            className='flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
+            rows={2}
+            className='flex-1 resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
           />
           <button
             type='submit'
             disabled={isPending || !newCode.trim()}
             className='inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0'
           >
-            {isPending ? 'Adding...' : '+ Add Code'}
+            {isPending ? 'Adding...' : '+ Add Codes'}
           </button>
         </div>
         {error && (

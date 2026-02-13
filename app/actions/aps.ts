@@ -160,6 +160,44 @@ export async function addCodeToAps(id: string, code: string) {
   }
 }
 
+export async function addCodesToAps(id: string, codes: string[]) {
+  try {
+    const normalized = codes.map((c) => c.trim()).filter(Boolean);
+    if (normalized.length === 0) {
+      throw new Error("No codes provided");
+    }
+
+    const data = await requestGraphQL<{
+      getAPS?: { year: string; codes?: string[] | null } | null;
+    }>(GET_APS_FOR_CODES, { id });
+    if (!data.getAPS) {
+      throw new Error("APS not found");
+    }
+
+    const currentCodes = data.getAPS.codes ?? [];
+    const existing = new Set(currentCodes);
+    const merged = [...currentCodes];
+    for (const code of normalized) {
+      if (!existing.has(code)) {
+        existing.add(code);
+        merged.push(code);
+      }
+    }
+
+    await requestGraphQL(UPDATE_APS, {
+      input: {
+        id,
+        year: data.getAPS.year,
+        codes: merged.length > 0 ? merged : null,
+      },
+    });
+    revalidatePath(`/aps/${id}`);
+  } catch (error) {
+    console.error("Add codes failed", error);
+    throw error;
+  }
+}
+
 export async function removeCodeFromAps(id: string, code: string) {
   try {
     // Fetch current APS to get existing codes and year
