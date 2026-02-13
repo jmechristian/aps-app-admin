@@ -25,20 +25,15 @@ export default function CodesSection({
     e.preventDefault();
     setError(null);
 
-    const normalizedInput = newCode
-      .replace(/\r/g, '\n')
-      .replace(/\n+/g, '\n')
-      .replace(/,\s*/g, '\n')
-      .replace(/\s+/g, ' ')
-      .replace(/([A-Za-z])\s+(\d)/g, '$1\n$2')
-      .replace(/([A-Za-z])(\d)/g, '$1\n$2')
-      .replace(/\n{2,}/g, '\n')
-      .trim();
-
-    const parsedCodes = normalizedInput
-      .split(/[\n]+/)
-      .map((code) => code.trim())
-      .filter(Boolean);
+    const normalizedInput = newCode.replace(/\r/g, '\n').trim();
+    const matchedCodes = normalizedInput.match(/[A-Za-z][A-Za-z\-]*\d+/g) ?? [];
+    const parsedCodes =
+      matchedCodes.length > 0
+        ? matchedCodes
+        : normalizedInput
+            .split(/[\n,]+/)
+            .map((code) => code.trim())
+            .filter(Boolean);
     if (parsedCodes.length === 0) {
       setError('Please enter a code');
       return;
