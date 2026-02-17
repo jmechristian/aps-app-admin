@@ -2,6 +2,7 @@
 
 import { requestGraphQL } from '@/lib/appsync';
 import {
+  deleteAPSSpeaker,
   deleteApsAppExhibitorDeal,
   deleteApsAppSessionQuestion,
   deleteApsAppUser,
@@ -12,6 +13,7 @@ import {
   deleteApsAppUserProfile,
   deleteApsDmMessage,
   deleteApsRegistrant,
+  deleteSessionSpeakers,
   deleteProfileAffiliate,
   deleteProfileEducation,
   deleteProfileInterest,
@@ -570,6 +572,41 @@ const LIST_DM_MESSAGES = /* GraphQL */ `
     $nextToken: String
   ) {
     listApsDmMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_APS_SPEAKERS = /* GraphQL */ `
+  query ListAPSSpeakers(
+    $filter: ModelAPSSpeakerFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listAPSSpeakers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        email
+      }
+      nextToken
+    }
+  }
+`;
+
+const SESSION_SPEAKERS_BY_SPEAKER_ID = /* GraphQL */ `
+  query SessionSpeakersByAPSSpeakerId(
+    $aPSSpeakerId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    sessionSpeakersByAPSSpeakerId(
+      aPSSpeakerId: $aPSSpeakerId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
       items {
         id
       }
@@ -1268,6 +1305,10 @@ function readStringArrayField(
   return list.length > 0 ? list : null;
 }
 
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
 async function listAllIds(
   query: string,
   responseKey: string,
@@ -1302,6 +1343,39 @@ async function listAllIds(
   } while (nextToken);
 
   return ids;
+}
+
+async function findSpeakerIdForRegistrant(
+  eventId: string,
+  email: string
+): Promise<string | null> {
+  let nextToken: string | null | undefined = null;
+  const target = normalizeEmail(email);
+
+  do {
+    const response: {
+      listAPSSpeakers?: {
+        items?: Array<{ id?: string | null; email?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(LIST_APS_SPEAKERS, {
+      filter: { eventId: { eq: eventId } },
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = response.listAPSSpeakers?.items ?? [];
+    for (const item of items) {
+      if (!item?.id || !item.email) continue;
+      if (normalizeEmail(item.email) === target) {
+        return item.id;
+      }
+    }
+
+    nextToken = response.listAPSSpeakers?.nextToken ?? null;
+  } while (nextToken);
+
+  return null;
 }
 
 async function deleteIds(
@@ -1566,6 +1640,25 @@ export async function deleteRegistrantCascade({
         { senderUserId: { eq: appUserId } }
       );
       await deleteIds(messageIds, deleteApsDmMessage, 'dm message');
+    }
+
+    const speakerId = await findSpeakerIdForRegistrant(
+      registrant.apsID,
+      registrant.email
+    );
+    if (speakerId) {
+      const sessionSpeakerIds = await listAllIds(
+        SESSION_SPEAKERS_BY_SPEAKER_ID,
+        'sessionSpeakersByAPSSpeakerId',
+        { aPSSpeakerId: speakerId }
+      );
+      await deleteIds(
+        sessionSpeakerIds,
+        deleteSessionSpeakers,
+        'session speaker'
+      );
+
+      await requestGraphQL(deleteAPSSpeaker, { input: { id: speakerId } });
     }
 
     if (profileId) {

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createAps, deleteAps, updateAps } from './actions/aps';
+import { createAps, updateAps } from './actions/aps';
 import { requestGraphQL } from '@/lib/appsync';
 
 export const dynamic = 'force-dynamic';
@@ -199,18 +199,6 @@ export default async function Home() {
                         </form>
                       </details>
 
-                      <form
-                        action={deleteAps}
-                        className='flex w-full justify-end sm:w-auto'
-                      >
-                        <input type='hidden' name='id' value={event.id} />
-                        <button
-                          type='submit'
-                          className='inline-flex items-center justify-center rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500'
-                        >
-                          Delete
-                        </button>
-                      </form>
                     </div>
                   </div>
                 </article>
