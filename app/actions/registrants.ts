@@ -1345,6 +1345,38 @@ async function listAllIds(
   return ids;
 }
 
+async function listSessionSpeakerIdsBySpeakerId(
+  speakerId: string
+): Promise<string[]> {
+  const ids: string[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response: {
+      sessionSpeakersByAPSSpeakerId?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(SESSION_SPEAKERS_BY_SPEAKER_ID, {
+      aPSSpeakerId: speakerId,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = response.sessionSpeakersByAPSSpeakerId?.items ?? [];
+    for (const item of items) {
+      if (item?.id) ids.push(item.id);
+    }
+    nextToken = response.sessionSpeakersByAPSSpeakerId?.nextToken ?? null;
+
+    if (nextToken) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  } while (nextToken);
+
+  return ids;
+}
+
 async function findSpeakerIdForRegistrant(
   eventId: string,
   email: string
@@ -1647,11 +1679,8 @@ export async function deleteRegistrantCascade({
       registrant.email
     );
     if (speakerId) {
-      const sessionSpeakerIds = await listAllIds(
-        SESSION_SPEAKERS_BY_SPEAKER_ID,
-        'sessionSpeakersByAPSSpeakerId',
-        { aPSSpeakerId: speakerId }
-      );
+      const sessionSpeakerIds =
+        await listSessionSpeakerIdsBySpeakerId(speakerId);
       await deleteIds(
         sessionSpeakerIds,
         deleteSessionSpeakers,
