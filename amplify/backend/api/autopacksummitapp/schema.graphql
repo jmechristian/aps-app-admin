@@ -53,7 +53,7 @@ type APS
   Registrants: [ApsRegistrant] @hasMany(indexName: "byAPS")
   Sponsors: [ApsSponsor] @hasMany(indexName: "byEvent")
   Speakers: [APSSpeaker] @hasMany(indexName: "byEvent")
-  Companies: [APSCompany] @hasMany(indexName: "byEvent")
+  companies: [APSCompany] @manyToMany(relationName: "APSCompanyEvents")
   photos: [ApsAppUserPhoto] @hasMany(indexName: "byEvent")
   exhibitors: [ApsAppExhibitorProfile] @hasMany(indexName: "byEvent")
   exhibitorPromotions: [ApsAppExhibitorPromotion] @hasMany(indexName: "byEvent")
@@ -167,6 +167,26 @@ type ApsRegistrant
 
   notes: [ApsAppUserNote] @hasMany(indexName: "byRegistrant", fields: ["id"])
   qrCode: String
+}
+
+# Temporary credentials for bulk welcome emails
+type ApsTempCredential
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
+  id: ID!
+  apsID: ID! @index(name: "byAPS", sortKeyFields: ["createdAt"])
+  registrantId: ID! @index(name: "byRegistrant", sortKeyFields: ["createdAt"])
+  email: String!
+  tempPasswordCiphertext: String!
+  tempPasswordIv: String!
+  tempPasswordTag: String!
+  expiresAt: AWSTimestamp
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 # App User (for mobile app)
@@ -480,8 +500,7 @@ type APSCompany
   zip: String
   country: String
   logo: String
-  eventId: ID! @index(name: "byEvent")
-  event: APS! @belongsTo(fields: ["eventId"])
+  events: [APS] @manyToMany(relationName: "APSCompanyEvents")
   registrants: [ApsRegistrant] @hasMany(indexName: "byCompany")
   sponsorId: ID
   sponsor: ApsSponsor @hasOne(fields: ["sponsorId"])

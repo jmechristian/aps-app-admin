@@ -8,6 +8,69 @@ type GeneratedSubscription<InputType, OutputType> = string & {
   __generatedSubscriptionOutput: OutputType;
 };
 
+export const onCreateApsTempCredential = /* GraphQL */ `subscription OnCreateApsTempCredential(
+  $filter: ModelSubscriptionApsTempCredentialFilterInput
+) {
+  onCreateApsTempCredential(filter: $filter) {
+    id
+    apsID
+    registrantId
+    email
+    tempPasswordCiphertext
+    tempPasswordIv
+    tempPasswordTag
+    expiresAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsTempCredentialSubscriptionVariables,
+  APITypes.OnCreateApsTempCredentialSubscription
+>;
+export const onUpdateApsTempCredential = /* GraphQL */ `subscription OnUpdateApsTempCredential(
+  $filter: ModelSubscriptionApsTempCredentialFilterInput
+) {
+  onUpdateApsTempCredential(filter: $filter) {
+    id
+    apsID
+    registrantId
+    email
+    tempPasswordCiphertext
+    tempPasswordIv
+    tempPasswordTag
+    expiresAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsTempCredentialSubscriptionVariables,
+  APITypes.OnUpdateApsTempCredentialSubscription
+>;
+export const onDeleteApsTempCredential = /* GraphQL */ `subscription OnDeleteApsTempCredential(
+  $filter: ModelSubscriptionApsTempCredentialFilterInput
+) {
+  onDeleteApsTempCredential(filter: $filter) {
+    id
+    apsID
+    registrantId
+    email
+    tempPasswordCiphertext
+    tempPasswordIv
+    tempPasswordTag
+    expiresAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsTempCredentialSubscriptionVariables,
+  APITypes.OnDeleteApsTempCredentialSubscription
+>;
 export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsAppUserNote(
   $filter: ModelSubscriptionApsAppUserNoteFilterInput
   $owner: String
@@ -160,12 +223,10 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     createdAt
@@ -330,12 +391,10 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     createdAt
@@ -500,12 +559,10 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     createdAt
@@ -1096,7 +1153,7 @@ export const onCreateAPS = /* GraphQL */ `subscription OnCreateAPS($filter: Mode
       nextToken
       __typename
     }
-    Companies {
+    companies {
       nextToken
       __typename
     }
@@ -1170,7 +1227,7 @@ export const onUpdateAPS = /* GraphQL */ `subscription OnUpdateAPS($filter: Mode
       nextToken
       __typename
     }
-    Companies {
+    companies {
       nextToken
       __typename
     }
@@ -1244,7 +1301,7 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
       nextToken
       __typename
     }
-    Companies {
+    companies {
       nextToken
       __typename
     }
@@ -1487,12 +1544,10 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     jobTitle
@@ -1624,12 +1679,10 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     jobTitle
@@ -1761,12 +1814,10 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     jobTitle
@@ -3703,12 +3754,10 @@ export const onCreateApsSponsor = /* GraphQL */ `subscription OnCreateApsSponsor
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     eventId
@@ -3781,12 +3830,10 @@ export const onUpdateApsSponsor = /* GraphQL */ `subscription OnUpdateApsSponsor
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     eventId
@@ -3859,12 +3906,10 @@ export const onDeleteApsSponsor = /* GraphQL */ `subscription OnDeleteApsSponsor
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     eventId
@@ -3934,22 +3979,8 @@ export const onCreateAPSCompany = /* GraphQL */ `subscription OnCreateAPSCompany
     zip
     country
     logo
-    eventId
-    event {
-      id
-      year
-      codes
-      startDate
-      endDate
-      location
-      address
-      city
-      state
-      zip
-      website
-      createdAt
-      updatedAt
-      aPSAgendaId
+    events {
+      nextToken
       __typename
     }
     registrants {
@@ -3995,7 +4026,6 @@ export const onCreateAPSCompany = /* GraphQL */ `subscription OnCreateAPSCompany
     }
     createdAt
     updatedAt
-    aPSCompaniesId
     __typename
   }
 }
@@ -4020,22 +4050,8 @@ export const onUpdateAPSCompany = /* GraphQL */ `subscription OnUpdateAPSCompany
     zip
     country
     logo
-    eventId
-    event {
-      id
-      year
-      codes
-      startDate
-      endDate
-      location
-      address
-      city
-      state
-      zip
-      website
-      createdAt
-      updatedAt
-      aPSAgendaId
+    events {
+      nextToken
       __typename
     }
     registrants {
@@ -4081,7 +4097,6 @@ export const onUpdateAPSCompany = /* GraphQL */ `subscription OnUpdateAPSCompany
     }
     createdAt
     updatedAt
-    aPSCompaniesId
     __typename
   }
 }
@@ -4106,22 +4121,8 @@ export const onDeleteAPSCompany = /* GraphQL */ `subscription OnDeleteAPSCompany
     zip
     country
     logo
-    eventId
-    event {
-      id
-      year
-      codes
-      startDate
-      endDate
-      location
-      address
-      city
-      state
-      zip
-      website
-      createdAt
-      updatedAt
-      aPSAgendaId
+    events {
+      nextToken
       __typename
     }
     registrants {
@@ -4167,7 +4168,6 @@ export const onDeleteAPSCompany = /* GraphQL */ `subscription OnDeleteAPSCompany
     }
     createdAt
     updatedAt
-    aPSCompaniesId
     __typename
   }
 }
@@ -4195,12 +4195,10 @@ export const onCreateAPSCompanyContact = /* GraphQL */ `subscription OnCreateAPS
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     name
@@ -4236,12 +4234,10 @@ export const onUpdateAPSCompanyContact = /* GraphQL */ `subscription OnUpdateAPS
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     name
@@ -4277,12 +4273,10 @@ export const onDeleteAPSCompanyContact = /* GraphQL */ `subscription OnDeleteAPS
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     name
@@ -4318,12 +4312,10 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     sponsorId
@@ -4412,12 +4404,10 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     sponsorId
@@ -4506,12 +4496,10 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     sponsorId
@@ -5698,6 +5686,165 @@ export const onDeleteApsSeatingChartRegistrant = /* GraphQL */ `subscription OnD
 ` as GeneratedSubscription<
   APITypes.OnDeleteApsSeatingChartRegistrantSubscriptionVariables,
   APITypes.OnDeleteApsSeatingChartRegistrantSubscription
+>;
+export const onCreateAPSCompanyEvents = /* GraphQL */ `subscription OnCreateAPSCompanyEvents(
+  $filter: ModelSubscriptionAPSCompanyEventsFilterInput
+) {
+  onCreateAPSCompanyEvents(filter: $filter) {
+    id
+    aPSId
+    aPSCompanyId
+    aPS {
+      id
+      year
+      codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    aPSCompany {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      sponsorId
+      exhibitorProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateAPSCompanyEventsSubscriptionVariables,
+  APITypes.OnCreateAPSCompanyEventsSubscription
+>;
+export const onUpdateAPSCompanyEvents = /* GraphQL */ `subscription OnUpdateAPSCompanyEvents(
+  $filter: ModelSubscriptionAPSCompanyEventsFilterInput
+) {
+  onUpdateAPSCompanyEvents(filter: $filter) {
+    id
+    aPSId
+    aPSCompanyId
+    aPS {
+      id
+      year
+      codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    aPSCompany {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      sponsorId
+      exhibitorProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateAPSCompanyEventsSubscriptionVariables,
+  APITypes.OnUpdateAPSCompanyEventsSubscription
+>;
+export const onDeleteAPSCompanyEvents = /* GraphQL */ `subscription OnDeleteAPSCompanyEvents(
+  $filter: ModelSubscriptionAPSCompanyEventsFilterInput
+) {
+  onDeleteAPSCompanyEvents(filter: $filter) {
+    id
+    aPSId
+    aPSCompanyId
+    aPS {
+      id
+      year
+      codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    aPSCompany {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      sponsorId
+      exhibitorProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteAPSCompanyEventsSubscriptionVariables,
+  APITypes.OnDeleteAPSCompanyEventsSubscription
 >;
 export const onCreateSessionSpeakers = /* GraphQL */ `subscription OnCreateSessionSpeakers(
   $filter: ModelSubscriptionSessionSpeakersFilterInput

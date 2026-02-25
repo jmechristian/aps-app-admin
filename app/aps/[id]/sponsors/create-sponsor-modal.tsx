@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import CompanyPicker, { type CompanyPickerItem } from '../company-picker';
+import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
 import { ensureAmplifyConfigured, graphqlClient } from '@/src/amplify-client';
 import {
   createApsAppExhibitorProfile,
@@ -78,7 +79,6 @@ export default function CreateSponsorModal({
             name,
             email,
             type: newCompanyType,
-            eventId,
           },
         },
         authMode: 'userPool',
@@ -88,6 +88,11 @@ export default function CreateSponsorModal({
         | { id: string; name: string }
         | undefined;
       if (!created?.id) throw new Error('Failed to create company');
+
+      await ensureCompanyAttachedToEvent({
+        eventId,
+        companyId: created.id,
+      });
 
       const nextCompany: CompanyPickerItem = {
         id: created.id,
@@ -120,6 +125,11 @@ export default function CreateSponsorModal({
     try {
       ensureAmplifyConfigured();
       await fetchAuthSession();
+
+      await ensureCompanyAttachedToEvent({
+        eventId,
+        companyId,
+      });
 
       const existingSponsors = await graphqlClient.graphql({
         query: apsSponsorsByCompanyId,

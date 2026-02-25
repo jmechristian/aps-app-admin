@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-type CategoryKey = 'exhibitors' | 'sponsors' | 'speakers' | 'agenda';
+type CategoryKey = 'exhibitors' | 'sponsors' | 'speakers' | 'agenda' | 'companies';
 
 const CATEGORY_LABELS: Record<CategoryKey, string> = {
+  companies: 'Companies',
   exhibitors: 'Exhibitors',
   sponsors: 'Sponsors',
   speakers: 'Speakers',
@@ -68,6 +69,11 @@ export default function CategoryPageShell({
         </header>
 
         <nav className='flex flex-wrap gap-3'>
+          <CategoryNavLink
+            eventId={eventId}
+            category='companies'
+            activeCategory={activeCategory}
+          />
           <CategoryNavLink
             eventId={eventId}
             category='exhibitors'

@@ -8,6 +8,56 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
+export const getApsTempCredential = /* GraphQL */ `query GetApsTempCredential($id: ID!) {
+  getApsTempCredential(id: $id) {
+    id
+    apsID
+    registrantId
+    email
+    tempPasswordCiphertext
+    tempPasswordIv
+    tempPasswordTag
+    expiresAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApsTempCredentialQueryVariables,
+  APITypes.GetApsTempCredentialQuery
+>;
+export const listApsTempCredentials = /* GraphQL */ `query ListApsTempCredentials(
+  $filter: ModelApsTempCredentialFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApsTempCredentials(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      apsID
+      registrantId
+      email
+      tempPasswordCiphertext
+      tempPasswordIv
+      tempPasswordTag
+      expiresAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApsTempCredentialsQueryVariables,
+  APITypes.ListApsTempCredentialsQuery
+>;
 export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!) {
   getApsAppUserNote(id: $id) {
     id
@@ -157,12 +207,10 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     createdAt
@@ -563,6 +611,80 @@ export const listApsPushTokens = /* GraphQL */ `query ListApsPushTokens(
 ` as GeneratedQuery<
   APITypes.ListApsPushTokensQueryVariables,
   APITypes.ListApsPushTokensQuery
+>;
+export const apsTempCredentialsByApsIDAndCreatedAt = /* GraphQL */ `query ApsTempCredentialsByApsIDAndCreatedAt(
+  $apsID: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsTempCredentialFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsTempCredentialsByApsIDAndCreatedAt(
+    apsID: $apsID
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      apsID
+      registrantId
+      email
+      tempPasswordCiphertext
+      tempPasswordIv
+      tempPasswordTag
+      expiresAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsTempCredentialsByApsIDAndCreatedAtQueryVariables,
+  APITypes.ApsTempCredentialsByApsIDAndCreatedAtQuery
+>;
+export const apsTempCredentialsByRegistrantIdAndCreatedAt = /* GraphQL */ `query ApsTempCredentialsByRegistrantIdAndCreatedAt(
+  $registrantId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsTempCredentialFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsTempCredentialsByRegistrantIdAndCreatedAt(
+    registrantId: $registrantId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      apsID
+      registrantId
+      email
+      tempPasswordCiphertext
+      tempPasswordIv
+      tempPasswordTag
+      expiresAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsTempCredentialsByRegistrantIdAndCreatedAtQueryVariables,
+  APITypes.ApsTempCredentialsByRegistrantIdAndCreatedAtQuery
 >;
 export const apsAppUserNotesByUserId = /* GraphQL */ `query ApsAppUserNotesByUserId(
   $userId: ID!
@@ -1182,7 +1304,7 @@ export const getAPS = /* GraphQL */ `query GetAPS($id: ID!) {
       nextToken
       __typename
     }
-    Companies {
+    companies {
       nextToken
       __typename
     }
@@ -1415,12 +1537,10 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     jobTitle
@@ -3181,12 +3301,10 @@ export const getApsSponsor = /* GraphQL */ `query GetApsSponsor($id: ID!) {
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     eventId
@@ -3345,22 +3463,8 @@ export const getAPSCompany = /* GraphQL */ `query GetAPSCompany($id: ID!) {
     zip
     country
     logo
-    eventId
-    event {
-      id
-      year
-      codes
-      startDate
-      endDate
-      location
-      address
-      city
-      state
-      zip
-      website
-      createdAt
-      updatedAt
-      aPSAgendaId
+    events {
+      nextToken
       __typename
     }
     registrants {
@@ -3406,7 +3510,6 @@ export const getAPSCompany = /* GraphQL */ `query GetAPSCompany($id: ID!) {
     }
     createdAt
     updatedAt
-    aPSCompaniesId
     __typename
   }
 }
@@ -3434,12 +3537,10 @@ export const listAPSCompanies = /* GraphQL */ `query ListAPSCompanies(
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     nextToken
@@ -3449,50 +3550,6 @@ export const listAPSCompanies = /* GraphQL */ `query ListAPSCompanies(
 ` as GeneratedQuery<
   APITypes.ListAPSCompaniesQueryVariables,
   APITypes.ListAPSCompaniesQuery
->;
-export const aPSCompaniesByEventId = /* GraphQL */ `query APSCompaniesByEventId(
-  $eventId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelAPSCompanyFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  aPSCompaniesByEventId(
-    eventId: $eventId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      name
-      email
-      type
-      description
-      website
-      phone
-      address
-      city
-      state
-      zip
-      country
-      logo
-      eventId
-      sponsorId
-      exhibitorProfileId
-      createdAt
-      updatedAt
-      aPSCompaniesId
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.APSCompaniesByEventIdQueryVariables,
-  APITypes.APSCompaniesByEventIdQuery
 >;
 export const getAPSCompanyContact = /* GraphQL */ `query GetAPSCompanyContact($id: ID!) {
   getAPSCompanyContact(id: $id) {
@@ -3512,12 +3569,10 @@ export const getAPSCompanyContact = /* GraphQL */ `query GetAPSCompanyContact($i
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     name
@@ -3615,12 +3670,10 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
       zip
       country
       logo
-      eventId
       sponsorId
       exhibitorProfileId
       createdAt
       updatedAt
-      aPSCompaniesId
       __typename
     }
     sponsorId
@@ -4836,6 +4889,139 @@ export const apsSeatingChartRegistrantsByRegistrantID = /* GraphQL */ `query Aps
 ` as GeneratedQuery<
   APITypes.ApsSeatingChartRegistrantsByRegistrantIDQueryVariables,
   APITypes.ApsSeatingChartRegistrantsByRegistrantIDQuery
+>;
+export const getAPSCompanyEvents = /* GraphQL */ `query GetAPSCompanyEvents($id: ID!) {
+  getAPSCompanyEvents(id: $id) {
+    id
+    aPSId
+    aPSCompanyId
+    aPS {
+      id
+      year
+      codes
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    aPSCompany {
+      id
+      name
+      email
+      type
+      description
+      website
+      phone
+      address
+      city
+      state
+      zip
+      country
+      logo
+      sponsorId
+      exhibitorProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetAPSCompanyEventsQueryVariables,
+  APITypes.GetAPSCompanyEventsQuery
+>;
+export const listAPSCompanyEvents = /* GraphQL */ `query ListAPSCompanyEvents(
+  $filter: ModelAPSCompanyEventsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listAPSCompanyEvents(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      aPSId
+      aPSCompanyId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListAPSCompanyEventsQueryVariables,
+  APITypes.ListAPSCompanyEventsQuery
+>;
+export const aPSCompanyEventsByAPSId = /* GraphQL */ `query APSCompanyEventsByAPSId(
+  $aPSId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelAPSCompanyEventsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  aPSCompanyEventsByAPSId(
+    aPSId: $aPSId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      aPSId
+      aPSCompanyId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.APSCompanyEventsByAPSIdQueryVariables,
+  APITypes.APSCompanyEventsByAPSIdQuery
+>;
+export const aPSCompanyEventsByAPSCompanyId = /* GraphQL */ `query APSCompanyEventsByAPSCompanyId(
+  $aPSCompanyId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelAPSCompanyEventsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  aPSCompanyEventsByAPSCompanyId(
+    aPSCompanyId: $aPSCompanyId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      aPSId
+      aPSCompanyId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.APSCompanyEventsByAPSCompanyIdQueryVariables,
+  APITypes.APSCompanyEventsByAPSCompanyIdQuery
 >;
 export const getSessionSpeakers = /* GraphQL */ `query GetSessionSpeakers($id: ID!) {
   getSessionSpeakers(id: $id) {

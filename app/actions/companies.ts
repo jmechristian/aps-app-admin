@@ -7,14 +7,6 @@ import { join } from "path";
 
 type CompanyType = "OEMTIER1" | "SOLUTIONPROVIDER" | "SPONSOR" | null;
 
-type CompanyInput = {
-  id: string;
-  name: string;
-  email: string;
-  type: CompanyType;
-  eventId: string;
-};
-
 type Company = {
   id: string;
   name: string;
@@ -29,7 +21,6 @@ type Company = {
   zip?: string | null;
   country?: string | null;
   logo?: string | null;
-  eventId: string;
 };
 
 type CompanyContact = {
@@ -42,6 +33,8 @@ type CompanyContact = {
   createdAt?: string | null;
   updatedAt?: string | null;
 };
+
+type ActionState = { ok: boolean; message: string; removedCount?: number; skippedWithEvents?: number; processed?: number };
 
 const CREATE_COMPANY = /* GraphQL */ `
   mutation CreateAPSCompany($input: CreateAPSCompanyInput!) {
@@ -70,7 +63,6 @@ const UPDATE_COMPANY = /* GraphQL */ `
       zip
       country
       logo
-      eventId
     }
   }
 `;
@@ -91,7 +83,117 @@ const GET_COMPANY = /* GraphQL */ `
       zip
       country
       logo
-      eventId
+    }
+  }
+`;
+
+const LIST_COMPANIES = /* GraphQL */ `
+  query ListAPSCompanies(
+    $filter: ModelAPSCompanyFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listAPSCompanies(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        name
+        email
+        type
+        website
+        phone
+        logo
+      }
+      nextToken
+    }
+  }
+`;
+
+const GET_APS_COMPANIES = /* GraphQL */ `
+  query GetAPS($id: ID!) {
+    getAPS(id: $id) {
+      id
+      year
+      companies(limit: 1000) {
+        items {
+          id
+          aPSCompany {
+            id
+            name
+            email
+            type
+            website
+            phone
+            logo
+          }
+        }
+        nextToken
+      }
+    }
+  }
+`;
+
+const CREATE_APS_COMPANY_EVENT = /* GraphQL */ `
+  mutation CreateAPSCompanyEvents($input: CreateAPSCompanyEventsInput!) {
+    createAPSCompanyEvents(input: $input) {
+      id
+    }
+  }
+`;
+
+const APS_COMPANY_EVENTS_BY_APS_ID = /* GraphQL */ `
+  query APSCompanyEventsByAPSId(
+    $aPSId: ID!
+    $filter: ModelAPSCompanyEventsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    aPSCompanyEventsByAPSId(
+      aPSId: $aPSId
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        aPSCompanyId
+        aPSId
+      }
+      nextToken
+    }
+  }
+`;
+
+const APS_COMPANY_EVENTS_BY_COMPANY = /* GraphQL */ `
+  query APSCompanyEventsByAPSCompanyId(
+    $aPSCompanyId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    aPSCompanyEventsByAPSCompanyId(
+      aPSCompanyId: $aPSCompanyId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const DELETE_APS_COMPANY_EVENT = /* GraphQL */ `
+  mutation DeleteAPSCompanyEvents($input: DeleteAPSCompanyEventsInput!) {
+    deleteAPSCompanyEvents(input: $input) {
+      id
+    }
+  }
+`;
+
+const DELETE_COMPANY = /* GraphQL */ `
+  mutation DeleteAPSCompany($input: DeleteAPSCompanyInput!) {
+    deleteAPSCompany(input: $input) {
+      id
     }
   }
 `;
@@ -216,6 +318,305 @@ export async function fetchCompanyById(companyId: string): Promise<Company> {
   return data.getAPSCompany;
 }
 
+export async function fetchCompaniesByEventId(
+  eventId: string
+): Promise<Company[]> {
+  const data = await requestGraphQL<{
+    getAPS?: {
+      companies?: {
+        items?: Array<{ aPSCompany?: Company | null } | null> | null;
+      } | null;
+    } | null;
+  }>(GET_APS_COMPANIES, { id: eventId });
+
+  const items = data.getAPS?.companies?.items ?? [];
+  return items.map((item) => item?.aPSCompany).filter(Boolean) as Company[];
+}
+
+export async function fetchAllCompanies(): Promise<Company[]> {
+  const allCompanies: Company[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const data: {
+      listAPSCompanies?: {
+        items?: Company[];
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(LIST_COMPANIES, {
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = data.listAPSCompanies?.items || [];
+    allCompanies.push(...items.filter(Boolean));
+    nextToken = data.listAPSCompanies?.nextToken;
+
+    if (nextToken) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  } while (nextToken);
+
+  return allCompanies;
+}
+
+async function companyHasEvents(companyId: string): Promise<boolean> {
+  let nextToken: string | null | undefined = null;
+  do {
+    const data: {
+      aPSCompanyEventsByAPSCompanyId?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(APS_COMPANY_EVENTS_BY_COMPANY, {
+      aPSCompanyId: companyId,
+      limit: 1,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = data.aPSCompanyEventsByAPSCompanyId?.items ?? [];
+    if (items.length > 0) return true;
+    nextToken = data.aPSCompanyEventsByAPSCompanyId?.nextToken ?? null;
+  } while (nextToken);
+
+  return false;
+}
+
+function normalizeCompanyName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+export async function dedupeCompaniesByName(
+  _prevState: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  try {
+    const companies = await fetchAllCompanies();
+    const groups = new Map<string, Company[]>();
+
+    for (const company of companies) {
+      const key = normalizeCompanyName(company.name || '');
+      if (!key) continue;
+      const bucket = groups.get(key) ?? [];
+      bucket.push(company);
+      groups.set(key, bucket);
+    }
+
+    let removedCount = 0;
+    let skippedWithEvents = 0;
+    let processed = 0;
+
+    for (const bucket of groups.values()) {
+      if (bucket.length < 2) continue;
+      processed += 1;
+
+      const withAt = bucket.filter((company) =>
+        (company.email ?? '').includes('@')
+      );
+      const keep = (withAt[0] ?? bucket[0]) as Company;
+
+      for (const company of bucket) {
+        if (company.id === keep.id) continue;
+        const hasEvents = await companyHasEvents(company.id);
+        if (hasEvents) {
+          skippedWithEvents += 1;
+          continue;
+        }
+        const formData = new FormData();
+        formData.set('id', company.id);
+        await deleteCompany(formData);
+        removedCount += 1;
+      }
+    }
+
+    revalidatePath('/companies');
+
+    return {
+      ok: true,
+      message: `Removed ${removedCount} duplicate compan${
+        removedCount === 1 ? 'y' : 'ies'
+      }. Skipped ${skippedWithEvents} with events.`,
+      removedCount,
+      skippedWithEvents,
+      processed,
+    };
+  } catch (error) {
+    console.error('Failed to dedupe companies:', error);
+    return { ok: false, message: 'Failed to dedupe companies.' };
+  }
+}
+
+export async function attachCompanyToEvent(formData: FormData) {
+  const eventId = formData.get("eventId")?.toString();
+  const companyId = formData.get("companyId")?.toString();
+
+  if (!eventId) throw new Error("Missing event id");
+  if (!companyId) throw new Error("Missing company id");
+
+  await requestGraphQL(CREATE_APS_COMPANY_EVENT, {
+    input: {
+      aPSId: eventId,
+      aPSCompanyId: companyId,
+    },
+  });
+
+  revalidatePath(`/aps/${eventId}/companies`);
+  revalidatePath(`/aps/${eventId}/sponsors`);
+}
+
+export async function ensureCompanyAttachedToEvent(input: {
+  eventId: string;
+  companyId: string;
+  jwt?: string | null;
+}) {
+  const { eventId, companyId, jwt } = input;
+  if (!eventId) throw new Error("Missing event id");
+  if (!companyId) throw new Error("Missing company id");
+
+  const data: {
+    aPSCompanyEventsByAPSId?: {
+      items?: Array<{ id?: string | null; aPSCompanyId?: string | null } | null>;
+    } | null;
+  } = await requestGraphQL(
+    APS_COMPANY_EVENTS_BY_APS_ID,
+    {
+      aPSId: eventId,
+      filter: { aPSCompanyId: { eq: companyId } },
+      limit: 1,
+    },
+    jwt ? { authMode: "userPools", jwt } : undefined
+  );
+
+  const existing = data.aPSCompanyEventsByAPSId?.items?.find(
+    (item) => item?.aPSCompanyId === companyId
+  );
+  if (existing?.id) return;
+
+  await requestGraphQL(
+    CREATE_APS_COMPANY_EVENT,
+    {
+      input: {
+        aPSId: eventId,
+        aPSCompanyId: companyId,
+      },
+    },
+    jwt ? { authMode: "userPools", jwt } : undefined
+  );
+
+  revalidatePath(`/aps/${eventId}/companies`);
+  revalidatePath(`/aps/${eventId}/sponsors`);
+}
+
+export async function detachCompanyFromEvent(formData: FormData) {
+  const eventId = formData.get("eventId")?.toString();
+  const companyId = formData.get("companyId")?.toString();
+
+  if (!eventId) throw new Error("Missing event id");
+  if (!companyId) throw new Error("Missing company id");
+
+  let nextToken: string | null | undefined = null;
+  do {
+    const data: {
+      aPSCompanyEventsByAPSId?: {
+        items?: Array<{ id?: string | null; aPSCompanyId?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(APS_COMPANY_EVENTS_BY_APS_ID, {
+      aPSId: eventId,
+      filter: { aPSCompanyId: { eq: companyId } },
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = data.aPSCompanyEventsByAPSId?.items ?? [];
+    for (const item of items) {
+      if (!item?.id) continue;
+      await requestGraphQL(DELETE_APS_COMPANY_EVENT, { input: { id: item.id } });
+    }
+    nextToken = data.aPSCompanyEventsByAPSId?.nextToken ?? null;
+  } while (nextToken);
+
+  revalidatePath(`/aps/${eventId}/companies`);
+  revalidatePath(`/aps/${eventId}/sponsors`);
+}
+
+export async function createCompany(formData: FormData) {
+  const eventId = formData.get("eventId")?.toString();
+  const name = formData.get("name")?.toString().trim() || "";
+  const email = formData.get("email")?.toString().trim() || "";
+  const type = parseCompanyType(formData.get("type")?.toString() || "");
+
+  if (!name) throw new Error("Company name is required");
+  if (!email) throw new Error("Company email is required");
+
+  const result = await requestGraphQL<{ createAPSCompany?: { id: string } | null }>(
+    CREATE_COMPANY,
+    {
+      input: {
+        name,
+        email,
+        type,
+      },
+    }
+  );
+
+  if (!result.createAPSCompany?.id) {
+    throw new Error("Failed to create company");
+  }
+
+  if (eventId) {
+    revalidatePath(`/aps/${eventId}/companies`);
+    revalidatePath(`/aps/${eventId}/sponsors`);
+  }
+}
+
+export async function deleteCompany(formData: FormData) {
+  const id = formData.get("id")?.toString();
+  const eventId = formData.get("eventId")?.toString();
+
+  if (!id) throw new Error("Missing company id");
+
+  const contacts = await fetchCompanyContacts(id);
+  if (contacts.length > 0) {
+    await Promise.all(
+      contacts.map((contact) =>
+        requestGraphQL(DELETE_COMPANY_CONTACT, { input: { id: contact.id } })
+      )
+    );
+  }
+
+  let nextToken: string | null | undefined = null;
+  do {
+    const data: {
+      aPSCompanyEventsByAPSCompanyId?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(APS_COMPANY_EVENTS_BY_COMPANY, {
+      aPSCompanyId: id,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = data.aPSCompanyEventsByAPSCompanyId?.items ?? [];
+    for (const item of items) {
+      if (!item?.id) continue;
+      await requestGraphQL(DELETE_APS_COMPANY_EVENT, { input: { id: item.id } });
+    }
+    nextToken = data.aPSCompanyEventsByAPSCompanyId?.nextToken ?? null;
+  } while (nextToken);
+
+  await requestGraphQL(DELETE_COMPANY, { input: { id } });
+  if (eventId) {
+    revalidatePath(`/aps/${eventId}/companies`);
+    revalidatePath(`/aps/${eventId}/sponsors`);
+  }
+  revalidatePath("/companies");
+}
+
 export async function updateCompany(formData: FormData) {
   const id = formData.get("id")?.toString();
   const eventId = formData.get("eventId")?.toString();
@@ -224,13 +625,11 @@ export async function updateCompany(formData: FormData) {
   const type = parseCompanyType(formData.get("type")?.toString() || "");
 
   if (!id) throw new Error("Missing company id");
-  if (!eventId) throw new Error("Missing event id");
   if (!name) throw new Error("Company name is required");
   if (!email) throw new Error("Company email is required");
 
   const input = {
     id,
-    eventId,
     name,
     email,
     type,
@@ -246,11 +645,17 @@ export async function updateCompany(formData: FormData) {
   };
 
   await requestGraphQL(UPDATE_COMPANY, { input });
-  revalidatePath(`/aps/${eventId}/companies/${id}`);
-  revalidatePath(`/aps/${eventId}/sponsors`);
+  if (eventId) {
+    revalidatePath(`/aps/${eventId}/companies/${id}`);
+    revalidatePath(`/aps/${eventId}/sponsors`);
+  }
+  if (id) {
+    revalidatePath(`/companies/${id}`);
+  }
+  revalidatePath("/companies");
 }
 
-type ActionState = { ok: boolean; message: string };
+// reuse ActionState definition above
 
 export async function updateCompanyLogo(
   _prevState: ActionState,
@@ -425,15 +830,21 @@ export async function importCompaniesFromCSV(eventId: string): Promise<{
               return;
             }
 
-            const input: CompanyInput = {
-              id,
-              name,
-              email,
-              type,
-              eventId,
-            };
+            await requestGraphQL(CREATE_COMPANY, {
+              input: {
+                id,
+                name,
+                email,
+                type,
+              },
+            });
 
-            await requestGraphQL(CREATE_COMPANY, { input });
+            await requestGraphQL(CREATE_APS_COMPANY_EVENT, {
+              input: {
+                aPSId: eventId,
+                aPSCompanyId: id,
+              },
+            });
             success++;
           } catch (error) {
             const fields = parseCSVLine(line);

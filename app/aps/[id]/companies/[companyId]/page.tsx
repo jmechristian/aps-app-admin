@@ -19,16 +19,12 @@ export default async function CompanyDetailPage({ params }: PageProps) {
   const company = await fetchCompanyById(companyId);
   const contacts = await fetchCompanyContacts(companyId);
 
-  if (company.eventId !== eventId) {
-    throw new Error('Company does not belong to this event');
-  }
-
   return (
     <CategoryPageShell
       eventId={eventId}
       title='Edit Company'
       description='Update APS company details for this event.'
-      activeCategory='sponsors'
+      activeCategory='companies'
     >
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
@@ -37,16 +33,16 @@ export default async function CompanyDetailPage({ params }: PageProps) {
             <p className='mt-1 text-sm text-slate-600'>Company ID: {company.id}</p>
           </div>
           <Link
-            href={`/aps/${eventId}/sponsors`}
+            href={`/aps/${eventId}/companies`}
             className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
           >
-            ← Back to sponsors
+            ← Back to companies
           </Link>
         </div>
 
         <form action={updateCompany} className='mt-6 grid gap-6'>
           <input type='hidden' name='id' value={company.id} />
-          <input type='hidden' name='eventId' value={company.eventId} />
+          <input type='hidden' name='eventId' value={eventId} />
 
           <div className='grid gap-4 md:grid-cols-2'>
             <label className='text-sm font-medium text-slate-700'>
@@ -174,7 +170,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
             className='mt-4 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2'
           >
             <input type='hidden' name='companyId' value={company.id} />
-            <input type='hidden' name='eventId' value={company.eventId} />
+            <input type='hidden' name='eventId' value={eventId} />
             <label className='text-sm font-medium text-slate-700'>
               Contact name
               <input
@@ -230,7 +226,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                 >
                   <input type='hidden' name='id' value={contact.id} />
                   <input type='hidden' name='companyId' value={company.id} />
-                  <input type='hidden' name='eventId' value={company.eventId} />
+                  <input type='hidden' name='eventId' value={eventId} />
                   <label className='text-sm font-medium text-slate-700'>
                     Contact name
                     <input

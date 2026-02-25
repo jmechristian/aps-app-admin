@@ -121,6 +121,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <Link className="hover:text-slate-900" href="/">
                 Events
               </Link>
+              <Link className="hover:text-slate-900" href="/companies">
+                Companies
+              </Link>
               <Link className="hover:text-slate-900" href="/announcements">
                 Announcements
               </Link>

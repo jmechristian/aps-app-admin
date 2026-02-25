@@ -109,7 +109,7 @@ export type APS = {
   Registrants?: ModelApsRegistrantConnection | null,
   Sponsors?: ModelApsSponsorConnection | null,
   Speakers?: ModelAPSSpeakerConnection | null,
-  Companies?: ModelAPSCompanyConnection | null,
+  companies?: ModelAPSCompanyEventsConnection | null,
   photos?: ModelApsAppUserPhotoConnection | null,
   exhibitors?: ModelApsAppExhibitorProfileConnection | null,
   exhibitorPromotions?: ModelApsAppExhibitorPromotionConnection | null,
@@ -277,8 +277,7 @@ export type APSCompany = {
   zip?: string | null,
   country?: string | null,
   logo?: string | null,
-  eventId: string,
-  event: APS,
+  events?: ModelAPSCompanyEventsConnection | null,
   registrants?: ModelApsRegistrantConnection | null,
   sponsorId?: string | null,
   sponsor?: ApsSponsor | null,
@@ -288,7 +287,6 @@ export type APSCompany = {
   contacts?: ModelAPSCompanyContactConnection | null,
   createdAt: string,
   updatedAt: string,
-  aPSCompaniesId?: string | null,
 };
 
 export enum CompanyType {
@@ -297,6 +295,23 @@ export enum CompanyType {
   SPONSOR = "SPONSOR",
 }
 
+
+export type ModelAPSCompanyEventsConnection = {
+  __typename: "ModelAPSCompanyEventsConnection",
+  items:  Array<APSCompanyEvents | null >,
+  nextToken?: string | null,
+};
+
+export type APSCompanyEvents = {
+  __typename: "APSCompanyEvents",
+  id: string,
+  aPSId: string,
+  aPSCompanyId: string,
+  aPS: APS,
+  aPSCompany: APSCompany,
+  createdAt: string,
+  updatedAt: string,
+};
 
 export type ModelApsRegistrantConnection = {
   __typename: "ModelApsRegistrantConnection",
@@ -814,12 +829,6 @@ export type ModelAPSSpeakerConnection = {
   nextToken?: string | null,
 };
 
-export type ModelAPSCompanyConnection = {
-  __typename: "ModelAPSCompanyConnection",
-  items:  Array<APSCompany | null >,
-  nextToken?: string | null,
-};
-
 export type ModelApsAppExhibitorProfileConnection = {
   __typename: "ModelApsAppExhibitorProfileConnection",
   items:  Array<ApsAppExhibitorProfile | null >,
@@ -1160,6 +1169,65 @@ export type UpdateApsRegistrantInput = {
 };
 
 export type DeleteApsRegistrantInput = {
+  id: string,
+};
+
+export type CreateApsTempCredentialInput = {
+  id?: string | null,
+  apsID: string,
+  registrantId: string,
+  email: string,
+  tempPasswordCiphertext: string,
+  tempPasswordIv: string,
+  tempPasswordTag: string,
+  expiresAt?: number | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type ModelApsTempCredentialConditionInput = {
+  apsID?: ModelIDInput | null,
+  registrantId?: ModelIDInput | null,
+  email?: ModelStringInput | null,
+  tempPasswordCiphertext?: ModelStringInput | null,
+  tempPasswordIv?: ModelStringInput | null,
+  tempPasswordTag?: ModelStringInput | null,
+  expiresAt?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsTempCredentialConditionInput | null > | null,
+  or?: Array< ModelApsTempCredentialConditionInput | null > | null,
+  not?: ModelApsTempCredentialConditionInput | null,
+};
+
+export type ApsTempCredential = {
+  __typename: "ApsTempCredential",
+  id: string,
+  apsID: string,
+  registrantId: string,
+  email: string,
+  tempPasswordCiphertext: string,
+  tempPasswordIv: string,
+  tempPasswordTag: string,
+  expiresAt?: number | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type UpdateApsTempCredentialInput = {
+  id: string,
+  apsID?: string | null,
+  registrantId?: string | null,
+  email?: string | null,
+  tempPasswordCiphertext?: string | null,
+  tempPasswordIv?: string | null,
+  tempPasswordTag?: string | null,
+  expiresAt?: number | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteApsTempCredentialInput = {
   id: string,
 };
 
@@ -1715,10 +1783,8 @@ export type CreateAPSCompanyInput = {
   zip?: string | null,
   country?: string | null,
   logo?: string | null,
-  eventId: string,
   sponsorId?: string | null,
   exhibitorProfileId?: string | null,
-  aPSCompaniesId?: string | null,
 };
 
 export type ModelAPSCompanyConditionInput = {
@@ -1734,7 +1800,6 @@ export type ModelAPSCompanyConditionInput = {
   zip?: ModelStringInput | null,
   country?: ModelStringInput | null,
   logo?: ModelStringInput | null,
-  eventId?: ModelIDInput | null,
   sponsorId?: ModelIDInput | null,
   exhibitorProfileId?: ModelIDInput | null,
   and?: Array< ModelAPSCompanyConditionInput | null > | null,
@@ -1742,7 +1807,6 @@ export type ModelAPSCompanyConditionInput = {
   not?: ModelAPSCompanyConditionInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
-  aPSCompaniesId?: ModelIDInput | null,
 };
 
 export type ModelCompanyTypeInput = {
@@ -1764,10 +1828,8 @@ export type UpdateAPSCompanyInput = {
   zip?: string | null,
   country?: string | null,
   logo?: string | null,
-  eventId?: string | null,
   sponsorId?: string | null,
   exhibitorProfileId?: string | null,
-  aPSCompaniesId?: string | null,
 };
 
 export type DeleteAPSCompanyInput = {
@@ -2483,6 +2545,32 @@ export type DeleteApsPushTokenInput = {
   id: string,
 };
 
+export type CreateAPSCompanyEventsInput = {
+  id?: string | null,
+  aPSId: string,
+  aPSCompanyId: string,
+};
+
+export type ModelAPSCompanyEventsConditionInput = {
+  aPSId?: ModelIDInput | null,
+  aPSCompanyId?: ModelIDInput | null,
+  and?: Array< ModelAPSCompanyEventsConditionInput | null > | null,
+  or?: Array< ModelAPSCompanyEventsConditionInput | null > | null,
+  not?: ModelAPSCompanyEventsConditionInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type UpdateAPSCompanyEventsInput = {
+  id: string,
+  aPSId?: string | null,
+  aPSCompanyId?: string | null,
+};
+
+export type DeleteAPSCompanyEventsInput = {
+  id: string,
+};
+
 export type CreateSessionSpeakersInput = {
   id?: string | null,
   apsAppSessionId: string,
@@ -2533,6 +2621,28 @@ export type UpdateSessionSponsorsInput = {
 
 export type DeleteSessionSponsorsInput = {
   id: string,
+};
+
+export type ModelApsTempCredentialFilterInput = {
+  id?: ModelIDInput | null,
+  apsID?: ModelIDInput | null,
+  registrantId?: ModelIDInput | null,
+  email?: ModelStringInput | null,
+  tempPasswordCiphertext?: ModelStringInput | null,
+  tempPasswordIv?: ModelStringInput | null,
+  tempPasswordTag?: ModelStringInput | null,
+  expiresAt?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsTempCredentialFilterInput | null > | null,
+  or?: Array< ModelApsTempCredentialFilterInput | null > | null,
+  not?: ModelApsTempCredentialFilterInput | null,
+};
+
+export type ModelApsTempCredentialConnection = {
+  __typename: "ModelApsTempCredentialConnection",
+  items:  Array<ApsTempCredential | null >,
+  nextToken?: string | null,
 };
 
 export type ModelApsAppUserNoteFilterInput = {
@@ -2685,12 +2795,6 @@ export type ModelApsPushTokenConnection = {
   nextToken?: string | null,
 };
 
-export enum ModelSortDirection {
-  ASC = "ASC",
-  DESC = "DESC",
-}
-
-
 export type ModelStringKeyConditionInput = {
   eq?: string | null,
   le?: string | null,
@@ -2700,6 +2804,12 @@ export type ModelStringKeyConditionInput = {
   between?: Array< string | null > | null,
   beginsWith?: string | null,
 };
+
+export enum ModelSortDirection {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
 
 export type ModelIDKeyConditionInput = {
   eq?: string | null,
@@ -3055,7 +3165,6 @@ export type ModelAPSCompanyFilterInput = {
   zip?: ModelStringInput | null,
   country?: ModelStringInput | null,
   logo?: ModelStringInput | null,
-  eventId?: ModelIDInput | null,
   sponsorId?: ModelIDInput | null,
   exhibitorProfileId?: ModelIDInput | null,
   createdAt?: ModelStringInput | null,
@@ -3063,7 +3172,12 @@ export type ModelAPSCompanyFilterInput = {
   and?: Array< ModelAPSCompanyFilterInput | null > | null,
   or?: Array< ModelAPSCompanyFilterInput | null > | null,
   not?: ModelAPSCompanyFilterInput | null,
-  aPSCompaniesId?: ModelIDInput | null,
+};
+
+export type ModelAPSCompanyConnection = {
+  __typename: "ModelAPSCompanyConnection",
+  items:  Array<APSCompany | null >,
+  nextToken?: string | null,
 };
 
 export type ModelAPSCompanyContactFilterInput = {
@@ -3217,6 +3331,17 @@ export type ModelApsSeatingChartRegistrantFilterInput = {
   apsSeatingChartRegistrantsId?: ModelIDInput | null,
 };
 
+export type ModelAPSCompanyEventsFilterInput = {
+  id?: ModelIDInput | null,
+  aPSId?: ModelIDInput | null,
+  aPSCompanyId?: ModelIDInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelAPSCompanyEventsFilterInput | null > | null,
+  or?: Array< ModelAPSCompanyEventsFilterInput | null > | null,
+  not?: ModelAPSCompanyEventsFilterInput | null,
+};
+
 export type ModelSessionSpeakersFilterInput = {
   id?: ModelIDInput | null,
   apsAppSessionId?: ModelIDInput | null,
@@ -3239,20 +3364,19 @@ export type ModelSessionSponsorsFilterInput = {
   not?: ModelSessionSponsorsFilterInput | null,
 };
 
-export type ModelSubscriptionApsAppUserNoteFilterInput = {
+export type ModelSubscriptionApsTempCredentialFilterInput = {
   id?: ModelSubscriptionIDInput | null,
-  userId?: ModelSubscriptionIDInput | null,
-  note?: ModelSubscriptionStringInput | null,
-  sessionId?: ModelSubscriptionIDInput | null,
-  exhibitorId?: ModelSubscriptionIDInput | null,
+  apsID?: ModelSubscriptionIDInput | null,
   registrantId?: ModelSubscriptionIDInput | null,
-  profileId?: ModelSubscriptionIDInput | null,
-  companyId?: ModelSubscriptionIDInput | null,
+  email?: ModelSubscriptionStringInput | null,
+  tempPasswordCiphertext?: ModelSubscriptionStringInput | null,
+  tempPasswordIv?: ModelSubscriptionStringInput | null,
+  tempPasswordTag?: ModelSubscriptionStringInput | null,
+  expiresAt?: ModelSubscriptionIntInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
-  and?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
-  or?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
-  owner?: ModelStringInput | null,
+  and?: Array< ModelSubscriptionApsTempCredentialFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsTempCredentialFilterInput | null > | null,
 };
 
 export type ModelSubscriptionIDInput = {
@@ -3283,6 +3407,34 @@ export type ModelSubscriptionStringInput = {
   beginsWith?: string | null,
   in?: Array< string | null > | null,
   notIn?: Array< string | null > | null,
+};
+
+export type ModelSubscriptionIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  in?: Array< number | null > | null,
+  notIn?: Array< number | null > | null,
+};
+
+export type ModelSubscriptionApsAppUserNoteFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  userId?: ModelSubscriptionIDInput | null,
+  note?: ModelSubscriptionStringInput | null,
+  sessionId?: ModelSubscriptionIDInput | null,
+  exhibitorId?: ModelSubscriptionIDInput | null,
+  registrantId?: ModelSubscriptionIDInput | null,
+  profileId?: ModelSubscriptionIDInput | null,
+  companyId?: ModelSubscriptionIDInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
+  owner?: ModelStringInput | null,
 };
 
 export type ModelSubscriptionApsContactRequestFilterInput = {
@@ -3330,18 +3482,6 @@ export type ModelSubscriptionApsDmParticipantStateFilterInput = {
   and?: Array< ModelSubscriptionApsDmParticipantStateFilterInput | null > | null,
   or?: Array< ModelSubscriptionApsDmParticipantStateFilterInput | null > | null,
   userId?: ModelStringInput | null,
-};
-
-export type ModelSubscriptionIntInput = {
-  ne?: number | null,
-  eq?: number | null,
-  le?: number | null,
-  lt?: number | null,
-  ge?: number | null,
-  gt?: number | null,
-  between?: Array< number | null > | null,
-  in?: Array< number | null > | null,
-  notIn?: Array< number | null > | null,
 };
 
 export type ModelSubscriptionApsDmMessageFilterInput = {
@@ -3411,7 +3551,6 @@ export type ModelSubscriptionAPSFilterInput = {
   aPSRegistrantsId?: ModelSubscriptionIDInput | null,
   aPSSponsorsId?: ModelSubscriptionIDInput | null,
   aPSSpeakersId?: ModelSubscriptionIDInput | null,
-  aPSCompaniesId?: ModelSubscriptionIDInput | null,
   aPSPhotosId?: ModelSubscriptionIDInput | null,
   aPSExhibitorsId?: ModelSubscriptionIDInput | null,
   aPSExhibitorPromotionsId?: ModelSubscriptionIDInput | null,
@@ -3703,7 +3842,6 @@ export type ModelSubscriptionAPSCompanyFilterInput = {
   zip?: ModelSubscriptionStringInput | null,
   country?: ModelSubscriptionStringInput | null,
   logo?: ModelSubscriptionStringInput | null,
-  eventId?: ModelSubscriptionIDInput | null,
   sponsorId?: ModelSubscriptionIDInput | null,
   exhibitorProfileId?: ModelSubscriptionIDInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
@@ -3842,6 +3980,16 @@ export type ModelSubscriptionApsSeatingChartRegistrantFilterInput = {
   or?: Array< ModelSubscriptionApsSeatingChartRegistrantFilterInput | null > | null,
 };
 
+export type ModelSubscriptionAPSCompanyEventsFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  aPSId?: ModelSubscriptionIDInput | null,
+  aPSCompanyId?: ModelSubscriptionIDInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionAPSCompanyEventsFilterInput | null > | null,
+  or?: Array< ModelSubscriptionAPSCompanyEventsFilterInput | null > | null,
+};
+
 export type ModelSubscriptionSessionSpeakersFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   apsAppSessionId?: ModelSubscriptionIDInput | null,
@@ -3900,8 +4048,8 @@ export type CreateAPSMutation = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -3976,8 +4124,8 @@ export type UpdateAPSMutation = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -4052,8 +4200,8 @@ export type DeleteAPSMutation = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -4308,12 +4456,10 @@ export type CreateApsRegistrantMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -4445,12 +4591,10 @@ export type UpdateApsRegistrantMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -4582,12 +4726,10 @@ export type DeleteApsRegistrantMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -4669,6 +4811,69 @@ export type DeleteApsRegistrantMutation = {
     aPSRegistrantsId?: string | null,
     aPSCompanyRegistrantsId?: string | null,
     apsRegistrantSeatingChartRegistrantId?: string | null,
+  } | null,
+};
+
+export type CreateApsTempCredentialMutationVariables = {
+  input: CreateApsTempCredentialInput,
+  condition?: ModelApsTempCredentialConditionInput | null,
+};
+
+export type CreateApsTempCredentialMutation = {
+  createApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
+export type UpdateApsTempCredentialMutationVariables = {
+  input: UpdateApsTempCredentialInput,
+  condition?: ModelApsTempCredentialConditionInput | null,
+};
+
+export type UpdateApsTempCredentialMutation = {
+  updateApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
+export type DeleteApsTempCredentialMutationVariables = {
+  input: DeleteApsTempCredentialInput,
+  condition?: ModelApsTempCredentialConditionInput | null,
+};
+
+export type DeleteApsTempCredentialMutation = {
+  deleteApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
   } | null,
 };
 
@@ -5371,12 +5576,10 @@ export type CreateApsAppUserNoteMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -5540,12 +5743,10 @@ export type UpdateApsAppUserNoteMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -5709,12 +5910,10 @@ export type DeleteApsAppUserNoteMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -7031,12 +7230,10 @@ export type CreateApsSponsorMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -7109,12 +7306,10 @@ export type UpdateApsSponsorMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -7187,12 +7382,10 @@ export type DeleteApsSponsorMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -7261,24 +7454,10 @@ export type CreateAPSCompanyMutation = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -7322,7 +7501,6 @@ export type CreateAPSCompanyMutation = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -7347,24 +7525,10 @@ export type UpdateAPSCompanyMutation = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -7408,7 +7572,6 @@ export type UpdateAPSCompanyMutation = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -7433,24 +7596,10 @@ export type DeleteAPSCompanyMutation = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -7494,7 +7643,6 @@ export type DeleteAPSCompanyMutation = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -7523,12 +7671,10 @@ export type CreateAPSCompanyContactMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -7564,12 +7710,10 @@ export type UpdateAPSCompanyContactMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -7605,12 +7749,10 @@ export type DeleteAPSCompanyContactMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -7646,12 +7788,10 @@ export type CreateApsAppExhibitorProfileMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -7740,12 +7880,10 @@ export type UpdateApsAppExhibitorProfileMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -7834,12 +7972,10 @@ export type DeleteApsAppExhibitorProfileMutation = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -9565,6 +9701,165 @@ export type DeleteApsPushTokenMutation = {
   } | null,
 };
 
+export type CreateAPSCompanyEventsMutationVariables = {
+  input: CreateAPSCompanyEventsInput,
+  condition?: ModelAPSCompanyEventsConditionInput | null,
+};
+
+export type CreateAPSCompanyEventsMutation = {
+  createAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateAPSCompanyEventsMutationVariables = {
+  input: UpdateAPSCompanyEventsInput,
+  condition?: ModelAPSCompanyEventsConditionInput | null,
+};
+
+export type UpdateAPSCompanyEventsMutation = {
+  updateAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteAPSCompanyEventsMutationVariables = {
+  input: DeleteAPSCompanyEventsInput,
+  condition?: ModelAPSCompanyEventsConditionInput | null,
+};
+
+export type DeleteAPSCompanyEventsMutation = {
+  deleteAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
 export type CreateSessionSpeakersMutationVariables = {
   input: CreateSessionSpeakersInput,
   condition?: ModelSessionSpeakersConditionInput | null,
@@ -9841,6 +10136,52 @@ export type DeleteSessionSponsorsMutation = {
   } | null,
 };
 
+export type GetApsTempCredentialQueryVariables = {
+  id: string,
+};
+
+export type GetApsTempCredentialQuery = {
+  getApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
+export type ListApsTempCredentialsQueryVariables = {
+  filter?: ModelApsTempCredentialFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsTempCredentialsQuery = {
+  listApsTempCredentials?:  {
+    __typename: "ModelApsTempCredentialConnection",
+    items:  Array< {
+      __typename: "ApsTempCredential",
+      id: string,
+      apsID: string,
+      registrantId: string,
+      email: string,
+      tempPasswordCiphertext: string,
+      tempPasswordIv: string,
+      tempPasswordTag: string,
+      expiresAt?: number | null,
+      createdAt?: string | null,
+      updatedAt?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type GetApsAppUserNoteQueryVariables = {
   id: string,
 };
@@ -9996,12 +10337,10 @@ export type GetApsAppUserNoteQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -10376,6 +10715,64 @@ export type ListApsPushTokensQuery = {
       platform?: string | null,
       updatedAt: string,
       createdAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsTempCredentialsByApsIDAndCreatedAtQueryVariables = {
+  apsID: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsTempCredentialFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsTempCredentialsByApsIDAndCreatedAtQuery = {
+  apsTempCredentialsByApsIDAndCreatedAt?:  {
+    __typename: "ModelApsTempCredentialConnection",
+    items:  Array< {
+      __typename: "ApsTempCredential",
+      id: string,
+      apsID: string,
+      registrantId: string,
+      email: string,
+      tempPasswordCiphertext: string,
+      tempPasswordIv: string,
+      tempPasswordTag: string,
+      expiresAt?: number | null,
+      createdAt?: string | null,
+      updatedAt?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsTempCredentialsByRegistrantIdAndCreatedAtQueryVariables = {
+  registrantId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsTempCredentialFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsTempCredentialsByRegistrantIdAndCreatedAtQuery = {
+  apsTempCredentialsByRegistrantIdAndCreatedAt?:  {
+    __typename: "ModelApsTempCredentialConnection",
+    items:  Array< {
+      __typename: "ApsTempCredential",
+      id: string,
+      apsID: string,
+      registrantId: string,
+      email: string,
+      tempPasswordCiphertext: string,
+      tempPasswordIv: string,
+      tempPasswordTag: string,
+      expiresAt?: number | null,
+      createdAt?: string | null,
+      updatedAt?: string | null,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -10884,8 +11281,8 @@ export type GetAPSQuery = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -11121,12 +11518,10 @@ export type GetApsRegistrantQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -12756,12 +13151,10 @@ export type GetApsSponsorQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -12905,24 +13298,10 @@ export type GetAPSCompanyQuery = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -12966,7 +13345,6 @@ export type GetAPSCompanyQuery = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -12994,49 +13372,10 @@ export type ListAPSCompaniesQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
-    } | null >,
-    nextToken?: string | null,
-  } | null,
-};
-
-export type APSCompaniesByEventIdQueryVariables = {
-  eventId: string,
-  sortDirection?: ModelSortDirection | null,
-  filter?: ModelAPSCompanyFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type APSCompaniesByEventIdQuery = {
-  aPSCompaniesByEventId?:  {
-    __typename: "ModelAPSCompanyConnection",
-    items:  Array< {
-      __typename: "APSCompany",
-      id: string,
-      name: string,
-      email: string,
-      type?: CompanyType | null,
-      description?: string | null,
-      website?: string | null,
-      phone?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      country?: string | null,
-      logo?: string | null,
-      eventId: string,
-      sponsorId?: string | null,
-      exhibitorProfileId?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -13066,12 +13405,10 @@ export type GetAPSCompanyContactQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -13157,12 +13494,10 @@ export type GetApsAppExhibitorProfileQuery = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -14244,6 +14579,125 @@ export type ApsSeatingChartRegistrantsByRegistrantIDQuery = {
   } | null,
 };
 
+export type GetAPSCompanyEventsQueryVariables = {
+  id: string,
+};
+
+export type GetAPSCompanyEventsQuery = {
+  getAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListAPSCompanyEventsQueryVariables = {
+  filter?: ModelAPSCompanyEventsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListAPSCompanyEventsQuery = {
+  listAPSCompanyEvents?:  {
+    __typename: "ModelAPSCompanyEventsConnection",
+    items:  Array< {
+      __typename: "APSCompanyEvents",
+      id: string,
+      aPSId: string,
+      aPSCompanyId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type APSCompanyEventsByAPSIdQueryVariables = {
+  aPSId: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelAPSCompanyEventsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type APSCompanyEventsByAPSIdQuery = {
+  aPSCompanyEventsByAPSId?:  {
+    __typename: "ModelAPSCompanyEventsConnection",
+    items:  Array< {
+      __typename: "APSCompanyEvents",
+      id: string,
+      aPSId: string,
+      aPSCompanyId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type APSCompanyEventsByAPSCompanyIdQueryVariables = {
+  aPSCompanyId: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelAPSCompanyEventsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type APSCompanyEventsByAPSCompanyIdQuery = {
+  aPSCompanyEventsByAPSCompanyId?:  {
+    __typename: "ModelAPSCompanyEventsConnection",
+    items:  Array< {
+      __typename: "APSCompanyEvents",
+      id: string,
+      aPSId: string,
+      aPSCompanyId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type GetSessionSpeakersQueryVariables = {
   id: string,
 };
@@ -14468,6 +14922,66 @@ export type SessionSponsorsByApsSponsorIdQuery = {
   } | null,
 };
 
+export type OnCreateApsTempCredentialSubscriptionVariables = {
+  filter?: ModelSubscriptionApsTempCredentialFilterInput | null,
+};
+
+export type OnCreateApsTempCredentialSubscription = {
+  onCreateApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
+export type OnUpdateApsTempCredentialSubscriptionVariables = {
+  filter?: ModelSubscriptionApsTempCredentialFilterInput | null,
+};
+
+export type OnUpdateApsTempCredentialSubscription = {
+  onUpdateApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
+export type OnDeleteApsTempCredentialSubscriptionVariables = {
+  filter?: ModelSubscriptionApsTempCredentialFilterInput | null,
+};
+
+export type OnDeleteApsTempCredentialSubscription = {
+  onDeleteApsTempCredential?:  {
+    __typename: "ApsTempCredential",
+    id: string,
+    apsID: string,
+    registrantId: string,
+    email: string,
+    tempPasswordCiphertext: string,
+    tempPasswordIv: string,
+    tempPasswordTag: string,
+    expiresAt?: number | null,
+    createdAt?: string | null,
+    updatedAt?: string | null,
+  } | null,
+};
+
 export type OnCreateApsAppUserNoteSubscriptionVariables = {
   filter?: ModelSubscriptionApsAppUserNoteFilterInput | null,
   owner?: string | null,
@@ -14624,12 +15138,10 @@ export type OnCreateApsAppUserNoteSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -14793,12 +15305,10 @@ export type OnUpdateApsAppUserNoteSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -14962,12 +15472,10 @@ export type OnDeleteApsAppUserNoteSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     createdAt: string,
     updatedAt: string,
@@ -15537,8 +16045,8 @@ export type OnCreateAPSSubscription = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -15612,8 +16120,8 @@ export type OnUpdateAPSSubscription = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -15687,8 +16195,8 @@ export type OnDeleteAPSSubscription = {
       __typename: "ModelAPSSpeakerConnection",
       nextToken?: string | null,
     } | null,
-    Companies?:  {
-      __typename: "ModelAPSCompanyConnection",
+    companies?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
       nextToken?: string | null,
     } | null,
     photos?:  {
@@ -15936,12 +16444,10 @@ export type OnCreateApsRegistrantSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -16072,12 +16578,10 @@ export type OnUpdateApsRegistrantSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -16208,12 +16712,10 @@ export type OnDeleteApsRegistrantSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     } | null,
     jobTitle?: string | null,
     attendeeType: RegistrantType,
@@ -18116,12 +18618,10 @@ export type OnCreateApsSponsorSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -18193,12 +18693,10 @@ export type OnUpdateApsSponsorSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -18270,12 +18768,10 @@ export type OnDeleteApsSponsorSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     eventId: string,
     event:  {
@@ -18343,24 +18839,10 @@ export type OnCreateAPSCompanySubscription = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -18404,7 +18886,6 @@ export type OnCreateAPSCompanySubscription = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -18428,24 +18909,10 @@ export type OnUpdateAPSCompanySubscription = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -18489,7 +18956,6 @@ export type OnUpdateAPSCompanySubscription = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -18513,24 +18979,10 @@ export type OnDeleteAPSCompanySubscription = {
     zip?: string | null,
     country?: string | null,
     logo?: string | null,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      codes?: Array< string | null > | null,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
+    events?:  {
+      __typename: "ModelAPSCompanyEventsConnection",
+      nextToken?: string | null,
+    } | null,
     registrants?:  {
       __typename: "ModelApsRegistrantConnection",
       nextToken?: string | null,
@@ -18574,7 +19026,6 @@ export type OnDeleteAPSCompanySubscription = {
     } | null,
     createdAt: string,
     updatedAt: string,
-    aPSCompaniesId?: string | null,
   } | null,
 };
 
@@ -18602,12 +19053,10 @@ export type OnCreateAPSCompanyContactSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -18642,12 +19091,10 @@ export type OnUpdateAPSCompanyContactSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -18682,12 +19129,10 @@ export type OnDeleteAPSCompanyContactSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     name?: string | null,
     email: string,
@@ -18722,12 +19167,10 @@ export type OnCreateApsAppExhibitorProfileSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -18815,12 +19258,10 @@ export type OnUpdateApsAppExhibitorProfileSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -18908,12 +19349,10 @@ export type OnDeleteApsAppExhibitorProfileSubscription = {
       zip?: string | null,
       country?: string | null,
       logo?: string | null,
-      eventId: string,
       sponsorId?: string | null,
       exhibitorProfileId?: string | null,
       createdAt: string,
       updatedAt: string,
-      aPSCompaniesId?: string | null,
     },
     sponsorId?: string | null,
     sponsor?:  {
@@ -20078,6 +20517,162 @@ export type OnDeleteApsSeatingChartRegistrantSubscription = {
     createdAt: string,
     updatedAt: string,
     apsSeatingChartRegistrantsId?: string | null,
+  } | null,
+};
+
+export type OnCreateAPSCompanyEventsSubscriptionVariables = {
+  filter?: ModelSubscriptionAPSCompanyEventsFilterInput | null,
+};
+
+export type OnCreateAPSCompanyEventsSubscription = {
+  onCreateAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateAPSCompanyEventsSubscriptionVariables = {
+  filter?: ModelSubscriptionAPSCompanyEventsFilterInput | null,
+};
+
+export type OnUpdateAPSCompanyEventsSubscription = {
+  onUpdateAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteAPSCompanyEventsSubscriptionVariables = {
+  filter?: ModelSubscriptionAPSCompanyEventsFilterInput | null,
+};
+
+export type OnDeleteAPSCompanyEventsSubscription = {
+  onDeleteAPSCompanyEvents?:  {
+    __typename: "APSCompanyEvents",
+    id: string,
+    aPSId: string,
+    aPSCompanyId: string,
+    aPS:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      codes?: Array< string | null > | null,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    aPSCompany:  {
+      __typename: "APSCompany",
+      id: string,
+      name: string,
+      email: string,
+      type?: CompanyType | null,
+      description?: string | null,
+      website?: string | null,
+      phone?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      country?: string | null,
+      logo?: string | null,
+      sponsorId?: string | null,
+      exhibitorProfileId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };
 

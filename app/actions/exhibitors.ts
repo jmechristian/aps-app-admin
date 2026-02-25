@@ -1,6 +1,7 @@
 'use server';
 
 import { requestGraphQL } from '@/lib/appsync';
+import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
 
 const EXHIBITORS_BY_COMPANY = /* GraphQL */ `
   query ApsAppExhibitorProfilesByCompanyId(
@@ -63,6 +64,11 @@ export async function createExhibitorProfile(input: {
   if (existing.apsAppExhibitorProfilesByCompanyId?.items?.length) {
     throw new Error('This company already has an exhibitor profile.');
   }
+
+  await ensureCompanyAttachedToEvent({
+    eventId: input.eventId,
+    companyId: input.companyId,
+  });
 
   const data = await requestGraphQL<{
     createApsAppExhibitorProfile?: { id: string; eventId: string; companyId: string } | null;

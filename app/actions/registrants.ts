@@ -1,6 +1,7 @@
 'use server';
 
 import { requestGraphQL } from '@/lib/appsync';
+import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
 import {
   deleteAPSSpeaker,
   deleteApsAppExhibitorDeal,
@@ -20,16 +21,19 @@ import {
 } from '@/src/graphql/mutations';
 import {
   AdminCreateUserCommand,
+  AdminDeleteUserCommand,
   AdminGetUserCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { revalidatePath } from 'next/cache';
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 type CognitoAttr = { Name?: string; Value?: string };
 
 async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
   sub: string;
   username: string;
+  tempPassword: string | null;
 }> {
   const region =
     process.env.AWS_REGION ||
@@ -53,9 +57,7 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
 
   const client = new CognitoIdentityProviderClient({ region });
   const username = email.trim().toLowerCase();
-  const suppressInvite =
-    process.env.APS_SUPPRESS_COGNITO_INVITES === 'true' ||
-    process.env.NEXT_PUBLIC_APS_SUPPRESS_COGNITO_INVITES === 'true';
+  const suppressInvite = true;
 
   const tempPassword = suppressInvite
     ? `Aps!${Math.random().toString(36).slice(2)}${Math.random()
@@ -82,7 +84,7 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
     const attrs = (created.User?.Attributes ?? []) as CognitoAttr[];
     const sub = attrs.find((a: CognitoAttr) => a.Name === 'sub')?.Value;
     if (!sub) throw new Error('Cognito AdminCreateUser did not return sub');
-    return { sub, username };
+    return { sub, username, tempPassword: tempPassword ?? null };
   } catch (e: unknown) {
     // If user already exists, fetch their sub and proceed idempotently.
     const errName =
@@ -102,9 +104,115 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
         (a: CognitoAttr) => a.Name === 'sub'
       )?.Value;
       if (!sub) throw new Error('Cognito user exists but sub not found');
-      return { sub, username };
+      return { sub, username, tempPassword: null };
     }
     throw e;
+  }
+}
+
+async function deleteCognitoUserByEmail(email: string) {
+  const region =
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    process.env.NEXT_PUBLIC_AWS_REGION;
+
+  const userPoolId =
+    process.env.AWS_USER_POOLS_ID || process.env.NEXT_PUBLIC_AWS_USER_POOLS_ID;
+
+  if (!userPoolId || !region) {
+    throw new Error('Missing Cognito user pool configuration');
+  }
+
+  const client = new CognitoIdentityProviderClient({ region });
+  const username = email.trim().toLowerCase();
+
+  try {
+    await client.send(
+      new AdminDeleteUserCommand({
+        UserPoolId: userPoolId,
+        Username: username,
+      })
+    );
+  } catch (e: unknown) {
+    const errName =
+      typeof e === 'object' && e && 'name' in e
+        ? String((e as { name?: unknown }).name)
+        : null;
+    if (errName === 'UserNotFoundException') return;
+    throw e;
+  }
+}
+
+function getTempPasswordKey(): Buffer {
+  const raw = process.env.APS_TEMP_PASSWORD_KEY;
+  if (!raw) {
+    throw new Error('Missing APS_TEMP_PASSWORD_KEY for temp password storage');
+  }
+  const key = Buffer.from(raw, 'base64');
+  if (key.length !== 32) {
+    throw new Error(
+      'APS_TEMP_PASSWORD_KEY must be 32 bytes base64-encoded'
+    );
+  }
+  return key;
+}
+
+function encryptTempPassword(plain: string) {
+  const key = getTempPasswordKey();
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const ciphertext = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return {
+    ciphertext: ciphertext.toString('base64'),
+    iv: iv.toString('base64'),
+    tag: tag.toString('base64'),
+  };
+}
+
+function decryptTempPassword(payload: {
+  tempPasswordCiphertext: string;
+  tempPasswordIv: string;
+  tempPasswordTag: string;
+}) {
+  const key = getTempPasswordKey();
+  const iv = Buffer.from(payload.tempPasswordIv, 'base64');
+  const tag = Buffer.from(payload.tempPasswordTag, 'base64');
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  const plaintext = Buffer.concat([
+    decipher.update(Buffer.from(payload.tempPasswordCiphertext, 'base64')),
+    decipher.final(),
+  ]);
+  return plaintext.toString('utf8');
+}
+
+async function storeTempPassword(params: {
+  apsID: string;
+  registrantId: string;
+  email: string;
+  tempPassword: string | null;
+  jwt?: string;
+}) {
+  if (!params.tempPassword) return;
+  try {
+    const encrypted = encryptTempPassword(params.tempPassword);
+    await requestGraphQL(
+      CREATE_TEMP_CREDENTIAL,
+      {
+        input: {
+          apsID: params.apsID,
+          registrantId: params.registrantId,
+          email: params.email,
+          tempPasswordCiphertext: encrypted.ciphertext,
+          tempPasswordIv: encrypted.iv,
+          tempPasswordTag: encrypted.tag,
+        },
+      },
+      params.jwt ? { authMode: 'userPools', jwt: params.jwt } : undefined
+    );
+  } catch (error) {
+    console.error('Failed to store temp password for registrant:', error);
   }
 }
 
@@ -201,21 +309,58 @@ const CREATE_APP_USER_PROFILE = /* GraphQL */ `
   }
 `;
 
-const LIST_COMPANIES_BY_EVENT = /* GraphQL */ `
-  query ListAPSCompanies(
-    $filter: ModelAPSCompanyFilterInput
+const CREATE_TEMP_CREDENTIAL = /* GraphQL */ `
+  mutation CreateApsTempCredential($input: CreateApsTempCredentialInput!) {
+    createApsTempCredential(input: $input) {
+      id
+      apsID
+      registrantId
+      email
+      expiresAt
+      createdAt
+    }
+  }
+`;
+
+const TEMP_CREDENTIALS_BY_APS = /* GraphQL */ `
+  query ListApsTempCredentials(
+    $filter: ModelApsTempCredentialFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listAPSCompanies(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listApsTempCredentials(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        name
+        apsID
+        registrantId
         email
-        type
-        eventId
+        tempPasswordCiphertext
+        tempPasswordIv
+        tempPasswordTag
+        expiresAt
+        createdAt
       }
       nextToken
+    }
+  }
+`;
+
+const GET_APS_COMPANIES = /* GraphQL */ `
+  query GetAPS($id: ID!) {
+    getAPS(id: $id) {
+      id
+      companies(limit: 1000) {
+        items {
+          id
+          aPSCompany {
+            id
+            name
+            email
+            type
+          }
+        }
+        nextToken
+      }
     }
   }
 `;
@@ -621,7 +766,6 @@ export type Company = {
   name: string;
   email: string;
   type: string | null;
-  eventId: string;
 };
 
 export type Registrant = {
@@ -775,36 +919,16 @@ export type AddOn = {
 export async function fetchCompaniesByEventId(
   eventId: string
 ): Promise<Company[]> {
-  const allCompanies: Company[] = [];
-  let nextToken: string | null | undefined = null;
-
-  do {
-    const response: {
-      listAPSCompanies?: {
-        items?: Company[];
-        nextToken?: string | null;
+  const response = await requestGraphQL<{
+    getAPS?: {
+      companies?: {
+        items?: Array<{ aPSCompany?: Company | null } | null> | null;
       } | null;
-    } = await requestGraphQL<{
-      listAPSCompanies?: {
-        items?: Company[];
-        nextToken?: string | null;
-      } | null;
-    }>(LIST_COMPANIES_BY_EVENT, {
-      filter: { eventId: { eq: eventId } },
-      limit: 1000,
-      nextToken: nextToken || undefined,
-    });
+    } | null;
+  }>(GET_APS_COMPANIES, { id: eventId });
 
-    const items = response.listAPSCompanies?.items || [];
-    allCompanies.push(...items);
-    nextToken = response.listAPSCompanies?.nextToken;
-
-    if (nextToken) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-  } while (nextToken);
-
-  return allCompanies;
+  const items = response.getAPS?.companies?.items ?? [];
+  return items.map((item) => item?.aPSCompany).filter(Boolean) as Company[];
 }
 
 /**
@@ -907,7 +1031,12 @@ export async function createRegistrant(
     bio?: string | null;
   },
   opts?: { jwt?: string }
-): Promise<{ id: string; email: string; companyId: string | null }> {
+): Promise<{
+  id: string;
+  email: string;
+  companyId: string | null;
+  tempPassword: string | null;
+}> {
   // #region agent log (debug)
   fetch('http://127.0.0.1:7243/ingest/8e54769f-f43d-46b6-abd8-6d9007eecefc', {
     method: 'POST',
@@ -948,10 +1077,22 @@ export async function createRegistrant(
 
   const registrantId = result.createApsRegistrant.id;
 
-  // Create (or fetch) a Cognito user so ApsAppUser.id can be the stable Cognito sub.
-  const { sub: appUserId } = await ensureCognitoUserForRegistrantEmail(
-    input.email
-  );
+  const { sub: appUserId, tempPassword } =
+    await ensureCognitoUserForRegistrantEmail(input.email);
+
+  if (input.companyId) {
+    const attachedCompanies = await fetchCompaniesByEventId(input.apsID);
+    const alreadyAttached = attachedCompanies.some(
+      (company) => company.id === input.companyId
+    );
+    if (!alreadyAttached) {
+      await ensureCompanyAttachedToEvent({
+        eventId: input.apsID,
+        companyId: input.companyId,
+        jwt: opts?.jwt ?? null,
+      });
+    }
+  }
 
   // Create ApsAppUser for this registrant (strict; required for bidirectional querying)
   const appUserResult = await requestGraphQL<{
@@ -1072,6 +1213,14 @@ export async function createRegistrant(
     }
   }
 
+  await storeTempPassword({
+    apsID: input.apsID,
+    registrantId,
+    email: input.email,
+    tempPassword,
+    jwt: opts?.jwt,
+  });
+
   // Generate and upload QR code (best-effort)
   try {
     // Import the QR code function
@@ -1107,7 +1256,70 @@ export async function createRegistrant(
     // The registrant + app user + profile are already created and linked
   }
 
-  return result.createApsRegistrant;
+  return {
+    ...result.createApsRegistrant,
+    tempPassword,
+  };
+}
+
+export async function exportTempCredentialsByApsId(apsId: string): Promise<
+  Array<{
+    registrantId: string;
+    email: string;
+    tempPassword: string;
+    createdAt?: string | null;
+    expiresAt?: number | null;
+  }>
+> {
+  const records: Array<{
+    registrantId: string;
+    email: string;
+    tempPassword: string;
+    createdAt?: string | null;
+    expiresAt?: number | null;
+  }> = [];
+  let nextToken: string | null | undefined = null;
+  do {
+    const response: {
+      listApsTempCredentials?: {
+        items?: Array<{
+          registrantId: string;
+          email: string;
+          tempPasswordCiphertext: string;
+          tempPasswordIv: string;
+          tempPasswordTag: string;
+          expiresAt?: number | null;
+          createdAt?: string | null;
+        } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(TEMP_CREDENTIALS_BY_APS, {
+      filter: { apsID: { eq: apsId } },
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = response.listApsTempCredentials?.items ?? [];
+    for (const item of items) {
+      if (!item) continue;
+      const tempPassword = decryptTempPassword({
+        tempPasswordCiphertext: item.tempPasswordCiphertext,
+        tempPasswordIv: item.tempPasswordIv,
+        tempPasswordTag: item.tempPasswordTag,
+      });
+      records.push({
+        registrantId: item.registrantId,
+        email: item.email,
+        tempPassword,
+        createdAt: item.createdAt ?? null,
+        expiresAt: item.expiresAt ?? null,
+      });
+    }
+
+    nextToken = response.listApsTempCredentials?.nextToken ?? null;
+  } while (nextToken);
+
+  return records;
 }
 
 /**
@@ -1696,6 +1908,8 @@ export async function deleteRegistrantCascade({
     if (appUserId) {
       await requestGraphQL(deleteApsAppUser, { input: { id: appUserId } });
     }
+
+    await deleteCognitoUserByEmail(registrant.email);
 
     await requestGraphQL(deleteApsRegistrant, { input: { id: registrantId } });
 

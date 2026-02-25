@@ -108,6 +108,12 @@ function ApsDetailClient({
           </div>
           <div className='flex items-center gap-3'>
             <CreateRegistrantButton eventId={eventId} />
+            <a
+              href={`/aps/${eventId}/registrants/temp-credentials.csv`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              Download temp passwords CSV
+            </a>
             <Link
               href='/'
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
@@ -243,8 +249,14 @@ function ApsDetailClient({
             </p>
             <div className='mt-2 flex flex-col gap-3'>
               <Link
-                href={`/aps/${eventId}/exhibitors`}
+                href={`/aps/${eventId}/companies`}
                 className='inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+              >
+                Companies
+              </Link>
+              <Link
+                href={`/aps/${eventId}/exhibitors`}
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
               >
                 Exhibitors
               </Link>
