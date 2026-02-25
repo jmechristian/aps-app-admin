@@ -610,6 +610,7 @@ export async function fetchCompaniesWithRegistrantsByEventId(eventId: string) {
   const filtered: CompanyWithRegistrantCount[] = companies
     .map((c) => ({
       ...c,
+      eventId,
       registrantCount: counts.get(c.id) ?? 0,
     }))
     .filter((c) => c.registrantCount > 0);
