@@ -65,23 +65,48 @@ export async function fetchExhibitorProfilesByEventId(eventId: string) {
           eventId
           companyId
           boothNumber
-          company {
-            id
-            name
-          }
         }
         nextToken
       }
     }
   `;
 
-  const items = await paginate<ExhibitorProfileListItem>({
+  const items = await paginate<Omit<ExhibitorProfileListItem, 'company'>>({
     query: EXHIBITOR_PROFILES_BY_EVENT_ID,
     variables: { eventId },
     getPage: (data) => data.apsAppExhibitorProfilesByEventId ?? null,
   });
 
-  return items.sort((a, b) =>
+  const DELETE_EXHIBITOR = /* GraphQL */ `
+    mutation DeleteApsAppExhibitorProfile(
+      $input: DeleteApsAppExhibitorProfileInput!
+    ) {
+      deleteApsAppExhibitorProfile(input: $input) {
+        id
+      }
+    }
+  `;
+  const { fetchCompanyById } = await import('@/app/actions/companies');
+
+  const resolved: ExhibitorProfileListItem[] = [];
+  for (const exhibitor of items) {
+    if (!exhibitor.companyId) {
+      await requestGraphQL(DELETE_EXHIBITOR, { input: { id: exhibitor.id } });
+      continue;
+    }
+
+    try {
+      const company = await fetchCompanyById(exhibitor.companyId);
+      resolved.push({
+        ...exhibitor,
+        company: { id: company.id, name: company.name },
+      });
+    } catch {
+      await requestGraphQL(DELETE_EXHIBITOR, { input: { id: exhibitor.id } });
+    }
+  }
+
+  return resolved.sort((a, b) =>
     (a.company?.name ?? '').localeCompare(b.company?.name ?? '')
   );
 }
@@ -171,23 +196,43 @@ export async function fetchSponsorsByEventId(eventId: string) {
           eventId
           companyId
           type
-          company {
-            id
-            name
-          }
         }
         nextToken
       }
     }
   `;
 
-  const items = await paginate<SponsorListItem>({
+  const items = await paginate<Omit<SponsorListItem, 'company'>>({
     query: APS_SPONSORS_BY_EVENT_ID,
     variables: { eventId },
     getPage: (data) => data.apsSponsorsByEventId ?? null,
   });
 
-  return items.sort((a, b) =>
+  const DELETE_SPONSOR = /* GraphQL */ `
+    mutation DeleteApsSponsor($input: DeleteApsSponsorInput!) {
+      deleteApsSponsor(input: $input) {
+        id
+      }
+    }
+  `;
+  const { fetchCompanyById } = await import('@/app/actions/companies');
+
+  const resolved: SponsorListItem[] = [];
+  for (const sponsor of items) {
+    if (!sponsor.companyId) {
+      await requestGraphQL(DELETE_SPONSOR, { input: { id: sponsor.id } });
+      continue;
+    }
+
+    try {
+      const company = await fetchCompanyById(sponsor.companyId);
+      resolved.push({ ...sponsor, company: { id: company.id, name: company.name } });
+    } catch {
+      await requestGraphQL(DELETE_SPONSOR, { input: { id: sponsor.id } });
+    }
+  }
+
+  return resolved.sort((a, b) =>
     (a.company?.name ?? '').localeCompare(b.company?.name ?? '')
   );
 }
