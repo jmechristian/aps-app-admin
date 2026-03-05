@@ -470,8 +470,6 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    speedNetworking
-    speedNetworkingStatus
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -486,12 +484,6 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
     totalAmount
     discountCode
     status
-    morrisetteTransportation
-    morrisetteStatus
-    aristoTransportation
-    aristoStatus
-    magnaTransportation
-    magnaStatus
     paymentConfirmation
     registrationEmailSent
     registrationEmailSentDate
@@ -524,6 +516,14 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
       createdAt
       updatedAt
       apsSeatingChartRegistrantsId
+      __typename
+    }
+    addOnsRequested {
+      nextToken
+      __typename
+    }
+    addOnsApproved {
+      nextToken
       __typename
     }
     appUserId
@@ -606,8 +606,6 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    speedNetworking
-    speedNetworkingStatus
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -622,12 +620,6 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
     totalAmount
     discountCode
     status
-    morrisetteTransportation
-    morrisetteStatus
-    aristoTransportation
-    aristoStatus
-    magnaTransportation
-    magnaStatus
     paymentConfirmation
     registrationEmailSent
     registrationEmailSentDate
@@ -660,6 +652,14 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
       createdAt
       updatedAt
       apsSeatingChartRegistrantsId
+      __typename
+    }
+    addOnsRequested {
+      nextToken
+      __typename
+    }
+    addOnsApproved {
+      nextToken
       __typename
     }
     appUserId
@@ -742,8 +742,6 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    speedNetworking
-    speedNetworkingStatus
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -758,12 +756,6 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
     totalAmount
     discountCode
     status
-    morrisetteTransportation
-    morrisetteStatus
-    aristoTransportation
-    aristoStatus
-    magnaTransportation
-    magnaStatus
     paymentConfirmation
     registrationEmailSent
     registrationEmailSentDate
@@ -796,6 +788,14 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
       createdAt
       updatedAt
       apsSeatingChartRegistrantsId
+      __typename
+    }
+    addOnsRequested {
+      nextToken
+      __typename
+    }
+    addOnsApproved {
+      nextToken
       __typename
     }
     appUserId
@@ -910,8 +910,6 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -926,12 +924,6 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1008,6 +1000,7 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1041,8 +1034,6 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1057,12 +1048,6 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1139,6 +1124,7 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1172,8 +1158,6 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1188,12 +1172,6 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1270,6 +1248,7 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1320,6 +1299,7 @@ export const createApsAppUserContact = /* GraphQL */ `mutation CreateApsAppUserC
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1372,6 +1352,7 @@ export const updateApsAppUserContact = /* GraphQL */ `mutation UpdateApsAppUserC
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1424,6 +1405,7 @@ export const deleteApsAppUserContact = /* GraphQL */ `mutation DeleteApsAppUserC
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1502,8 +1484,6 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1518,12 +1498,6 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1572,6 +1546,7 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1670,8 +1645,6 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1686,12 +1659,6 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1740,6 +1707,7 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1838,8 +1806,6 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1854,12 +1820,6 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -1908,6 +1868,7 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -1980,6 +1941,7 @@ export const createApsAppUserLead = /* GraphQL */ `mutation CreateApsAppUserLead
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2032,6 +1994,7 @@ export const updateApsAppUserLead = /* GraphQL */ `mutation UpdateApsAppUserLead
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2084,6 +2047,7 @@ export const deleteApsAppUserLead = /* GraphQL */ `mutation DeleteApsAppUserLead
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2156,6 +2120,18 @@ export const createApsAppUserProfile = /* GraphQL */ `mutation CreateApsAppUserP
       nextToken
       __typename
     }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -2220,6 +2196,18 @@ export const updateApsAppUserProfile = /* GraphQL */ `mutation UpdateApsAppUserP
     }
     notes {
       nextToken
+      __typename
+    }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
       __typename
     }
     createdAt
@@ -2288,6 +2276,18 @@ export const deleteApsAppUserProfile = /* GraphQL */ `mutation DeleteApsAppUserP
       nextToken
       __typename
     }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -2325,6 +2325,7 @@ export const createProfileAffiliate = /* GraphQL */ `mutation CreateProfileAffil
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2371,6 +2372,7 @@ export const updateProfileAffiliate = /* GraphQL */ `mutation UpdateProfileAffil
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2417,6 +2419,7 @@ export const deleteProfileAffiliate = /* GraphQL */ `mutation DeleteProfileAffil
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2463,6 +2466,7 @@ export const createProfileEducation = /* GraphQL */ `mutation CreateProfileEduca
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2508,6 +2512,7 @@ export const updateProfileEducation = /* GraphQL */ `mutation UpdateProfileEduca
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2553,6 +2558,7 @@ export const deleteProfileEducation = /* GraphQL */ `mutation DeleteProfileEduca
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2598,6 +2604,7 @@ export const createProfileInterest = /* GraphQL */ `mutation CreateProfileIntere
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2641,6 +2648,7 @@ export const updateProfileInterest = /* GraphQL */ `mutation UpdateProfileIntere
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -2684,6 +2692,7 @@ export const deleteProfileInterest = /* GraphQL */ `mutation DeleteProfileIntere
       website
       location
       resume
+      speakerId
       createdAt
       updatedAt
       __typename
@@ -3107,19 +3116,35 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
 ) {
   createAPSSpeaker(input: $input, condition: $condition) {
     id
-    firstName
-    lastName
-    email
-    company
-    title
-    phone
-    linkedin
-    bio
     presentationTitle
     presentationSummary
-    headshot
-    mediaConsent
-    privacyConsent
+    profileId
+    profile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
     eventId
     event {
       id
@@ -3158,19 +3183,35 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
 ) {
   updateAPSSpeaker(input: $input, condition: $condition) {
     id
-    firstName
-    lastName
-    email
-    company
-    title
-    phone
-    linkedin
-    bio
     presentationTitle
     presentationSummary
-    headshot
-    mediaConsent
-    privacyConsent
+    profileId
+    profile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
     eventId
     event {
       id
@@ -3209,19 +3250,35 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
 ) {
   deleteAPSSpeaker(input: $input, condition: $condition) {
     id
-    firstName
-    lastName
-    email
-    company
-    title
-    phone
-    linkedin
-    bio
     presentationTitle
     presentationSummary
-    headshot
-    mediaConsent
-    privacyConsent
+    profileId
+    profile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
     eventId
     event {
       id
@@ -4812,6 +4869,15 @@ export const createApsAddOn = /* GraphQL */ `mutation CreateApsAddOn(
       aPSAgendaId
       __typename
     }
+    price
+    registrantsRequested {
+      nextToken
+      __typename
+    }
+    registrantsApproved {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSAddOnsId
@@ -4856,6 +4922,15 @@ export const updateApsAddOn = /* GraphQL */ `mutation UpdateApsAddOn(
       aPSAgendaId
       __typename
     }
+    price
+    registrantsRequested {
+      nextToken
+      __typename
+    }
+    registrantsApproved {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSAddOnsId
@@ -4898,6 +4973,15 @@ export const deleteApsAddOn = /* GraphQL */ `mutation DeleteApsAddOn(
       createdAt
       updatedAt
       aPSAgendaId
+      __typename
+    }
+    price
+    registrantsRequested {
+      nextToken
+      __typename
+    }
+    registrantsApproved {
+      nextToken
       __typename
     }
     createdAt
@@ -5002,8 +5086,6 @@ export const createApsSeatingChartRegistrant = /* GraphQL */ `mutation CreateAps
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5018,12 +5100,6 @@ export const createApsSeatingChartRegistrant = /* GraphQL */ `mutation CreateAps
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -5095,8 +5171,6 @@ export const updateApsSeatingChartRegistrant = /* GraphQL */ `mutation UpdateAps
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5111,12 +5185,6 @@ export const updateApsSeatingChartRegistrant = /* GraphQL */ `mutation UpdateAps
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -5188,8 +5256,6 @@ export const deleteApsSeatingChartRegistrant = /* GraphQL */ `mutation DeleteAps
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5204,12 +5270,6 @@ export const deleteApsSeatingChartRegistrant = /* GraphQL */ `mutation DeleteAps
       totalAmount
       discountCode
       status
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -5966,6 +6026,540 @@ export const deleteAPSCompanyEvents = /* GraphQL */ `mutation DeleteAPSCompanyEv
   APITypes.DeleteAPSCompanyEventsMutationVariables,
   APITypes.DeleteAPSCompanyEventsMutation
 >;
+export const createRegistrantAddOnsRequested = /* GraphQL */ `mutation CreateRegistrantAddOnsRequested(
+  $input: CreateRegistrantAddOnsRequestedInput!
+  $condition: ModelRegistrantAddOnsRequestedConditionInput
+) {
+  createRegistrantAddOnsRequested(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateRegistrantAddOnsRequestedMutationVariables,
+  APITypes.CreateRegistrantAddOnsRequestedMutation
+>;
+export const updateRegistrantAddOnsRequested = /* GraphQL */ `mutation UpdateRegistrantAddOnsRequested(
+  $input: UpdateRegistrantAddOnsRequestedInput!
+  $condition: ModelRegistrantAddOnsRequestedConditionInput
+) {
+  updateRegistrantAddOnsRequested(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateRegistrantAddOnsRequestedMutationVariables,
+  APITypes.UpdateRegistrantAddOnsRequestedMutation
+>;
+export const deleteRegistrantAddOnsRequested = /* GraphQL */ `mutation DeleteRegistrantAddOnsRequested(
+  $input: DeleteRegistrantAddOnsRequestedInput!
+  $condition: ModelRegistrantAddOnsRequestedConditionInput
+) {
+  deleteRegistrantAddOnsRequested(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteRegistrantAddOnsRequestedMutationVariables,
+  APITypes.DeleteRegistrantAddOnsRequestedMutation
+>;
+export const createRegistrantAddOnsApproved = /* GraphQL */ `mutation CreateRegistrantAddOnsApproved(
+  $input: CreateRegistrantAddOnsApprovedInput!
+  $condition: ModelRegistrantAddOnsApprovedConditionInput
+) {
+  createRegistrantAddOnsApproved(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateRegistrantAddOnsApprovedMutationVariables,
+  APITypes.CreateRegistrantAddOnsApprovedMutation
+>;
+export const updateRegistrantAddOnsApproved = /* GraphQL */ `mutation UpdateRegistrantAddOnsApproved(
+  $input: UpdateRegistrantAddOnsApprovedInput!
+  $condition: ModelRegistrantAddOnsApprovedConditionInput
+) {
+  updateRegistrantAddOnsApproved(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateRegistrantAddOnsApprovedMutationVariables,
+  APITypes.UpdateRegistrantAddOnsApprovedMutation
+>;
+export const deleteRegistrantAddOnsApproved = /* GraphQL */ `mutation DeleteRegistrantAddOnsApproved(
+  $input: DeleteRegistrantAddOnsApprovedInput!
+  $condition: ModelRegistrantAddOnsApprovedConditionInput
+) {
+  deleteRegistrantAddOnsApproved(input: $input, condition: $condition) {
+    id
+    apsRegistrantId
+    apsAddOnId
+    apsRegistrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    apsAddOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      company
+      altLink
+      type
+      limit
+      eventId
+      price
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteRegistrantAddOnsApprovedMutationVariables,
+  APITypes.DeleteRegistrantAddOnsApprovedMutation
+>;
 export const createSessionSpeakers = /* GraphQL */ `mutation CreateSessionSpeakers(
   $input: CreateSessionSpeakersInput!
   $condition: ModelSessionSpeakersConditionInput
@@ -5990,19 +6584,9 @@ export const createSessionSpeakers = /* GraphQL */ `mutation CreateSessionSpeake
     }
     aPSSpeaker {
       id
-      firstName
-      lastName
-      email
-      company
-      title
-      phone
-      linkedin
-      bio
       presentationTitle
       presentationSummary
-      headshot
-      mediaConsent
-      privacyConsent
+      profileId
       eventId
       createdAt
       updatedAt
@@ -6042,19 +6626,9 @@ export const updateSessionSpeakers = /* GraphQL */ `mutation UpdateSessionSpeake
     }
     aPSSpeaker {
       id
-      firstName
-      lastName
-      email
-      company
-      title
-      phone
-      linkedin
-      bio
       presentationTitle
       presentationSummary
-      headshot
-      mediaConsent
-      privacyConsent
+      profileId
       eventId
       createdAt
       updatedAt
@@ -6094,19 +6668,9 @@ export const deleteSessionSpeakers = /* GraphQL */ `mutation DeleteSessionSpeake
     }
     aPSSpeaker {
       id
-      firstName
-      lastName
-      email
-      company
-      title
-      phone
-      linkedin
-      bio
       presentationTitle
       presentationSummary
-      headshot
-      mediaConsent
-      privacyConsent
+      profileId
       eventId
       createdAt
       updatedAt

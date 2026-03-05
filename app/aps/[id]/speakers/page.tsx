@@ -71,12 +71,18 @@ export default async function SpeakersPage({ params }: PageProps) {
                         href={`/aps/${eventId}/speakers/${s.id}`}
                         className='hover:underline'
                       >
-                        {s.firstName} {s.lastName}
+                        {s.profile?.firstName ?? '—'} {s.profile?.lastName ?? ''}
                       </Link>
                     </td>
-                    <td className='px-4 py-3 text-slate-700'>{s.email}</td>
-                    <td className='px-4 py-3 text-slate-700'>{s.company}</td>
-                    <td className='px-4 py-3 text-slate-700'>{s.title}</td>
+                    <td className='px-4 py-3 text-slate-700'>
+                      {s.profile?.email ?? '—'}
+                    </td>
+                    <td className='px-4 py-3 text-slate-700'>
+                      {s.profile?.company ?? '—'}
+                    </td>
+                    <td className='px-4 py-3 text-slate-700'>
+                      {s.profile?.jobTitle ?? '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

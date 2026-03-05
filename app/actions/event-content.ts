@@ -324,11 +324,17 @@ export async function fetchSpeakerRegistrantsByEventId(eventId: string) {
 export type SpeakerProfileListItem = {
   id: string;
   eventId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  company: string;
-  title: string;
+  profileId: string;
+  presentationTitle?: string | null;
+  presentationSummary?: string | null;
+  profile?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+    company?: string | null;
+    jobTitle?: string | null;
+  } | null;
 };
 
 export async function fetchSpeakerProfilesByEventId(eventId: string) {
@@ -350,11 +356,17 @@ export async function fetchSpeakerProfilesByEventId(eventId: string) {
         items {
           id
           eventId
-          firstName
-          lastName
-          email
-          company
-          title
+          profileId
+          presentationTitle
+          presentationSummary
+          profile {
+            id
+            firstName
+            lastName
+            email
+            company
+            jobTitle
+          }
         }
         nextToken
       }
@@ -367,20 +379,33 @@ export async function fetchSpeakerProfilesByEventId(eventId: string) {
     getPage: (data) => data.aPSSpeakersByEventId ?? null,
   });
 
-  return items.sort((a, b) =>
-    `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
-  );
+  return items.sort((a, b) => {
+    const aName = `${a.profile?.lastName ?? ''} ${a.profile?.firstName ?? ''}`.trim();
+    const bName = `${b.profile?.lastName ?? ''} ${b.profile?.firstName ?? ''}`.trim();
+    return aName.localeCompare(bName);
+  });
 }
 
 export type SpeakerProfileDetail = SpeakerProfileListItem & {
-  phone?: string | null;
-  linkedin?: string | null;
-  bio?: string | null;
-  presentationTitle?: string | null;
-  presentationSummary?: string | null;
-  headshot?: string | null;
-  mediaConsent?: boolean | null;
-  privacyConsent?: boolean | null;
+  profile?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+    company?: string | null;
+    jobTitle?: string | null;
+    attendeeType?: string | null;
+    location?: string | null;
+    phone?: string | null;
+    linkedin?: string | null;
+    bio?: string | null;
+    profilePicture?: string | null;
+    twitter?: string | null;
+    facebook?: string | null;
+    instagram?: string | null;
+    youtube?: string | null;
+    website?: string[] | null;
+  } | null;
 };
 
 export async function fetchSpeakerProfileById(speakerId: string) {
@@ -389,19 +414,28 @@ export async function fetchSpeakerProfileById(speakerId: string) {
       getAPSSpeaker(id: $id) {
         id
         eventId
-        firstName
-        lastName
-        email
-        company
-        title
-        phone
-        linkedin
-        bio
         presentationTitle
         presentationSummary
-        headshot
-        mediaConsent
-        privacyConsent
+        profileId
+        profile {
+          id
+          firstName
+          lastName
+          email
+          company
+          jobTitle
+          attendeeType
+          location
+          phone
+          linkedin
+          bio
+          profilePicture
+          twitter
+          facebook
+          instagram
+          youtube
+          website
+        }
       }
     }
   `;
@@ -493,9 +527,11 @@ const LIST_SESSIONS_BY_AGENDA = /* GraphQL */ `
             aPSSpeakerId
             aPSSpeaker {
               id
-              firstName
-              lastName
-              email
+              profile {
+                firstName
+                lastName
+                email
+              }
             }
           }
         }
@@ -527,9 +563,11 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
             aPSSpeakerId?: string | null;
             aPSSpeaker?: {
               id: string;
-              firstName: string;
-              lastName: string;
-              email: string;
+              profile?: {
+                firstName?: string | null;
+                lastName?: string | null;
+                email?: string | null;
+              } | null;
             } | null;
           }
         | null
@@ -580,10 +618,10 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
         ?.map((x) => x?.aPSSpeaker)
         .filter(Boolean)
         .map((sp) => {
-          const first = sp!.firstName?.trim() ?? '';
-          const last = sp!.lastName?.trim() ?? '';
+          const first = sp?.profile?.firstName?.trim() ?? '';
+          const last = sp?.profile?.lastName?.trim() ?? '';
           const name = `${first} ${last}`.trim();
-          return name || sp!.email;
+          return name || sp?.profile?.email || sp?.id || '—';
         }) ?? [];
 
     const sponsorNames =

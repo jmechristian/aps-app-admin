@@ -469,8 +469,6 @@ const GET_REGISTRANT = /* GraphQL */ `
       termsAccepted
       interests
       otherInterest
-      speedNetworking
-      speedNetworkingStatus
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -484,12 +482,6 @@ const GET_REGISTRANT = /* GraphQL */ `
       learningObjectives
       totalAmount
       discountCode
-      morrisetteTransportation
-      morrisetteStatus
-      aristoTransportation
-      aristoStatus
-      magnaTransportation
-      magnaStatus
       paymentConfirmation
       registrationEmailSent
       registrationEmailSentDate
@@ -734,7 +726,7 @@ const LIST_APS_SPEAKERS = /* GraphQL */ `
     listAPSSpeakers(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        email
+        profileId
       }
       nextToken
     }
@@ -1517,10 +1509,6 @@ function readStringArrayField(
   return list.length > 0 ? list : null;
 }
 
-function normalizeEmail(value: string) {
-  return value.trim().toLowerCase();
-}
-
 async function listAllIds(
   query: string,
   responseKey: string,
@@ -1591,15 +1579,14 @@ async function listSessionSpeakerIdsBySpeakerId(
 
 async function findSpeakerIdForRegistrant(
   eventId: string,
-  email: string
+  profileId: string
 ): Promise<string | null> {
   let nextToken: string | null | undefined = null;
-  const target = normalizeEmail(email);
 
   do {
     const response: {
       listAPSSpeakers?: {
-        items?: Array<{ id?: string | null; email?: string | null } | null>;
+        items?: Array<{ id?: string | null; profileId?: string | null } | null>;
         nextToken?: string | null;
       } | null;
     } = await requestGraphQL(LIST_APS_SPEAKERS, {
@@ -1610,8 +1597,8 @@ async function findSpeakerIdForRegistrant(
 
     const items = response.listAPSSpeakers?.items ?? [];
     for (const item of items) {
-      if (!item?.id || !item.email) continue;
-      if (normalizeEmail(item.email) === target) {
+      if (!item?.id || !item.profileId) continue;
+      if (item.profileId === profileId) {
         return item.id;
       }
     }
@@ -1737,6 +1724,7 @@ export async function updateAppUserProfile(
     if (eventId && registrantId) {
       revalidatePath(`/aps/${eventId}`);
       revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+      revalidatePath(`/aps/${eventId}/speakers`);
     }
 
     return { ok: true, message: 'App user profile updated.' };
@@ -1886,10 +1874,10 @@ export async function deleteRegistrantCascade({
       await deleteIds(messageIds, deleteApsDmMessage, 'dm message');
     }
 
-    const speakerId = await findSpeakerIdForRegistrant(
-      registrant.apsID,
-      registrant.email
-    );
+    const speakerProfileId = registrant.appUser?.profile?.id ?? null;
+    const speakerId = speakerProfileId
+      ? await findSpeakerIdForRegistrant(registrant.apsID, speakerProfileId)
+      : null;
     if (speakerId) {
       const sessionSpeakerIds =
         await listSessionSpeakerIdsBySpeakerId(speakerId);

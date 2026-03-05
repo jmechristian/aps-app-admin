@@ -120,8 +120,6 @@ type ApsRegistrant
   termsAccepted: Boolean
   interests: [String]
   otherInterest: String
-  speedNetworking: Boolean
-  speedNetworkingStatus: String
   billingAddressFirstName: String
   billingAddressLastName: String
   billingAddressEmail: String
@@ -136,12 +134,6 @@ type ApsRegistrant
   totalAmount: Int
   discountCode: String
   status: RegistrantStatus!
-  morrisetteTransportation: String
-  morrisetteStatus: String
-  aristoTransportation: String
-  aristoStatus: String
-  magnaTransportation: String
-  magnaStatus: String
   paymentConfirmation: String
   registrationEmailSent: Boolean
   registrationEmailSentDate: String
@@ -160,6 +152,10 @@ type ApsRegistrant
   presentationSummary: String
   bio: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
+  addOnsRequested: [ApsAddOn]
+    @manyToMany(relationName: "RegistrantAddOnsRequested")
+  addOnsApproved: [ApsAddOn]
+    @manyToMany(relationName: "RegistrantAddOnsApproved")
 
   # ✅ FIX: make the hasOne key explicit so resolvers can traverse registrant -> appUser
   appUserId: ID
@@ -172,11 +168,7 @@ type ApsRegistrant
 # Temporary credentials for bulk welcome emails
 type ApsTempCredential
   @model
-  @auth(
-    rules: [
-      { allow: groups, groups: ["Admin"] }
-    ]
-  ) {
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
   id: ID!
   apsID: ID! @index(name: "byAPS", sortKeyFields: ["createdAt"])
   registrantId: ID! @index(name: "byRegistrant", sortKeyFields: ["createdAt"])
@@ -321,6 +313,8 @@ type ApsAppUserProfile
 
   # Notes about this profile (contact notes)
   notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
+  speakerId: ID @index(name: "bySpeaker")
+  speaker: APSSpeaker @hasOne(fields: ["speakerId"])
 }
 
 type ProfileAffiliate
@@ -441,19 +435,11 @@ type APSSpeaker
     ]
   ) {
   id: ID!
-  firstName: String!
-  lastName: String!
-  email: String!
-  company: String!
-  title: String!
-  phone: String
-  linkedin: String
-  bio: String!
   presentationTitle: String
   presentationSummary: String
-  headshot: String!
-  mediaConsent: Boolean
-  privacyConsent: Boolean
+  profileId: ID!
+    @index(name: "bySpeakerProfile", sortKeyFields: ["eventId"])
+  profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   sessions: [ApsAppSession] @manyToMany(relationName: "SessionSpeakers")
@@ -505,7 +491,8 @@ type APSCompany
   sponsorId: ID
   sponsor: ApsSponsor @hasOne(fields: ["sponsorId"])
   exhibitorProfileId: ID
-  exhibitorProfile: ApsAppExhibitorProfile @hasOne(fields: ["exhibitorProfileId"])
+  exhibitorProfile: ApsAppExhibitorProfile
+    @hasOne(fields: ["exhibitorProfileId"])
   notes: [ApsAppUserNote] @hasMany(indexName: "byCompany", fields: ["id"])
   contacts: [APSCompanyContact] @hasMany(indexName: "byCompany", fields: ["id"])
 }
@@ -655,6 +642,11 @@ type ApsAddOn
   limit: Int
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
+  price: Int
+  registrantsRequested: [ApsRegistrant]
+    @manyToMany(relationName: "RegistrantAddOnsRequested")
+  registrantsApproved: [ApsRegistrant]
+    @manyToMany(relationName: "RegistrantAddOnsApproved")
 }
 
 # Seating Charts

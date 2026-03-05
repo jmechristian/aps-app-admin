@@ -1,30 +1,17 @@
 'use server';
 
 import { requestGraphQL } from '@/lib/appsync';
+import { revalidatePath } from 'next/cache';
 import { fetchRegistrantById } from '@/app/actions/registrants';
-import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
 
 const CREATE_APS_SPEAKER = /* GraphQL */ `
   mutation CreateAPSSpeaker($input: CreateAPSSpeakerInput!) {
     createAPSSpeaker(input: $input) {
       id
       eventId
-      firstName
-      lastName
-      email
-      company
-      title
-    }
-  }
-`;
-
-const GET_APS_SPEAKER = /* GraphQL */ `
-  query GetAPSSpeaker($id: ID!) {
-    getAPSSpeaker(id: $id) {
-      id
-      eventId
-      email
-      headshot
+      profileId
+      presentationTitle
+      presentationSummary
     }
   }
 `;
@@ -33,7 +20,8 @@ const UPDATE_APS_SPEAKER = /* GraphQL */ `
   mutation UpdateAPSSpeaker($input: UpdateAPSSpeakerInput!) {
     updateAPSSpeaker(input: $input) {
       id
-      headshot
+      presentationTitle
+      presentationSummary
     }
   }
 `;
@@ -43,6 +31,15 @@ const UPDATE_APS_REGISTRANT = /* GraphQL */ `
     updateApsRegistrant(input: $input) {
       id
       attendeeType
+    }
+  }
+`;
+
+const UPDATE_APP_USER_PROFILE = /* GraphQL */ `
+  mutation UpdateApsAppUserProfile($input: UpdateApsAppUserProfileInput!) {
+    updateApsAppUserProfile(input: $input) {
+      id
+      speakerId
     }
   }
 `;
@@ -78,18 +75,34 @@ const DELETE_SESSION_SPEAKERS = /* GraphQL */ `
   }
 `;
 
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
+export async function updateSpeakerProfile(
+  _prevState: { ok: boolean; message: string },
+  formData: FormData
+): Promise<{ ok: boolean; message: string }> {
+  try {
+    const id = formData.get('speakerId')?.toString();
+    const eventId = formData.get('eventId')?.toString();
+    const presentationTitle =
+      formData.get('presentationTitle')?.toString().trim() || '';
+    const presentationSummary =
+      formData.get('presentationSummary')?.toString().trim() || '';
 
-async function findRegistrantIdByEventAndEmail(eventId: string, email: string) {
-  const target = normalizeEmail(email);
-  if (!target) return null;
+    if (!id) return { ok: false, message: 'Missing speaker id.' };
+    if (!eventId) return { ok: false, message: 'Missing event id.' };
 
-  // IMPORTANT: AppSync string "eq" is case sensitive; we match in code instead.
-  const registrants = await fetchRegistrantsByApsId(eventId);
-  const match = registrants.find((r) => normalizeEmail(r.email) === target);
-  return match?.id ?? null;
+    const input = {
+      id,
+      presentationTitle: presentationTitle || null,
+      presentationSummary: presentationSummary || null,
+    };
+
+    await requestGraphQL(UPDATE_APS_SPEAKER, { input });
+    revalidatePath(`/aps/${eventId}/speakers/${id}`);
+    return { ok: true, message: 'Speaker updated.' };
+  } catch (error) {
+    console.error('Failed to update speaker:', error);
+    return { ok: false, message: 'Failed to update speaker.' };
+  }
 }
 
 /**
@@ -107,11 +120,9 @@ export async function createSpeakerFromRegistrantId(input: {
     throw new Error('Registrant does not belong to this event');
   }
 
-  const companyName = registrant.company?.name;
-  if (!companyName) {
-    throw new Error(
-      'Registrant must have a company to be created as an APSSpeaker'
-    );
+  const profileId = registrant.appUser?.profile?.id ?? null;
+  if (!profileId) {
+    throw new Error('Registrant must have a profile to be created as a speaker');
   }
 
   // Ensure the registrant is marked as a speaker (best-effort; used elsewhere in the app)
@@ -121,33 +132,15 @@ export async function createSpeakerFromRegistrantId(input: {
     });
   }
 
-  const profilePicKey = registrant.appUser?.profile?.profilePicture ?? null;
-
   // Create APSSpeaker record (what the Speakers page lists)
   const speakerRes = await requestGraphQL<{
     createAPSSpeaker?: { id: string } | null;
   }>(CREATE_APS_SPEAKER, {
     input: {
       eventId: input.eventId,
-      firstName: registrant.firstName || '—',
-      lastName: registrant.lastName || '—',
-      email: registrant.email,
-      company: companyName,
-      title: registrant.jobTitle || '—',
-      phone: registrant.phone ?? null,
-      linkedin: null,
-      bio:
-        registrant.bio?.trim() ||
-        `Speaker bio for ${registrant.firstName ?? ''} ${registrant.lastName ?? ''}`.trim() ||
-        '—',
+      profileId,
       presentationTitle: registrant.presentationTitle ?? null,
       presentationSummary: registrant.presentationSummary ?? null,
-      headshot:
-        profilePicKey ||
-        registrant.headshot ||
-        'https://placehold.co/400x400/png',
-      mediaConsent: true,
-      privacyConsent: true,
     },
   });
 
@@ -155,62 +148,11 @@ export async function createSpeakerFromRegistrantId(input: {
     throw new Error('Failed to create APSSpeaker');
   }
 
+  await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+    input: { id: profileId, speakerId: speakerRes.createAPSSpeaker.id },
+  });
+
   return speakerRes.createAPSSpeaker;
-}
-
-/**
- * On speaker detail load, ensure APSSpeaker.headshot is synced from the matching
- * registrant's appUser.profile.profilePicture (if present).
- *
- * We only overwrite the headshot if it's missing or a placeholder.
- */
-export async function syncSpeakerHeadshotFromRegistrant(input: {
-  eventId: string;
-  speakerId: string;
-}) {
-  const speakerRes = await requestGraphQL<{
-    getAPSSpeaker?: { id: string; eventId: string; email: string; headshot?: string | null } | null;
-  }>(GET_APS_SPEAKER, { id: input.speakerId });
-
-  const speaker = speakerRes.getAPSSpeaker;
-  if (!speaker) return null;
-
-  // Only sync if headshot is missing/placeholder.
-  const headshot = (speaker.headshot ?? '').trim();
-  const bucket =
-    process.env.AWS_S3_BUCKET ||
-    process.env.NEXT_PUBLIC_AWS_USER_FILES_S3_BUCKET ||
-    process.env.NEXT_PUBLIC_AWS_S3_BUCKET;
-  const isRawS3BucketUrl =
-    !!bucket &&
-    headshot.includes(`${bucket}.s3.`) &&
-    headshot.includes('.amazonaws.com/');
-
-  const isPlaceholder =
-    !headshot ||
-    headshot.includes('placehold.co') ||
-    headshot.includes('hub-mock') ||
-    isRawS3BucketUrl;
-  if (!isPlaceholder) return speaker;
-
-  const registrantId = await findRegistrantIdByEventAndEmail(
-    input.eventId,
-    speaker.email
-  );
-  if (!registrantId) return speaker;
-
-  const registrant = await fetchRegistrantById(registrantId);
-  const key = registrant?.appUser?.profile?.profilePicture ?? null;
-  if (!key) return speaker;
-
-  const updated = await requestGraphQL<{
-    updateAPSSpeaker?: { id: string; headshot?: string | null } | null;
-  }>(UPDATE_APS_SPEAKER, { input: { id: speaker.id, headshot: key } });
-
-  return {
-    ...speaker,
-    headshot: updated.updateAPSSpeaker?.headshot ?? key,
-  };
 }
 
 export async function cleanupOrphanedSessionSpeakers() {

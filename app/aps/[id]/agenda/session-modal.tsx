@@ -25,9 +25,7 @@ import {
 
 export type SpeakerOption = {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  profile?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null;
 };
 export type SponsorOption = {
   id: string;
@@ -48,7 +46,8 @@ export type AgendaSessionRow = {
 };
 
 function displaySpeaker(s: SpeakerOption) {
-  return `${s.firstName} ${s.lastName}`.trim() || s.email;
+  const name = `${s.profile?.firstName ?? ''} ${s.profile?.lastName ?? ''}`.trim();
+  return name || s.profile?.email || s.id;
 }
 
 function displaySponsor(s: SponsorOption) {
@@ -128,7 +127,8 @@ export default function SessionModal({
     if (!q) return speakers;
     return speakers.filter((s) => {
       const name = displaySpeaker(s).toLowerCase();
-      return name.includes(q) || s.email.toLowerCase().includes(q);
+      const email = s.profile?.email?.toLowerCase() ?? '';
+      return name.includes(q) || email.includes(q);
     });
   }, [form.speakerQuery, speakers]);
 
@@ -617,7 +617,7 @@ export default function SessionModal({
                           {displaySpeaker(s)}
                         </span>
                         <span className='truncate text-xs text-slate-600'>
-                          {s.email}
+                          {s.profile?.email ?? '—'}
                         </span>
                       </label>
                     ))
