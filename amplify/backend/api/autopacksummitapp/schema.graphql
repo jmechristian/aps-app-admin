@@ -150,6 +150,8 @@ type ApsRegistrant
   presentation: String
   presentationTitle: String
   presentationSummary: String
+  interestQuestionOne: String
+  interestQuestionTwo: String
   bio: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
   addOnsRequested: [ApsAddOn]
@@ -437,8 +439,7 @@ type APSSpeaker
   id: ID!
   presentationTitle: String
   presentationSummary: String
-  profileId: ID!
-    @index(name: "bySpeakerProfile", sortKeyFields: ["eventId"])
+  profileId: ID! @index(name: "bySpeakerProfile", sortKeyFields: ["eventId"])
   profile: ApsAppUserProfile! @belongsTo(fields: ["profileId"])
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
