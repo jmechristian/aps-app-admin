@@ -134,6 +134,8 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -295,6 +297,8 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -456,6 +460,8 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1534,6 +1540,8 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1669,6 +1677,8 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1804,6 +1814,8 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1905,6 +1917,8 @@ export const onCreateApsAppUser = /* GraphQL */ `subscription OnCreateApsAppUser
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -2028,6 +2042,8 @@ export const onUpdateApsAppUser = /* GraphQL */ `subscription OnUpdateApsAppUser
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -2151,6 +2167,8 @@ export const onDeleteApsAppUser = /* GraphQL */ `subscription OnDeleteApsAppUser
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5529,6 +5547,8 @@ export const onCreateApsSeatingChartRegistrant = /* GraphQL */ `subscription OnC
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5613,6 +5633,8 @@ export const onUpdateApsSeatingChartRegistrant = /* GraphQL */ `subscription OnU
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5697,6 +5719,8 @@ export const onDeleteApsSeatingChartRegistrant = /* GraphQL */ `subscription OnD
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5926,6 +5950,8 @@ export const onCreateRegistrantAddOnsRequested = /* GraphQL */ `subscription OnC
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6014,6 +6040,8 @@ export const onUpdateRegistrantAddOnsRequested = /* GraphQL */ `subscription OnU
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6102,6 +6130,8 @@ export const onDeleteRegistrantAddOnsRequested = /* GraphQL */ `subscription OnD
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6190,6 +6220,8 @@ export const onCreateRegistrantAddOnsApproved = /* GraphQL */ `subscription OnCr
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6278,6 +6310,8 @@ export const onUpdateRegistrantAddOnsApproved = /* GraphQL */ `subscription OnUp
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6366,6 +6400,8 @@ export const onDeleteRegistrantAddOnsApproved = /* GraphQL */ `subscription OnDe
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail

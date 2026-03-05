@@ -120,6 +120,8 @@ type ApsRegistrant
   termsAccepted: Boolean
   interests: [String]
   otherInterest: String
+  interestQuestionOne: String
+  interestQuestionTwo: String
   billingAddressFirstName: String
   billingAddressLastName: String
   billingAddressEmail: String
@@ -150,8 +152,6 @@ type ApsRegistrant
   presentation: String
   presentationTitle: String
   presentationSummary: String
-  interestQuestionOne: String
-  interestQuestionTwo: String
   bio: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
   addOnsRequested: [ApsAddOn]

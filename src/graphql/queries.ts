@@ -118,6 +118,8 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1541,6 +1543,8 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1642,6 +1646,8 @@ export const listApsRegistrants = /* GraphQL */ `query ListApsRegistrants(
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1717,6 +1723,8 @@ export const apsRegistrantsByApsID = /* GraphQL */ `query ApsRegistrantsByApsID(
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1792,6 +1800,8 @@ export const apsRegistrantsByCompanyId = /* GraphQL */ `query ApsRegistrantsByCo
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1857,6 +1867,8 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -4790,6 +4802,8 @@ export const getApsSeatingChartRegistrant = /* GraphQL */ `query GetApsSeatingCh
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5104,6 +5118,8 @@ export const getRegistrantAddOnsRequested = /* GraphQL */ `query GetRegistrantAd
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5276,6 +5292,8 @@ export const getRegistrantAddOnsApproved = /* GraphQL */ `query GetRegistrantAdd
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail

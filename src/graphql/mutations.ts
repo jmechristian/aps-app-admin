@@ -470,6 +470,8 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -606,6 +608,8 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -742,6 +746,8 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
     termsAccepted
     interests
     otherInterest
+    interestQuestionOne
+    interestQuestionTwo
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -910,6 +916,8 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1034,6 +1042,8 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1158,6 +1168,8 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1484,6 +1496,8 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1645,6 +1659,8 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1806,6 +1822,8 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5086,6 +5104,8 @@ export const createApsSeatingChartRegistrant = /* GraphQL */ `mutation CreateAps
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5171,6 +5191,8 @@ export const updateApsSeatingChartRegistrant = /* GraphQL */ `mutation UpdateAps
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5256,6 +5278,8 @@ export const deleteApsSeatingChartRegistrant = /* GraphQL */ `mutation DeleteAps
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6047,6 +6071,8 @@ export const createRegistrantAddOnsRequested = /* GraphQL */ `mutation CreateReg
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6136,6 +6162,8 @@ export const updateRegistrantAddOnsRequested = /* GraphQL */ `mutation UpdateReg
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6225,6 +6253,8 @@ export const deleteRegistrantAddOnsRequested = /* GraphQL */ `mutation DeleteReg
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6314,6 +6344,8 @@ export const createRegistrantAddOnsApproved = /* GraphQL */ `mutation CreateRegi
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6403,6 +6435,8 @@ export const updateRegistrantAddOnsApproved = /* GraphQL */ `mutation UpdateRegi
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6492,6 +6526,8 @@ export const deleteRegistrantAddOnsApproved = /* GraphQL */ `mutation DeleteRegi
       termsAccepted
       interests
       otherInterest
+      interestQuestionOne
+      interestQuestionTwo
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
