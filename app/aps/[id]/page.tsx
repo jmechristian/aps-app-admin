@@ -9,7 +9,6 @@ import { updateAps } from '@/app/actions/aps';
 type APS = {
   id: string;
   year: string;
-  codes?: string[] | null;
   startDate?: string | null;
   endDate?: string | null;
   location?: string | null;
@@ -25,7 +24,6 @@ const GET_APS = /* GraphQL */ `
     getAPS(id: $id) {
       id
       year
-      codes
       startDate
       endDate
       location

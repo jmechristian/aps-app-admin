@@ -1271,7 +1271,10 @@ export const getAPS = /* GraphQL */ `query GetAPS($id: ID!) {
   getAPS(id: $id) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -1343,7 +1346,6 @@ export const listAPS = /* GraphQL */ `query ListAPS($filter: ModelAPSFilterInput
     items {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1362,6 +1364,97 @@ export const listAPS = /* GraphQL */ `query ListAPS($filter: ModelAPSFilterInput
   }
 }
 ` as GeneratedQuery<APITypes.ListAPSQueryVariables, APITypes.ListAPSQuery>;
+export const getAPSCode = /* GraphQL */ `query GetAPSCode($id: ID!) {
+  getAPSCode(id: $id) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetAPSCodeQueryVariables,
+  APITypes.GetAPSCodeQuery
+>;
+export const listAPSCodes = /* GraphQL */ `query ListAPSCodes(
+  $filter: ModelAPSCodeFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listAPSCodes(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      code
+      eventId
+      limit
+      used
+      createdAt
+      updatedAt
+      aPSCodesId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListAPSCodesQueryVariables,
+  APITypes.ListAPSCodesQuery
+>;
+export const aPSCodesByEventId = /* GraphQL */ `query APSCodesByEventId(
+  $eventId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelAPSCodeFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  aPSCodesByEventId(
+    eventId: $eventId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      code
+      eventId
+      limit
+      used
+      createdAt
+      updatedAt
+      aPSCodesId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.APSCodesByEventIdQueryVariables,
+  APITypes.APSCodesByEventIdQuery
+>;
 export const getAPSBoard = /* GraphQL */ `query GetAPSBoard($id: ID!) {
   getAPSBoard(id: $id) {
     id
@@ -1415,7 +1508,6 @@ export const getApsAgenda = /* GraphQL */ `query GetApsAgenda($id: ID!) {
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1499,7 +1591,6 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1772,6 +1863,83 @@ export const apsRegistrantsByApsID = /* GraphQL */ `query ApsRegistrantsByApsID(
 ` as GeneratedQuery<
   APITypes.ApsRegistrantsByApsIDQueryVariables,
   APITypes.ApsRegistrantsByApsIDQuery
+>;
+export const apsRegistrantsByEmail = /* GraphQL */ `query ApsRegistrantsByEmail(
+  $email: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsRegistrantFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsRegistrantsByEmail(
+    email: $email
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      interestQuestionOne
+      interestQuestionTwo
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsRegistrantsByEmailQueryVariables,
+  APITypes.ApsRegistrantsByEmailQuery
 >;
 export const apsRegistrantsByCompanyId = /* GraphQL */ `query ApsRegistrantsByCompanyId(
   $companyId: ID!
@@ -2839,7 +3007,6 @@ export const getApsAppUserPhoto = /* GraphQL */ `query GetApsAppUserPhoto($id: I
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3234,7 +3401,6 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3383,7 +3549,6 @@ export const getApsSponsor = /* GraphQL */ `query GetApsSponsor($id: ID!) {
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3764,7 +3929,6 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3988,7 +4152,6 @@ export const getApsAppExhibitorPromotion = /* GraphQL */ `query GetApsAppExhibit
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4146,7 +4309,6 @@ export const getApsAppExhibitorDeal = /* GraphQL */ `query GetApsAppExhibitorDea
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4339,7 +4501,6 @@ export const getApsAppExhibitorPhoto = /* GraphQL */ `query GetApsAppExhibitorPh
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4490,7 +4651,6 @@ export const getApsAppExhibitorHandout = /* GraphQL */ `query GetApsAppExhibitor
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4627,7 +4787,6 @@ export const getApsAddOn = /* GraphQL */ `query GetApsAddOn($id: ID!) {
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4975,7 +5134,6 @@ export const getAPSCompanyEvents = /* GraphQL */ `query GetAPSCompanyEvents($id:
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location

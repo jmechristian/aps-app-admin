@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 type APS = {
   id: string;
   year: string;
-  codes?: string[] | null;
 };
 
 const LIST_APS = /* GraphQL */ `
@@ -16,7 +15,6 @@ const LIST_APS = /* GraphQL */ `
       items {
         id
         year
-        codes
       }
     }
   }

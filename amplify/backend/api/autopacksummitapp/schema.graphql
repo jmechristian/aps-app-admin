@@ -40,7 +40,7 @@ type APS
   ) {
   id: ID!
   year: String!
-  codes: [String]
+  codes: [APSCode] @hasMany(indexName: "byEvent")
   agenda: ApsAgenda @hasOne
   startDate: String
   endDate: String
@@ -61,6 +61,22 @@ type APS
   exhibitorPhotos: [ApsAppExhibitorPhoto] @hasMany(indexName: "byEvent")
   exhibitorHandouts: [ApsAppExhibitorHandout] @hasMany(indexName: "byEvent")
   addOns: [ApsAddOn] @hasMany(indexName: "byEvent")
+}
+
+type APSCode
+  @model
+  @auth(
+    rules: [
+      { allow: public, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
+  id: ID!
+  code: String!
+  eventId: ID! @index(name: "byEvent")
+  event: APS! @belongsTo(fields: ["eventId"])
+  limit: Int
+  used: Int!
 }
 
 # Board Members
@@ -111,7 +127,7 @@ type ApsRegistrant
   aps: APS! @belongsTo(fields: ["apsID"])
   firstName: String
   lastName: String
-  email: String!
+  email: String! @index(name: "byEmail")
   phone: String
   companyId: ID @index(name: "byCompany")
   company: APSCompany @belongsTo(fields: ["companyId"])

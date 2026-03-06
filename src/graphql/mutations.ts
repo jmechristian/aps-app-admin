@@ -15,7 +15,10 @@ export const createAPS = /* GraphQL */ `mutation CreateAPS(
   createAPS(input: $input, condition: $condition) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -92,7 +95,10 @@ export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
   updateAPS(input: $input, condition: $condition) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -169,7 +175,10 @@ export const deleteAPS = /* GraphQL */ `mutation DeleteAPS(
   deleteAPS(input: $input, condition: $condition) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -238,6 +247,114 @@ export const deleteAPS = /* GraphQL */ `mutation DeleteAPS(
 ` as GeneratedMutation<
   APITypes.DeleteAPSMutationVariables,
   APITypes.DeleteAPSMutation
+>;
+export const createAPSCode = /* GraphQL */ `mutation CreateAPSCode(
+  $input: CreateAPSCodeInput!
+  $condition: ModelAPSCodeConditionInput
+) {
+  createAPSCode(input: $input, condition: $condition) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateAPSCodeMutationVariables,
+  APITypes.CreateAPSCodeMutation
+>;
+export const updateAPSCode = /* GraphQL */ `mutation UpdateAPSCode(
+  $input: UpdateAPSCodeInput!
+  $condition: ModelAPSCodeConditionInput
+) {
+  updateAPSCode(input: $input, condition: $condition) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateAPSCodeMutationVariables,
+  APITypes.UpdateAPSCodeMutation
+>;
+export const deleteAPSCode = /* GraphQL */ `mutation DeleteAPSCode(
+  $input: DeleteAPSCodeInput!
+  $condition: ModelAPSCodeConditionInput
+) {
+  deleteAPSCode(input: $input, condition: $condition) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteAPSCodeMutationVariables,
+  APITypes.DeleteAPSCodeMutation
 >;
 export const createAPSBoard = /* GraphQL */ `mutation CreateAPSBoard(
   $input: CreateAPSBoardInput!
@@ -315,7 +432,6 @@ export const createApsAgenda = /* GraphQL */ `mutation CreateApsAgenda(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -352,7 +468,6 @@ export const updateApsAgenda = /* GraphQL */ `mutation UpdateApsAgenda(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -389,7 +504,6 @@ export const deleteApsAgenda = /* GraphQL */ `mutation DeleteApsAgenda(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -426,7 +540,6 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -564,7 +677,6 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -702,7 +814,6 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -2748,7 +2859,6 @@ export const createApsAppUserPhoto = /* GraphQL */ `mutation CreateApsAppUserPho
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -2795,7 +2905,6 @@ export const updateApsAppUserPhoto = /* GraphQL */ `mutation UpdateApsAppUserPho
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -2842,7 +2951,6 @@ export const deleteApsAppUserPhoto = /* GraphQL */ `mutation DeleteApsAppUserPho
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3167,7 +3275,6 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3234,7 +3341,6 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3301,7 +3407,6 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3360,7 +3465,6 @@ export const createApsSponsor = /* GraphQL */ `mutation CreateApsSponsor(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3437,7 +3541,6 @@ export const updateApsSponsor = /* GraphQL */ `mutation UpdateApsSponsor(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3514,7 +3617,6 @@ export const deleteApsSponsor = /* GraphQL */ `mutation DeleteApsSponsor(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3939,7 +4041,6 @@ export const createApsAppExhibitorProfile = /* GraphQL */ `mutation CreateApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4032,7 +4133,6 @@ export const updateApsAppExhibitorProfile = /* GraphQL */ `mutation UpdateApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4125,7 +4225,6 @@ export const deleteApsAppExhibitorProfile = /* GraphQL */ `mutation DeleteApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4204,7 +4303,6 @@ export const createApsAppExhibitorPromotion = /* GraphQL */ `mutation CreateApsA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4258,7 +4356,6 @@ export const updateApsAppExhibitorPromotion = /* GraphQL */ `mutation UpdateApsA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4312,7 +4409,6 @@ export const deleteApsAppExhibitorPromotion = /* GraphQL */ `mutation DeleteApsA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4375,7 +4471,6 @@ export const createApsAppExhibitorDeal = /* GraphQL */ `mutation CreateApsAppExh
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4439,7 +4534,6 @@ export const updateApsAppExhibitorDeal = /* GraphQL */ `mutation UpdateApsAppExh
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4503,7 +4597,6 @@ export const deleteApsAppExhibitorDeal = /* GraphQL */ `mutation DeleteApsAppExh
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4559,7 +4652,6 @@ export const createApsAppExhibitorPhoto = /* GraphQL */ `mutation CreateApsAppEx
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4614,7 +4706,6 @@ export const updateApsAppExhibitorPhoto = /* GraphQL */ `mutation UpdateApsAppEx
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4669,7 +4760,6 @@ export const deleteApsAppExhibitorPhoto = /* GraphQL */ `mutation DeleteApsAppEx
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4722,7 +4812,6 @@ export const createApsAppExhibitorHandout = /* GraphQL */ `mutation CreateApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4775,7 +4864,6 @@ export const updateApsAppExhibitorHandout = /* GraphQL */ `mutation UpdateApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4828,7 +4916,6 @@ export const deleteApsAppExhibitorHandout = /* GraphQL */ `mutation DeleteApsApp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4873,7 +4960,6 @@ export const createApsAddOn = /* GraphQL */ `mutation CreateApsAddOn(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4926,7 +5012,6 @@ export const updateApsAddOn = /* GraphQL */ `mutation UpdateApsAddOn(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4979,7 +5064,6 @@ export const deleteApsAddOn = /* GraphQL */ `mutation DeleteApsAddOn(
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5899,7 +5983,6 @@ export const createAPSCompanyEvents = /* GraphQL */ `mutation CreateAPSCompanyEv
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5953,7 +6036,6 @@ export const updateAPSCompanyEvents = /* GraphQL */ `mutation UpdateAPSCompanyEv
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -6007,7 +6089,6 @@ export const deleteAPSCompanyEvents = /* GraphQL */ `mutation DeleteAPSCompanyEv
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location

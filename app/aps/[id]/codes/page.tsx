@@ -1,32 +1,31 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { requestGraphQL } from '@/lib/appsync';
 import CodesSection from '../codes-section';
-import { addCodeToAps, addCodesToAps, removeCodeFromAps } from '@/app/actions/aps';
+import {
+  addCodeToAps,
+  addCodesToAps,
+  fetchCodesByEventId,
+  removeCodeFromAps,
+  updateCode,
+} from '@/app/actions/aps';
+import { requestGraphQL } from '@/lib/appsync';
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-type APSCodes = {
-  id: string;
-  year: string;
-  codes?: string[] | null;
-};
-
-const GET_APS_CODES = /* GraphQL */ `
+const GET_APS_YEAR = /* GraphQL */ `
   query GetAPS($id: ID!) {
     getAPS(id: $id) {
       id
       year
-      codes
     }
   }
 `;
 
-async function fetchApsCodes(id: string): Promise<APSCodes | null> {
-  const data = await requestGraphQL<{ getAPS?: APSCodes | null }>(
-    GET_APS_CODES,
+async function fetchApsYear(id: string): Promise<{ year: string } | null> {
+  const data = await requestGraphQL<{ getAPS?: { id: string; year: string } | null }>(
+    GET_APS_YEAR,
     { id }
   );
   return data.getAPS ?? null;
@@ -34,7 +33,10 @@ async function fetchApsCodes(id: string): Promise<APSCodes | null> {
 
 export default async function CodesPage({ params }: PageProps) {
   const { id: eventId } = await params;
-  const aps = await fetchApsCodes(eventId);
+  const [aps, codes] = await Promise.all([
+    fetchApsYear(eventId),
+    fetchCodesByEventId(eventId),
+  ]);
 
   if (!aps) {
     notFound();
@@ -65,9 +67,10 @@ export default async function CodesPage({ params }: PageProps) {
 
         <CodesSection
           eventId={eventId}
-          codes={aps.codes ?? []}
+          codes={codes}
           onAddCode={addCodeToAps}
           onAddCodes={addCodesToAps}
+          onUpdateCode={updateCode}
           onRemoveCode={removeCodeFromAps}
         />
       </main>

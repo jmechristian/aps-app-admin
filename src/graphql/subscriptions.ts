@@ -1110,7 +1110,10 @@ export const onCreateAPS = /* GraphQL */ `subscription OnCreateAPS($filter: Mode
   onCreateAPS(filter: $filter) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -1184,7 +1187,10 @@ export const onUpdateAPS = /* GraphQL */ `subscription OnUpdateAPS($filter: Mode
   onUpdateAPS(filter: $filter) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -1258,7 +1264,10 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
   onDeleteAPS(filter: $filter) {
     id
     year
-    codes
+    codes {
+      nextToken
+      __typename
+    }
     agenda {
       id
       eventId
@@ -1328,6 +1337,105 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
   APITypes.OnDeleteAPSSubscriptionVariables,
   APITypes.OnDeleteAPSSubscription
 >;
+export const onCreateAPSCode = /* GraphQL */ `subscription OnCreateAPSCode($filter: ModelSubscriptionAPSCodeFilterInput) {
+  onCreateAPSCode(filter: $filter) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateAPSCodeSubscriptionVariables,
+  APITypes.OnCreateAPSCodeSubscription
+>;
+export const onUpdateAPSCode = /* GraphQL */ `subscription OnUpdateAPSCode($filter: ModelSubscriptionAPSCodeFilterInput) {
+  onUpdateAPSCode(filter: $filter) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateAPSCodeSubscriptionVariables,
+  APITypes.OnUpdateAPSCodeSubscription
+>;
+export const onDeleteAPSCode = /* GraphQL */ `subscription OnDeleteAPSCode($filter: ModelSubscriptionAPSCodeFilterInput) {
+  onDeleteAPSCode(filter: $filter) {
+    id
+    code
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    limit
+    used
+    createdAt
+    updatedAt
+    aPSCodesId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteAPSCodeSubscriptionVariables,
+  APITypes.OnDeleteAPSCodeSubscription
+>;
 export const onCreateAPSBoard = /* GraphQL */ `subscription OnCreateAPSBoard($filter: ModelSubscriptionAPSBoardFilterInput) {
   onCreateAPSBoard(filter: $filter) {
     id
@@ -1392,7 +1500,6 @@ export const onCreateApsAgenda = /* GraphQL */ `subscription OnCreateApsAgenda($
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1426,7 +1533,6 @@ export const onUpdateApsAgenda = /* GraphQL */ `subscription OnUpdateApsAgenda($
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1460,7 +1566,6 @@ export const onDeleteApsAgenda = /* GraphQL */ `subscription OnDeleteApsAgenda($
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1496,7 +1601,6 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1633,7 +1737,6 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -1770,7 +1873,6 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
     aps {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3239,7 +3341,6 @@ export const onCreateApsAppUserPhoto = /* GraphQL */ `subscription OnCreateApsAp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3285,7 +3386,6 @@ export const onUpdateApsAppUserPhoto = /* GraphQL */ `subscription OnUpdateApsAp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3331,7 +3431,6 @@ export const onDeleteApsAppUserPhoto = /* GraphQL */ `subscription OnDeleteApsAp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3649,7 +3748,6 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3715,7 +3813,6 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3781,7 +3878,6 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3839,7 +3935,6 @@ export const onCreateApsSponsor = /* GraphQL */ `subscription OnCreateApsSponsor
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3915,7 +4010,6 @@ export const onUpdateApsSponsor = /* GraphQL */ `subscription OnUpdateApsSponsor
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -3991,7 +4085,6 @@ export const onDeleteApsSponsor = /* GraphQL */ `subscription OnDeleteApsSponsor
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4409,7 +4502,6 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4501,7 +4593,6 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4593,7 +4684,6 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4671,7 +4761,6 @@ export const onCreateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnCr
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4724,7 +4813,6 @@ export const onUpdateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnUp
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4777,7 +4865,6 @@ export const onDeleteApsAppExhibitorPromotion = /* GraphQL */ `subscription OnDe
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4839,7 +4926,6 @@ export const onCreateApsAppExhibitorDeal = /* GraphQL */ `subscription OnCreateA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4902,7 +4988,6 @@ export const onUpdateApsAppExhibitorDeal = /* GraphQL */ `subscription OnUpdateA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -4965,7 +5050,6 @@ export const onDeleteApsAppExhibitorDeal = /* GraphQL */ `subscription OnDeleteA
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5020,7 +5104,6 @@ export const onCreateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnCreate
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5074,7 +5157,6 @@ export const onUpdateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnUpdate
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5128,7 +5210,6 @@ export const onDeleteApsAppExhibitorPhoto = /* GraphQL */ `subscription OnDelete
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5180,7 +5261,6 @@ export const onCreateApsAppExhibitorHandout = /* GraphQL */ `subscription OnCrea
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5232,7 +5312,6 @@ export const onUpdateApsAppExhibitorHandout = /* GraphQL */ `subscription OnUpda
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5284,7 +5363,6 @@ export const onDeleteApsAppExhibitorHandout = /* GraphQL */ `subscription OnDele
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5326,7 +5404,6 @@ export const onCreateApsAddOn = /* GraphQL */ `subscription OnCreateApsAddOn($fi
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5376,7 +5453,6 @@ export const onUpdateApsAddOn = /* GraphQL */ `subscription OnUpdateApsAddOn($fi
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5426,7 +5502,6 @@ export const onDeleteApsAddOn = /* GraphQL */ `subscription OnDeleteApsAddOn($fi
     event {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5781,7 +5856,6 @@ export const onCreateAPSCompanyEvents = /* GraphQL */ `subscription OnCreateAPSC
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5834,7 +5908,6 @@ export const onUpdateAPSCompanyEvents = /* GraphQL */ `subscription OnUpdateAPSC
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location
@@ -5887,7 +5960,6 @@ export const onDeleteAPSCompanyEvents = /* GraphQL */ `subscription OnDeleteAPSC
     aPS {
       id
       year
-      codes
       startDate
       endDate
       location
