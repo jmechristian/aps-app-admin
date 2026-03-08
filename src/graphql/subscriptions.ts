@@ -1694,11 +1694,7 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
       apsSeatingChartRegistrantsId
       __typename
     }
-    addOnsRequested {
-      nextToken
-      __typename
-    }
-    addOnsApproved {
+    addOnRequests {
       nextToken
       __typename
     }
@@ -1830,11 +1826,7 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
       apsSeatingChartRegistrantsId
       __typename
     }
-    addOnsRequested {
-      nextToken
-      __typename
-    }
-    addOnsApproved {
+    addOnRequests {
       nextToken
       __typename
     }
@@ -1966,11 +1958,7 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
       apsSeatingChartRegistrantsId
       __typename
     }
-    addOnsRequested {
-      nextToken
-      __typename
-    }
-    addOnsApproved {
+    addOnRequests {
       nextToken
       __typename
     }
@@ -5396,7 +5384,6 @@ export const onCreateApsAddOn = /* GraphQL */ `subscription OnCreateApsAddOn($fi
     location
     date
     time
-    company
     altLink
     type
     limit
@@ -5418,11 +5405,8 @@ export const onCreateApsAddOn = /* GraphQL */ `subscription OnCreateApsAddOn($fi
       __typename
     }
     price
-    registrantsRequested {
-      nextToken
-      __typename
-    }
-    registrantsApproved {
+    preferenceSchema
+    registrantRequests {
       nextToken
       __typename
     }
@@ -5445,7 +5429,6 @@ export const onUpdateApsAddOn = /* GraphQL */ `subscription OnUpdateApsAddOn($fi
     location
     date
     time
-    company
     altLink
     type
     limit
@@ -5467,11 +5450,8 @@ export const onUpdateApsAddOn = /* GraphQL */ `subscription OnUpdateApsAddOn($fi
       __typename
     }
     price
-    registrantsRequested {
-      nextToken
-      __typename
-    }
-    registrantsApproved {
+    preferenceSchema
+    registrantRequests {
       nextToken
       __typename
     }
@@ -5494,7 +5474,6 @@ export const onDeleteApsAddOn = /* GraphQL */ `subscription OnDeleteApsAddOn($fi
     location
     date
     time
-    company
     altLink
     type
     limit
@@ -5516,11 +5495,8 @@ export const onDeleteApsAddOn = /* GraphQL */ `subscription OnDeleteApsAddOn($fi
       __typename
     }
     price
-    registrantsRequested {
-      nextToken
-      __typename
-    }
-    registrantsApproved {
+    preferenceSchema
+    registrantRequests {
       nextToken
       __typename
     }
@@ -5533,6 +5509,282 @@ export const onDeleteApsAddOn = /* GraphQL */ `subscription OnDeleteApsAddOn($fi
 ` as GeneratedSubscription<
   APITypes.OnDeleteApsAddOnSubscriptionVariables,
   APITypes.OnDeleteApsAddOnSubscription
+>;
+export const onCreateRegistrantAddOnRequest = /* GraphQL */ `subscription OnCreateRegistrantAddOnRequest(
+  $filter: ModelSubscriptionRegistrantAddOnRequestFilterInput
+) {
+  onCreateRegistrantAddOnRequest(filter: $filter) {
+    id
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      interestQuestionOne
+      interestQuestionTwo
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    addOnId
+    addOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      altLink
+      type
+      limit
+      eventId
+      price
+      preferenceSchema
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    status
+    preferences
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateRegistrantAddOnRequestSubscriptionVariables,
+  APITypes.OnCreateRegistrantAddOnRequestSubscription
+>;
+export const onUpdateRegistrantAddOnRequest = /* GraphQL */ `subscription OnUpdateRegistrantAddOnRequest(
+  $filter: ModelSubscriptionRegistrantAddOnRequestFilterInput
+) {
+  onUpdateRegistrantAddOnRequest(filter: $filter) {
+    id
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      interestQuestionOne
+      interestQuestionTwo
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    addOnId
+    addOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      altLink
+      type
+      limit
+      eventId
+      price
+      preferenceSchema
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    status
+    preferences
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateRegistrantAddOnRequestSubscriptionVariables,
+  APITypes.OnUpdateRegistrantAddOnRequestSubscription
+>;
+export const onDeleteRegistrantAddOnRequest = /* GraphQL */ `subscription OnDeleteRegistrantAddOnRequest(
+  $filter: ModelSubscriptionRegistrantAddOnRequestFilterInput
+) {
+  onDeleteRegistrantAddOnRequest(filter: $filter) {
+    id
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      interestQuestionOne
+      interestQuestionTwo
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    addOnId
+    addOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      altLink
+      type
+      limit
+      eventId
+      price
+      preferenceSchema
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    status
+    preferences
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteRegistrantAddOnRequestSubscriptionVariables,
+  APITypes.OnDeleteRegistrantAddOnRequestSubscription
 >;
 export const onCreateApsSeatingChart = /* GraphQL */ `subscription OnCreateApsSeatingChart(
   $filter: ModelSubscriptionApsSeatingChartFilterInput
@@ -6001,546 +6253,6 @@ export const onDeleteAPSCompanyEvents = /* GraphQL */ `subscription OnDeleteAPSC
 ` as GeneratedSubscription<
   APITypes.OnDeleteAPSCompanyEventsSubscriptionVariables,
   APITypes.OnDeleteAPSCompanyEventsSubscription
->;
-export const onCreateRegistrantAddOnsRequested = /* GraphQL */ `subscription OnCreateRegistrantAddOnsRequested(
-  $filter: ModelSubscriptionRegistrantAddOnsRequestedFilterInput
-) {
-  onCreateRegistrantAddOnsRequested(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnCreateRegistrantAddOnsRequestedSubscriptionVariables,
-  APITypes.OnCreateRegistrantAddOnsRequestedSubscription
->;
-export const onUpdateRegistrantAddOnsRequested = /* GraphQL */ `subscription OnUpdateRegistrantAddOnsRequested(
-  $filter: ModelSubscriptionRegistrantAddOnsRequestedFilterInput
-) {
-  onUpdateRegistrantAddOnsRequested(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnUpdateRegistrantAddOnsRequestedSubscriptionVariables,
-  APITypes.OnUpdateRegistrantAddOnsRequestedSubscription
->;
-export const onDeleteRegistrantAddOnsRequested = /* GraphQL */ `subscription OnDeleteRegistrantAddOnsRequested(
-  $filter: ModelSubscriptionRegistrantAddOnsRequestedFilterInput
-) {
-  onDeleteRegistrantAddOnsRequested(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnDeleteRegistrantAddOnsRequestedSubscriptionVariables,
-  APITypes.OnDeleteRegistrantAddOnsRequestedSubscription
->;
-export const onCreateRegistrantAddOnsApproved = /* GraphQL */ `subscription OnCreateRegistrantAddOnsApproved(
-  $filter: ModelSubscriptionRegistrantAddOnsApprovedFilterInput
-) {
-  onCreateRegistrantAddOnsApproved(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnCreateRegistrantAddOnsApprovedSubscriptionVariables,
-  APITypes.OnCreateRegistrantAddOnsApprovedSubscription
->;
-export const onUpdateRegistrantAddOnsApproved = /* GraphQL */ `subscription OnUpdateRegistrantAddOnsApproved(
-  $filter: ModelSubscriptionRegistrantAddOnsApprovedFilterInput
-) {
-  onUpdateRegistrantAddOnsApproved(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnUpdateRegistrantAddOnsApprovedSubscriptionVariables,
-  APITypes.OnUpdateRegistrantAddOnsApprovedSubscription
->;
-export const onDeleteRegistrantAddOnsApproved = /* GraphQL */ `subscription OnDeleteRegistrantAddOnsApproved(
-  $filter: ModelSubscriptionRegistrantAddOnsApprovedFilterInput
-) {
-  onDeleteRegistrantAddOnsApproved(filter: $filter) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnDeleteRegistrantAddOnsApprovedSubscriptionVariables,
-  APITypes.OnDeleteRegistrantAddOnsApprovedSubscription
 >;
 export const onCreateSessionSpeakers = /* GraphQL */ `subscription OnCreateSessionSpeakers(
   $filter: ModelSubscriptionSessionSpeakersFilterInput

@@ -1684,11 +1684,7 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
       apsSeatingChartRegistrantsId
       __typename
     }
-    addOnsRequested {
-      nextToken
-      __typename
-    }
-    addOnsApproved {
+    addOnRequests {
       nextToken
       __typename
     }
@@ -4779,7 +4775,6 @@ export const getApsAddOn = /* GraphQL */ `query GetApsAddOn($id: ID!) {
     location
     date
     time
-    company
     altLink
     type
     limit
@@ -4801,11 +4796,8 @@ export const getApsAddOn = /* GraphQL */ `query GetApsAddOn($id: ID!) {
       __typename
     }
     price
-    registrantsRequested {
-      nextToken
-      __typename
-    }
-    registrantsApproved {
+    preferenceSchema
+    registrantRequests {
       nextToken
       __typename
     }
@@ -4833,12 +4825,12 @@ export const listApsAddOns = /* GraphQL */ `query ListApsAddOns(
       location
       date
       time
-      company
       altLink
       type
       limit
       eventId
       price
+      preferenceSchema
       createdAt
       updatedAt
       aPSAddOnsId
@@ -4874,12 +4866,12 @@ export const apsAddOnsByEventId = /* GraphQL */ `query ApsAddOnsByEventId(
       location
       date
       time
-      company
       altLink
       type
       limit
       eventId
       price
+      preferenceSchema
       createdAt
       updatedAt
       aPSAddOnsId
@@ -4892,6 +4884,188 @@ export const apsAddOnsByEventId = /* GraphQL */ `query ApsAddOnsByEventId(
 ` as GeneratedQuery<
   APITypes.ApsAddOnsByEventIdQueryVariables,
   APITypes.ApsAddOnsByEventIdQuery
+>;
+export const getRegistrantAddOnRequest = /* GraphQL */ `query GetRegistrantAddOnRequest($id: ID!) {
+  getRegistrantAddOnRequest(id: $id) {
+    id
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      interestQuestionOne
+      interestQuestionTwo
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    addOnId
+    addOn {
+      id
+      title
+      description
+      subheadline
+      location
+      date
+      time
+      altLink
+      type
+      limit
+      eventId
+      price
+      preferenceSchema
+      createdAt
+      updatedAt
+      aPSAddOnsId
+      __typename
+    }
+    status
+    preferences
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetRegistrantAddOnRequestQueryVariables,
+  APITypes.GetRegistrantAddOnRequestQuery
+>;
+export const listRegistrantAddOnRequests = /* GraphQL */ `query ListRegistrantAddOnRequests(
+  $filter: ModelRegistrantAddOnRequestFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listRegistrantAddOnRequests(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      registrantId
+      addOnId
+      status
+      preferences
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListRegistrantAddOnRequestsQueryVariables,
+  APITypes.ListRegistrantAddOnRequestsQuery
+>;
+export const registrantAddOnRequestsByRegistrantId = /* GraphQL */ `query RegistrantAddOnRequestsByRegistrantId(
+  $registrantId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelRegistrantAddOnRequestFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  registrantAddOnRequestsByRegistrantId(
+    registrantId: $registrantId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      registrantId
+      addOnId
+      status
+      preferences
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.RegistrantAddOnRequestsByRegistrantIdQueryVariables,
+  APITypes.RegistrantAddOnRequestsByRegistrantIdQuery
+>;
+export const registrantAddOnRequestsByAddOnId = /* GraphQL */ `query RegistrantAddOnRequestsByAddOnId(
+  $addOnId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelRegistrantAddOnRequestFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  registrantAddOnRequestsByAddOnId(
+    addOnId: $addOnId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      registrantId
+      addOnId
+      status
+      preferences
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.RegistrantAddOnRequestsByAddOnIdQueryVariables,
+  APITypes.RegistrantAddOnRequestsByAddOnIdQuery
 >;
 export const getApsSeatingChart = /* GraphQL */ `query GetApsSeatingChart($id: ID!) {
   getApsSeatingChart(id: $id) {
@@ -5257,354 +5431,6 @@ export const aPSCompanyEventsByAPSCompanyId = /* GraphQL */ `query APSCompanyEve
 ` as GeneratedQuery<
   APITypes.APSCompanyEventsByAPSCompanyIdQueryVariables,
   APITypes.APSCompanyEventsByAPSCompanyIdQuery
->;
-export const getRegistrantAddOnsRequested = /* GraphQL */ `query GetRegistrantAddOnsRequested($id: ID!) {
-  getRegistrantAddOnsRequested(id: $id) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.GetRegistrantAddOnsRequestedQueryVariables,
-  APITypes.GetRegistrantAddOnsRequestedQuery
->;
-export const listRegistrantAddOnsRequesteds = /* GraphQL */ `query ListRegistrantAddOnsRequesteds(
-  $filter: ModelRegistrantAddOnsRequestedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listRegistrantAddOnsRequesteds(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.ListRegistrantAddOnsRequestedsQueryVariables,
-  APITypes.ListRegistrantAddOnsRequestedsQuery
->;
-export const registrantAddOnsRequestedsByApsRegistrantId = /* GraphQL */ `query RegistrantAddOnsRequestedsByApsRegistrantId(
-  $apsRegistrantId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelRegistrantAddOnsRequestedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  registrantAddOnsRequestedsByApsRegistrantId(
-    apsRegistrantId: $apsRegistrantId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.RegistrantAddOnsRequestedsByApsRegistrantIdQueryVariables,
-  APITypes.RegistrantAddOnsRequestedsByApsRegistrantIdQuery
->;
-export const registrantAddOnsRequestedsByApsAddOnId = /* GraphQL */ `query RegistrantAddOnsRequestedsByApsAddOnId(
-  $apsAddOnId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelRegistrantAddOnsRequestedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  registrantAddOnsRequestedsByApsAddOnId(
-    apsAddOnId: $apsAddOnId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.RegistrantAddOnsRequestedsByApsAddOnIdQueryVariables,
-  APITypes.RegistrantAddOnsRequestedsByApsAddOnIdQuery
->;
-export const getRegistrantAddOnsApproved = /* GraphQL */ `query GetRegistrantAddOnsApproved($id: ID!) {
-  getRegistrantAddOnsApproved(id: $id) {
-    id
-    apsRegistrantId
-    apsAddOnId
-    apsRegistrant {
-      id
-      apsID
-      firstName
-      lastName
-      email
-      phone
-      companyId
-      jobTitle
-      attendeeType
-      termsAccepted
-      interests
-      otherInterest
-      interestQuestionOne
-      interestQuestionTwo
-      billingAddressFirstName
-      billingAddressLastName
-      billingAddressEmail
-      billingAddressPhone
-      billingAddressStreet
-      billingAddressCity
-      billingAddressState
-      billingAddressZip
-      sameAsAttendee
-      speakerTopic
-      learningObjectives
-      totalAmount
-      discountCode
-      status
-      paymentConfirmation
-      registrationEmailSent
-      registrationEmailSentDate
-      registrationEmailReceived
-      registrationEmailReceivedDate
-      welcomeEmailSent
-      welcomeEmailSentDate
-      welcomeEmailReceived
-      welcomeEmailReceivedDate
-      paymentMethod
-      paymentLast4
-      approvedAt
-      headshot
-      presentation
-      presentationTitle
-      presentationSummary
-      bio
-      appUserId
-      qrCode
-      createdAt
-      updatedAt
-      aPSRegistrantsId
-      aPSCompanyRegistrantsId
-      apsRegistrantSeatingChartRegistrantId
-      __typename
-    }
-    apsAddOn {
-      id
-      title
-      description
-      subheadline
-      location
-      date
-      time
-      company
-      altLink
-      type
-      limit
-      eventId
-      price
-      createdAt
-      updatedAt
-      aPSAddOnsId
-      __typename
-    }
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.GetRegistrantAddOnsApprovedQueryVariables,
-  APITypes.GetRegistrantAddOnsApprovedQuery
->;
-export const listRegistrantAddOnsApproveds = /* GraphQL */ `query ListRegistrantAddOnsApproveds(
-  $filter: ModelRegistrantAddOnsApprovedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listRegistrantAddOnsApproveds(
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.ListRegistrantAddOnsApprovedsQueryVariables,
-  APITypes.ListRegistrantAddOnsApprovedsQuery
->;
-export const registrantAddOnsApprovedsByApsRegistrantId = /* GraphQL */ `query RegistrantAddOnsApprovedsByApsRegistrantId(
-  $apsRegistrantId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelRegistrantAddOnsApprovedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  registrantAddOnsApprovedsByApsRegistrantId(
-    apsRegistrantId: $apsRegistrantId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.RegistrantAddOnsApprovedsByApsRegistrantIdQueryVariables,
-  APITypes.RegistrantAddOnsApprovedsByApsRegistrantIdQuery
->;
-export const registrantAddOnsApprovedsByApsAddOnId = /* GraphQL */ `query RegistrantAddOnsApprovedsByApsAddOnId(
-  $apsAddOnId: ID!
-  $sortDirection: ModelSortDirection
-  $filter: ModelRegistrantAddOnsApprovedFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  registrantAddOnsApprovedsByApsAddOnId(
-    apsAddOnId: $apsAddOnId
-    sortDirection: $sortDirection
-    filter: $filter
-    limit: $limit
-    nextToken: $nextToken
-  ) {
-    items {
-      id
-      apsRegistrantId
-      apsAddOnId
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.RegistrantAddOnsApprovedsByApsAddOnIdQueryVariables,
-  APITypes.RegistrantAddOnsApprovedsByApsAddOnIdQuery
 >;
 export const getSessionSpeakers = /* GraphQL */ `query GetSessionSpeakers($id: ID!) {
   getSessionSpeakers(id: $id) {

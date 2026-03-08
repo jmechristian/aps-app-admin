@@ -282,6 +282,12 @@ function ApsDetailClient({
               >
                 Codes
               </Link>
+              <Link
+                href={`/aps/${eventId}/add-ons`}
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
+              >
+                Add-Ons
+              </Link>
             </div>
           </div>
         </section>

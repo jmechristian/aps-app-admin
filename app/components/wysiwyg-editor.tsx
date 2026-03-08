@@ -79,6 +79,15 @@ export default function WysiwygEditor({
     onChange(html);
   }
 
+  function handlePaste(e: React.ClipboardEvent) {
+    e.preventDefault();
+    const plainText = e.clipboardData.getData('text/plain');
+    if (plainText) {
+      document.execCommand('insertText', false, plainText);
+      emit();
+    }
+  }
+
   return (
     <div className='rounded-xl border border-slate-300 bg-white'>
       <div className='flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-2'>
@@ -129,6 +138,7 @@ export default function WysiwygEditor({
           ref={editorRef}
           contentEditable={!disabled}
           suppressContentEditableWarning
+          onPaste={handlePaste}
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);

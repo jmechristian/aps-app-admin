@@ -170,10 +170,8 @@ type ApsRegistrant
   presentationSummary: String
   bio: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
-  addOnsRequested: [ApsAddOn]
-    @manyToMany(relationName: "RegistrantAddOnsRequested")
-  addOnsApproved: [ApsAddOn]
-    @manyToMany(relationName: "RegistrantAddOnsApproved")
+  addOnRequests: [RegistrantAddOnRequest]
+    @hasMany(indexName: "byRegistrant", fields: ["id"])
 
   # ✅ FIX: make the hasOne key explicit so resolvers can traverse registrant -> appUser
   appUserId: ID
@@ -653,17 +651,33 @@ type ApsAddOn
   location: String!
   date: String!
   time: String!
-  company: String!
   altLink: String
   type: String
   limit: Int
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   price: Int
-  registrantsRequested: [ApsRegistrant]
-    @manyToMany(relationName: "RegistrantAddOnsRequested")
-  registrantsApproved: [ApsRegistrant]
-    @manyToMany(relationName: "RegistrantAddOnsApproved")
+  preferenceSchema: AWSJSON
+  registrantRequests: [RegistrantAddOnRequest]
+    @hasMany(indexName: "byAddOn", fields: ["id"])
+}
+
+# Join table: registrant + add-on request/approval with optional preferences
+type RegistrantAddOnRequest
+  @model
+  @auth(
+    rules: [
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
+  id: ID!
+  registrantId: ID! @index(name: "byRegistrant")
+  registrant: ApsRegistrant! @belongsTo(fields: ["registrantId"])
+  addOnId: ID! @index(name: "byAddOn")
+  addOn: ApsAddOn! @belongsTo(fields: ["addOnId"])
+  status: String! # PENDING (requested) or APPROVED
+  preferences: AWSJSON
 }
 
 # Seating Charts
