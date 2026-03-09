@@ -8,86 +8,6 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createAPS = /* GraphQL */ `mutation CreateAPS(
-  $input: CreateAPSInput!
-  $condition: ModelAPSConditionInput
-) {
-  createAPS(input: $input, condition: $condition) {
-    id
-    year
-    codes {
-      nextToken
-      __typename
-    }
-    agenda {
-      id
-      eventId
-      createdAt
-      updatedAt
-      __typename
-    }
-    startDate
-    endDate
-    location
-    address
-    city
-    state
-    zip
-    website
-    Registrants {
-      nextToken
-      __typename
-    }
-    Sponsors {
-      nextToken
-      __typename
-    }
-    Speakers {
-      nextToken
-      __typename
-    }
-    companies {
-      nextToken
-      __typename
-    }
-    photos {
-      nextToken
-      __typename
-    }
-    exhibitors {
-      nextToken
-      __typename
-    }
-    exhibitorPromotions {
-      nextToken
-      __typename
-    }
-    exhibitorDeals {
-      nextToken
-      __typename
-    }
-    exhibitorPhotos {
-      nextToken
-      __typename
-    }
-    exhibitorHandouts {
-      nextToken
-      __typename
-    }
-    addOns {
-      nextToken
-      __typename
-    }
-    createdAt
-    updatedAt
-    aPSAgendaId
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.CreateAPSMutationVariables,
-  APITypes.CreateAPSMutation
->;
 export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
   $input: UpdateAPSInput!
   $condition: ModelAPSConditionInput
@@ -583,8 +503,9 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    interestQuestionOne
-    interestQuestionTwo
+    buyerQuestion
+    packagingChallenge
+    certification
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -716,8 +637,9 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    interestQuestionOne
-    interestQuestionTwo
+    buyerQuestion
+    packagingChallenge
+    certification
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -849,8 +771,9 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
     termsAccepted
     interests
     otherInterest
-    interestQuestionOne
-    interestQuestionTwo
+    buyerQuestion
+    packagingChallenge
+    certification
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1015,8 +938,9 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1141,8 +1065,9 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1267,8 +1192,9 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1595,8 +1521,9 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1758,8 +1685,9 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1921,8 +1849,9 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5092,8 +5021,9 @@ export const createRegistrantAddOnRequest = /* GraphQL */ `mutation CreateRegist
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5185,8 +5115,9 @@ export const updateRegistrantAddOnRequest = /* GraphQL */ `mutation UpdateRegist
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5278,8 +5209,9 @@ export const deleteRegistrantAddOnRequest = /* GraphQL */ `mutation DeleteRegist
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5443,8 +5375,9 @@ export const createApsSeatingChartRegistrant = /* GraphQL */ `mutation CreateAps
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5530,8 +5463,9 @@ export const updateApsSeatingChartRegistrant = /* GraphQL */ `mutation UpdateAps
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5617,8 +5551,9 @@ export const deleteApsSeatingChartRegistrant = /* GraphQL */ `mutation DeleteAps
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -6637,4 +6572,84 @@ export const deleteSessionSponsors = /* GraphQL */ `mutation DeleteSessionSponso
 ` as GeneratedMutation<
   APITypes.DeleteSessionSponsorsMutationVariables,
   APITypes.DeleteSessionSponsorsMutation
+>;
+export const createAPS = /* GraphQL */ `mutation CreateAPS(
+  $input: CreateAPSInput!
+  $condition: ModelAPSConditionInput
+) {
+  createAPS(input: $input, condition: $condition) {
+    id
+    year
+    codes {
+      nextToken
+      __typename
+    }
+    agenda {
+      id
+      eventId
+      createdAt
+      updatedAt
+      __typename
+    }
+    startDate
+    endDate
+    location
+    address
+    city
+    state
+    zip
+    website
+    Registrants {
+      nextToken
+      __typename
+    }
+    Sponsors {
+      nextToken
+      __typename
+    }
+    Speakers {
+      nextToken
+      __typename
+    }
+    companies {
+      nextToken
+      __typename
+    }
+    photos {
+      nextToken
+      __typename
+    }
+    exhibitors {
+      nextToken
+      __typename
+    }
+    exhibitorPromotions {
+      nextToken
+      __typename
+    }
+    exhibitorDeals {
+      nextToken
+      __typename
+    }
+    exhibitorPhotos {
+      nextToken
+      __typename
+    }
+    exhibitorHandouts {
+      nextToken
+      __typename
+    }
+    addOns {
+      nextToken
+      __typename
+    }
+    createdAt
+    updatedAt
+    aPSAgendaId
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateAPSMutationVariables,
+  APITypes.CreateAPSMutation
 >;

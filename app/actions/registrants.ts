@@ -14,6 +14,7 @@ import {
   deleteApsAppUserProfile,
   deleteApsDmMessage,
   deleteApsRegistrant,
+  deleteRegistrantAddOnRequest,
   deleteSessionSpeakers,
   deleteProfileAffiliate,
   deleteProfileEducation,
@@ -216,32 +217,6 @@ async function storeTempPassword(params: {
   }
 }
 
-function buildProfileQrUrl(profileId: string): string {
-  // Preferred: explicit template
-  // Example: https://app.autopacksummit.com/profile/{profileId}
-  const template =
-    process.env.APS_PROFILE_QR_URL_TEMPLATE ||
-    process.env.NEXT_PUBLIC_APS_PROFILE_QR_URL_TEMPLATE;
-  if (template?.includes('{profileId}')) {
-    return template.replaceAll('{profileId}', profileId);
-  }
-
-  // Next: base URL + default path
-  const base =
-    process.env.APS_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
-
-  if (base) {
-    return `${String(base).replace(/\/$/, '')}/profile/${profileId}`;
-  }
-
-  // Fallback: deep-link style URL (still a URL, works for app routing)
-  return `aps://profile/${profileId}`;
-}
-
 const CREATE_REGISTRANT = /* GraphQL */ `
   mutation CreateApsRegistrant($input: CreateApsRegistrantInput!) {
     createApsRegistrant(input: $input) {
@@ -259,7 +234,6 @@ const GET_COMPANY = /* GraphQL */ `
       name
       email
       website
-      eventId
     }
   }
 `;
@@ -339,6 +313,34 @@ const TEMP_CREDENTIALS_BY_APS = /* GraphQL */ `
         tempPasswordTag
         expiresAt
         createdAt
+      }
+      nextToken
+    }
+  }
+`;
+
+const TEMP_CREDENTIALS_BY_REGISTRANT = /* GraphQL */ `
+  query ApsTempCredentialsByRegistrantIdAndCreatedAt(
+    $registrantId: ID!
+    $sortDirection: ModelSortDirection
+    $limit: Int
+    $nextToken: String
+  ) {
+    apsTempCredentialsByRegistrantIdAndCreatedAt(
+      registrantId: $registrantId
+      sortDirection: $sortDirection
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        registrantId
+        email
+        tempPasswordCiphertext
+        tempPasswordIv
+        tempPasswordTag
+        createdAt
+        expiresAt
       }
       nextToken
     }
@@ -709,6 +711,25 @@ const LIST_DM_MESSAGES = /* GraphQL */ `
     $nextToken: String
   ) {
     listApsDmMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_REGISTRANT_ADDON_REQUESTS = /* GraphQL */ `
+  query ListRegistrantAddOnRequests(
+    $filter: ModelRegistrantAddOnRequestFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listRegistrantAddOnRequests(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
       items {
         id
       }
@@ -1215,19 +1236,15 @@ export async function createRegistrant(
 
   // Generate and upload QR code (best-effort)
   try {
-    // Import the QR code function
-    const { generateAndUploadQRCodeFromText } = await import(
-      '@/lib/qrcode-storage'
-    );
-
-    // Encode profile URL (created after profile is created/linked)
-    const profileUrl = buildProfileQrUrl(profileId);
-
-    // Generate and upload QR code image
-    const qrCodeUrl = await generateAndUploadQRCodeFromText(
-      registrantId,
-      profileUrl
-    );
+    const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
+    const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
+      firstName: input.firstName ?? null,
+      lastName: input.lastName ?? null,
+      email: input.email,
+      phone: input.phone ?? null,
+      company: companyNameForProfile ?? null,
+      jobTitle: input.jobTitle ?? null,
+    });
 
     // Update the registrant with the QR code URL
     await requestGraphQL<{
@@ -1624,6 +1641,182 @@ async function deleteIds(
   }
 }
 
+async function ensureRegistrantIdentityArtifacts(params: {
+  registrant: RegistrantDetail;
+  jwt?: string;
+}): Promise<{ tempPassword: string | null }> {
+  const { registrant, jwt } = params;
+  const authOpts = jwt ? { authMode: 'userPools' as const, jwt } : undefined;
+
+  const { sub: cognitoSub, tempPassword } =
+    await ensureCognitoUserForRegistrantEmail(registrant.email);
+
+  if (registrant.companyId) {
+    const attachedCompanies = await fetchCompaniesByEventId(registrant.apsID);
+    const alreadyAttached = attachedCompanies.some(
+      (company) => company.id === registrant.companyId
+    );
+    if (!alreadyAttached) {
+      await ensureCompanyAttachedToEvent({
+        eventId: registrant.apsID,
+        companyId: registrant.companyId,
+        jwt: jwt ?? null,
+      });
+    }
+  }
+
+  const appUserId = registrant.appUser?.id ?? cognitoSub;
+
+  if (!registrant.appUser?.id) {
+    const appUserResult = await requestGraphQL<{
+      createApsAppUser?: { id: string; registrantId: string };
+    }>(
+      CREATE_APP_USER,
+      {
+        input: {
+          id: appUserId,
+          registrantId: registrant.id,
+        },
+      },
+      authOpts
+    );
+
+    if (!appUserResult.createApsAppUser?.id) {
+      throw new Error('Failed to create ApsAppUser for registrant');
+    }
+
+    const linkRegistrantResult = await requestGraphQL<{
+      updateApsRegistrant?: { id: string; appUserId?: string | null };
+    }>(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: registrant.id,
+          appUserId,
+        },
+      },
+      authOpts
+    );
+
+    if (!linkRegistrantResult.updateApsRegistrant?.id) {
+      throw new Error('Failed to attach appUserId to registrant');
+    }
+  }
+
+  let profileId = registrant.appUser?.profile?.id ?? null;
+
+  if (!profileId) {
+    let companyNameForProfile: string | null = null;
+    if (registrant.companyId) {
+      try {
+        const companyResult = await requestGraphQL<{
+          getAPSCompany?: { name: string };
+        }>(GET_COMPANY, { id: registrant.companyId }, authOpts);
+        companyNameForProfile = companyResult.getAPSCompany?.name || null;
+      } catch (error) {
+        console.warn('Failed to fetch company name for profile:', error);
+      }
+    }
+
+    const locationParts = [
+      registrant.billingAddressCity,
+      registrant.billingAddressState,
+      registrant.billingAddressZip,
+    ]
+      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+      .filter(Boolean);
+    const profileLocation =
+      locationParts.length > 0 ? locationParts.join(', ') : null;
+
+    const profileResult = await requestGraphQL<{
+      createApsAppUserProfile?: { id: string; userId: string };
+    }>(
+      CREATE_APP_USER_PROFILE,
+      {
+        input: {
+          userId: appUserId,
+          firstName: registrant.firstName || null,
+          lastName: registrant.lastName || null,
+          email: registrant.email,
+          phone: registrant.phone || null,
+          company: companyNameForProfile || null,
+          jobTitle: registrant.jobTitle || null,
+          attendeeType: registrant.attendeeType || null,
+          location: profileLocation,
+        },
+      },
+      authOpts
+    );
+
+    if (!profileResult.createApsAppUserProfile?.id) {
+      throw new Error('Failed to create ApsAppUserProfile for app user');
+    }
+
+    profileId = profileResult.createApsAppUserProfile.id;
+
+    const linkUserResult = await requestGraphQL<{
+      updateApsAppUser?: { id: string; profileId?: string | null };
+    }>(
+      UPDATE_APP_USER,
+      {
+        input: {
+          id: appUserId,
+          profileId,
+        },
+      },
+      authOpts
+    );
+
+    if (!linkUserResult.updateApsAppUser?.id) {
+      throw new Error('Failed to attach profileId to app user');
+    }
+
+    if (registrant.attendeeType === 'SPEAKER') {
+      const { createSpeakerFromRegistrantId } = await import('@/app/actions/speakers');
+      await createSpeakerFromRegistrantId({
+        eventId: registrant.apsID,
+        registrantId: registrant.id,
+      });
+    }
+  }
+
+  await storeTempPassword({
+    apsID: registrant.apsID,
+    registrantId: registrant.id,
+    email: registrant.email,
+    tempPassword,
+    jwt,
+  });
+
+  if (!registrant.qrCode && profileId) {
+    try {
+      const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
+      const qrCodeUrl = await generateAndUploadQRCode(registrant.id, {
+        firstName: registrant.firstName ?? null,
+        lastName: registrant.lastName ?? null,
+        email: registrant.email,
+        phone: registrant.phone ?? null,
+        company: registrant.company?.name ?? null,
+        jobTitle: registrant.jobTitle ?? null,
+      });
+      await requestGraphQL(
+        UPDATE_REGISTRANT,
+        {
+          input: {
+            id: registrant.id,
+            qrCode: qrCodeUrl,
+          },
+        },
+        authOpts
+      );
+    } catch (error) {
+      console.error('Failed to generate QR code for registrant:', error);
+    }
+  }
+
+  return { tempPassword };
+}
+
 export async function updateRegistrant(
   _prevState: ActionState,
   formData: FormData
@@ -1734,6 +1927,140 @@ export async function updateAppUserProfile(
   }
 }
 
+export async function approveRegistrant(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<{ ok: boolean; message: string; tempPassword: string | null }> {
+  try {
+    const registrant = await fetchRegistrantById(params.registrantId);
+    if (!registrant) {
+      return {
+        ok: false,
+        message: 'Registrant not found.',
+        tempPassword: null,
+      };
+    }
+
+    const authOpts = params.jwt
+      ? { authMode: 'userPools' as const, jwt: params.jwt }
+      : undefined;
+    const approvedAt = new Date().toISOString();
+
+    const { tempPassword } = await ensureRegistrantIdentityArtifacts({
+      registrant,
+      jwt: params.jwt ?? undefined,
+    });
+
+    await requestGraphQL(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: params.registrantId,
+          status: 'APPROVED',
+          approvedAt,
+        },
+      },
+      authOpts
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+
+    return { ok: true, message: 'Registrant approved.', tempPassword };
+  } catch (error) {
+    console.error('Failed to approve registrant:', error);
+    return {
+      ok: false,
+      message: 'Failed to approve registrant.',
+      tempPassword: null,
+    };
+  }
+}
+
+export async function unapproveRegistrant(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<ActionState> {
+  try {
+    const authOpts = params.jwt
+      ? { authMode: 'userPools' as const, jwt: params.jwt }
+      : undefined;
+
+    await requestGraphQL(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: params.registrantId,
+          status: 'PENDING',
+          approvedAt: null,
+        },
+      },
+      authOpts
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+    return { ok: true, message: 'Registrant moved back to pending.' };
+  } catch (error) {
+    console.error('Failed to unapprove registrant:', error);
+    return { ok: false, message: 'Failed to unapprove registrant.' };
+  }
+}
+
+export async function fetchLatestTempCredentialByRegistrantId(
+  registrantId: string
+): Promise<{
+  id: string;
+  email: string;
+  tempPassword: string;
+  createdAt?: string | null;
+  expiresAt?: number | null;
+} | null> {
+  try {
+    const response: {
+      apsTempCredentialsByRegistrantIdAndCreatedAt?: {
+        items?: Array<{
+          id: string;
+          email: string;
+          tempPasswordCiphertext: string;
+          tempPasswordIv: string;
+          tempPasswordTag: string;
+          createdAt?: string | null;
+          expiresAt?: number | null;
+        } | null>;
+      } | null;
+    } = await requestGraphQL(TEMP_CREDENTIALS_BY_REGISTRANT, {
+      registrantId,
+      sortDirection: 'DESC',
+      limit: 1,
+    });
+
+    const item =
+      response.apsTempCredentialsByRegistrantIdAndCreatedAt?.items?.[0] ?? null;
+    if (!item) return null;
+
+    return {
+      id: item.id,
+      email: item.email,
+      tempPassword: decryptTempPassword({
+        tempPasswordCiphertext: item.tempPasswordCiphertext,
+        tempPasswordIv: item.tempPasswordIv,
+        tempPasswordTag: item.tempPasswordTag,
+      }),
+      createdAt: item.createdAt ?? null,
+      expiresAt: item.expiresAt ?? null,
+    };
+  } catch (error) {
+    console.error(
+      `Failed to fetch temp credential for registrant ${registrantId}:`,
+      error
+    );
+    return null;
+  }
+}
+
 export async function deleteRegistrantCascade({
   registrantId,
   eventId,
@@ -1797,6 +2124,17 @@ export async function deleteRegistrantCascade({
     );
     registrantNoteIds.forEach((id) => noteIds.add(id));
     await deleteIds(noteIds, deleteApsAppUserNote, 'app user note');
+
+    const addOnRequestIds = await listAllIds(
+      LIST_REGISTRANT_ADDON_REQUESTS,
+      'listRegistrantAddOnRequests',
+      { registrantId: { eq: registrantId } }
+    );
+    await deleteIds(
+      addOnRequestIds,
+      deleteRegistrantAddOnRequest,
+      'registrant add-on request'
+    );
 
     const contactIds = new Set<string>();
     if (appUserId) {

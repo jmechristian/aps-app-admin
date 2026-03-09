@@ -1,16 +1,49 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { fetchRegistrantById } from '@/app/actions/registrants';
+import {
+  fetchLatestTempCredentialByRegistrantId,
+  fetchRegistrantById,
+} from '@/app/actions/registrants';
+import { fetchAddOnRequestsByRegistrantId } from '@/app/actions/add-ons';
 import CompanyLogoForm from './company-logo-form';
 import RegistrantEditForm from './registrant-edit-form';
+import RegistrantWorkflowPanel from './registrant-workflow-panel';
 
 type PageProps = {
   params: Promise<{ id: string; registrantId: string }>;
 };
 
+function buildVCardPreview(registrant: {
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  company?: { name: string } | null;
+  jobTitle?: string | null;
+}) {
+  const lines: string[] = ['BEGIN:VCARD', 'VERSION:3.0'];
+  const fullName =
+    `${registrant.firstName ?? ''} ${registrant.lastName ?? ''}`.trim() ||
+    registrant.email;
+  lines.push(`FN:${fullName}`);
+  if (registrant.firstName || registrant.lastName) {
+    lines.push(`N:${registrant.lastName ?? ''};${registrant.firstName ?? ''};;;`);
+  }
+  lines.push(`EMAIL:${registrant.email}`);
+  if (registrant.phone) lines.push(`TEL:${registrant.phone}`);
+  if (registrant.company?.name) lines.push(`ORG:${registrant.company.name}`);
+  if (registrant.jobTitle) lines.push(`TITLE:${registrant.jobTitle}`);
+  lines.push('END:VCARD');
+  return lines.join('\n');
+}
+
 export default async function RegistrantProfile({ params }: PageProps) {
   const { id: eventId, registrantId } = await params;
-  const registrant = await fetchRegistrantById(registrantId);
+  const [registrant, addOnRequests, latestCredential] = await Promise.all([
+    fetchRegistrantById(registrantId),
+    fetchAddOnRequestsByRegistrantId(registrantId),
+    fetchLatestTempCredentialByRegistrantId(registrantId),
+  ]);
 
   if (!registrant) {
     notFound();
@@ -19,6 +52,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
   const fullName =
     `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() ||
     'N/A';
+  const vCardPreview = buildVCardPreview(registrant);
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
@@ -40,6 +74,16 @@ export default async function RegistrantProfile({ params }: PageProps) {
         </header>
 
         <RegistrantEditForm registrant={registrant} eventId={eventId} />
+
+        <RegistrantWorkflowPanel
+          eventId={eventId}
+          registrantId={registrant.id}
+          status={registrant.status}
+          addOnRequests={addOnRequests.filter(
+            (request) => request.addOn?.eventId === eventId
+          )}
+          existingTempPassword={latestCredential?.tempPassword ?? null}
+        />
 
         <div className='space-y-6'>
           <div className='grid gap-6 sm:grid-cols-[2fr_1fr]'>
@@ -124,6 +168,14 @@ export default async function RegistrantProfile({ params }: PageProps) {
                     height={256}
                     className='rounded-lg'
                   />
+                </div>
+                <div className='mt-6'>
+                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                    Encoded vCard preview
+                  </p>
+                  <pre className='mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700'>
+                    {vCardPreview}
+                  </pre>
                 </div>
               </div>
             )}

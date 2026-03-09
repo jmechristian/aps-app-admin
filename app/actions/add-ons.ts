@@ -25,6 +25,11 @@ export type AddOnRequestItem = {
   addOnId: string;
   status: string;
   preferences?: string | null;
+  addOn?: {
+    id: string;
+    title: string;
+    eventId: string;
+  } | null;
   registrant?: {
     id: string;
     firstName?: string | null;
@@ -70,6 +75,34 @@ const REGISTRANT_ADDON_REQUESTS_BY_ADDON = /* GraphQL */ `
           firstName
           lastName
           email
+        }
+      }
+      nextToken
+    }
+  }
+`;
+
+const REGISTRANT_ADDON_REQUESTS_BY_REGISTRANT = /* GraphQL */ `
+  query RegistrantAddOnRequestsByRegistrantId(
+    $registrantId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    registrantAddOnRequestsByRegistrantId(
+      registrantId: $registrantId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        registrantId
+        addOnId
+        status
+        preferences
+        addOn {
+          id
+          title
+          eventId
         }
       }
       nextToken
@@ -226,6 +259,32 @@ export async function fetchAddOnRequestsByAddOnId(
     const page = data.registrantAddOnRequestsByAddOnId?.items ?? [];
     items.push(...(page.filter(Boolean) as AddOnRequestItem[]));
     nextToken = data.registrantAddOnRequestsByAddOnId?.nextToken ?? null;
+  } while (nextToken);
+
+  return items;
+}
+
+export async function fetchAddOnRequestsByRegistrantId(
+  registrantId: string
+): Promise<AddOnRequestItem[]> {
+  const items: AddOnRequestItem[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const data: {
+      registrantAddOnRequestsByRegistrantId?: {
+        items?: Array<AddOnRequestItem | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(REGISTRANT_ADDON_REQUESTS_BY_REGISTRANT, {
+      registrantId,
+      limit: 500,
+      nextToken: nextToken ?? undefined,
+    });
+
+    const page = data.registrantAddOnRequestsByRegistrantId?.items ?? [];
+    items.push(...(page.filter(Boolean) as AddOnRequestItem[]));
+    nextToken = data.registrantAddOnRequestsByRegistrantId?.nextToken ?? null;
   } while (nextToken);
 
   return items;

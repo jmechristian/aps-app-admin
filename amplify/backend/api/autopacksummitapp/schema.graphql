@@ -34,7 +34,7 @@ type APS
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -118,7 +118,7 @@ type ApsRegistrant
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -136,8 +136,9 @@ type ApsRegistrant
   termsAccepted: Boolean
   interests: [String]
   otherInterest: String
-  interestQuestionOne: String
-  interestQuestionTwo: String
+  buyerQuestion: String
+  packagingChallenge: String
+  certification: String
   billingAddressFirstName: String
   billingAddressLastName: String
   billingAddressEmail: String
@@ -667,7 +668,7 @@ type RegistrantAddOnRequest
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {

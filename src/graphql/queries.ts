@@ -118,8 +118,9 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1634,8 +1635,9 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
     termsAccepted
     interests
     otherInterest
-    interestQuestionOne
-    interestQuestionTwo
+    buyerQuestion
+    packagingChallenge
+    certification
     billingAddressFirstName
     billingAddressLastName
     billingAddressEmail
@@ -1733,8 +1735,9 @@ export const listApsRegistrants = /* GraphQL */ `query ListApsRegistrants(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1810,8 +1813,9 @@ export const apsRegistrantsByApsID = /* GraphQL */ `query ApsRegistrantsByApsID(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1887,8 +1891,9 @@ export const apsRegistrantsByEmail = /* GraphQL */ `query ApsRegistrantsByEmail(
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -1964,8 +1969,9 @@ export const apsRegistrantsByCompanyId = /* GraphQL */ `query ApsRegistrantsByCo
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -2031,8 +2037,9 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -4902,8 +4909,9 @@ export const getRegistrantAddOnRequest = /* GraphQL */ `query GetRegistrantAddOn
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -5135,8 +5143,9 @@ export const getApsSeatingChartRegistrant = /* GraphQL */ `query GetApsSeatingCh
       termsAccepted
       interests
       otherInterest
-      interestQuestionOne
-      interestQuestionTwo
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
