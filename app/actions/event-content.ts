@@ -11,9 +11,7 @@ async function sleep(ms: number) {
 async function paginate<TItem>(opts: {
   query: string;
   variables: Record<string, unknown>;
-  getPage: (
-    data: Record<string, unknown>
-  ) => { items: TItem[]; nextToken?: string | null } | null;
+  getPage: (data: Record<string, unknown>) => unknown;
   limit?: number;
 }) {
   const all: TItem[] = [];
@@ -27,10 +25,11 @@ async function paginate<TItem>(opts: {
     });
 
     const page = opts.getPage(data);
-    if (!page) break;
+    if (!page || typeof page !== 'object' || !('items' in page)) break;
 
-    all.push(...(page.items ?? []));
-    nextToken = page.nextToken;
+    const normalized = page as { items?: TItem[]; nextToken?: string | null };
+    all.push(...(normalized.items ?? []));
+    nextToken = normalized.nextToken ?? null;
 
     if (nextToken) await sleep(50);
   } while (nextToken);
