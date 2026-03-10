@@ -11,14 +11,16 @@ async function sleep(ms: number) {
 async function paginate<TItem>(opts: {
   query: string;
   variables: Record<string, unknown>;
-  getPage: (data: any) => { items: TItem[]; nextToken?: string | null } | null;
+  getPage: (
+    data: Record<string, unknown>
+  ) => { items: TItem[]; nextToken?: string | null } | null;
   limit?: number;
 }) {
   const all: TItem[] = [];
   let nextToken: string | null | undefined = null;
 
   do {
-    const data = await requestGraphQL<any>(opts.query, {
+    const data = await requestGraphQL<Record<string, unknown>>(opts.query, {
       ...opts.variables,
       limit: opts.limit ?? 1000,
       nextToken: nextToken || undefined,
@@ -172,7 +174,7 @@ export type SponsorListItem = {
   eventId: string;
   companyId: string;
   type?: string | null;
-  company?: { id: string; name: string } | null;
+  company?: { id: string; name: string; logo?: string | null } | null;
 };
 
 export async function fetchSponsorsByEventId(eventId: string) {
@@ -226,7 +228,10 @@ export async function fetchSponsorsByEventId(eventId: string) {
 
     try {
       const company = await fetchCompanyById(sponsor.companyId);
-      resolved.push({ ...sponsor, company: { id: company.id, name: company.name } });
+      resolved.push({
+        ...sponsor,
+        company: { id: company.id, name: company.name, logo: company.logo ?? null },
+      });
     } catch {
       await requestGraphQL(DELETE_SPONSOR, { input: { id: sponsor.id } });
     }
@@ -334,6 +339,7 @@ export type SpeakerProfileListItem = {
     email?: string | null;
     company?: string | null;
     jobTitle?: string | null;
+    profilePicture?: string | null;
   } | null;
 };
 
@@ -366,6 +372,7 @@ export async function fetchSpeakerProfilesByEventId(eventId: string) {
             email
             company
             jobTitle
+            profilePicture
           }
         }
         nextToken

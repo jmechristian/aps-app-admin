@@ -229,16 +229,6 @@ export default function SpeakerEditForm({
               </label>
               <label className='space-y-1 text-sm text-slate-700'>
                 <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
-                  Company
-                </span>
-                <input
-                  name='company'
-                  defaultValue={profile.company ?? ''}
-                  className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
-                />
-              </label>
-              <label className='space-y-1 text-sm text-slate-700'>
-                <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
                   Job Title
                 </span>
                 <input

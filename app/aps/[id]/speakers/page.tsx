@@ -5,6 +5,7 @@ import {
 } from '@/app/actions/event-content';
 import CreateSpeakerButton from './create-speaker-button';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
+import StorageImage from '@/app/components/storage-image';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -16,6 +17,14 @@ export default async function SpeakersPage({ params }: PageProps) {
     fetchSpeakerProfilesByEventId(eventId),
     fetchRegistrantsByApsId(eventId),
   ]);
+  const registrantCompanyByEmail = new Map(
+    registrants
+      .filter((r) => r.email?.trim())
+      .map((r) => [
+        r.email.trim().toLowerCase(),
+        r.company?.name?.trim() || null,
+      ])
+  );
 
   return (
     <CategoryPageShell
@@ -67,18 +76,37 @@ export default async function SpeakersPage({ params }: PageProps) {
                 {speakerProfiles.map((s) => (
                   <tr key={s.id} className='bg-white'>
                     <td className='px-4 py-3 font-semibold text-slate-900'>
-                      <Link
-                        href={`/aps/${eventId}/speakers/${s.id}`}
-                        className='hover:underline'
-                      >
-                        {s.profile?.firstName ?? '—'} {s.profile?.lastName ?? ''}
-                      </Link>
+                      <div className='flex items-center gap-3'>
+                        {s.profile?.profilePicture ? (
+                          <StorageImage
+                            srcOrKey={s.profile.profilePicture}
+                            alt={`${s.profile?.firstName ?? 'Speaker'} avatar`}
+                            className='h-8 w-8 rounded-full object-cover'
+                            accessLevel='guest'
+                          />
+                        ) : (
+                          <div
+                            className='h-8 w-8 rounded-full bg-slate-300'
+                            aria-label='No profile picture'
+                          />
+                        )}
+                        <Link
+                          href={`/aps/${eventId}/speakers/${s.id}`}
+                          className='hover:underline'
+                        >
+                          {s.profile?.firstName ?? '—'} {s.profile?.lastName ?? ''}
+                        </Link>
+                      </div>
                     </td>
                     <td className='px-4 py-3 text-slate-700'>
                       {s.profile?.email ?? '—'}
                     </td>
                     <td className='px-4 py-3 text-slate-700'>
-                      {s.profile?.company ?? '—'}
+                      {registrantCompanyByEmail.get(
+                        (s.profile?.email ?? '').trim().toLowerCase()
+                      ) ||
+                        s.profile?.company ||
+                        '—'}
                     </td>
                     <td className='px-4 py-3 text-slate-700'>
                       {s.profile?.jobTitle ?? '—'}

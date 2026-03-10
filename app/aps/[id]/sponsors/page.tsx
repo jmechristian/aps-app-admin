@@ -4,6 +4,7 @@ import { fetchSponsorsByEventId } from '@/app/actions/event-content';
 import { fetchCompaniesByEventId } from '@/app/actions/registrants';
 import CreateSponsorButton from './create-sponsor-button';
 import SponsorTypeSelect from './sponsor-type-select';
+import StorageImage from '@/app/components/storage-image';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -53,16 +54,31 @@ export default async function SponsorsPage({ params }: PageProps) {
                 {sponsors.map((sponsor) => (
                   <tr key={sponsor.id} className='bg-white'>
                     <td className='px-4 py-3 font-semibold text-slate-900'>
-                      {sponsor.companyId ? (
-                        <Link
-                          href={`/aps/${eventId}/companies/${sponsor.companyId}`}
-                          className='hover:underline'
-                        >
-                          {sponsor.company?.name ?? sponsor.companyId}
-                        </Link>
-                      ) : (
-                        sponsor.company?.name ?? 'Unknown company'
-                      )}
+                      <div className='flex items-center gap-3'>
+                        {sponsor.company?.logo ? (
+                          <StorageImage
+                            srcOrKey={sponsor.company.logo}
+                            alt={`${sponsor.company?.name ?? 'Sponsor'} logo`}
+                            className='h-8 w-8 rounded-full border border-slate-200 bg-white object-contain'
+                            accessLevel='guest'
+                          />
+                        ) : (
+                          <div
+                            className='h-8 w-8 rounded-full bg-slate-200'
+                            aria-label='No sponsor logo'
+                          />
+                        )}
+                        {sponsor.companyId ? (
+                          <Link
+                            href={`/aps/${eventId}/companies/${sponsor.companyId}`}
+                            className='hover:underline'
+                          >
+                            {sponsor.company?.name ?? sponsor.companyId}
+                          </Link>
+                        ) : (
+                          sponsor.company?.name ?? 'Unknown company'
+                        )}
+                      </div>
                     </td>
                     <td className='px-4 py-3'>
                       <SponsorTypeSelect
