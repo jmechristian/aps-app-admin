@@ -118,7 +118,7 @@ type ApsRegistrant
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read, create] }
+      { allow: public, provider: apiKey, operations: [read, create, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -170,6 +170,7 @@ type ApsRegistrant
   presentationTitle: String
   presentationSummary: String
   bio: String
+  invoice: String
   seatingChartRegistrant: ApsSeatingChartRegistrant @hasOne
   addOnRequests: [RegistrantAddOnRequest]
     @hasMany(indexName: "byRegistrant", fields: ["id"])
@@ -203,7 +204,7 @@ type ApsAppUser
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -294,7 +295,7 @@ type ApsAppUserProfile
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {

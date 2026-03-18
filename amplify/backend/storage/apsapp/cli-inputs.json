@@ -4,7 +4,8 @@
   "bucketName": "autopacksummitapp94b14feadba64f23aff0ed8deae77b",
   "storageAccess": "authAndGuest",
   "guestAccess": [
-    "READ"
+    "READ",
+    "CREATE_AND_UPDATE"
   ],
   "authAccess": [
     "CREATE_AND_UPDATE",
