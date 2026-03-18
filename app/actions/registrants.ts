@@ -1877,6 +1877,7 @@ export async function updateAppUserProfile(
     const profileId = readStringField(formData, 'profileId');
     const eventId = readStringField(formData, 'eventId');
     const registrantId = readStringField(formData, 'registrantId');
+    const attendeeType = readStringField(formData, 'attendeeType');
     if (!profileId) {
       return { ok: false, message: 'Missing profile id.' };
     }
@@ -1913,6 +1914,16 @@ export async function updateAppUserProfile(
     }
 
     await requestGraphQL(UPDATE_APP_USER_PROFILE, { input });
+
+    // Keep registrant attendee type in sync when edited from profile form.
+    if (registrantId && attendeeType) {
+      await requestGraphQL(UPDATE_REGISTRANT, {
+        input: {
+          id: registrantId,
+          attendeeType,
+        },
+      });
+    }
 
     if (eventId && registrantId) {
       revalidatePath(`/aps/${eventId}`);
