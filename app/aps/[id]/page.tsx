@@ -107,6 +107,12 @@ function ApsDetailClient({
           <div className='flex items-center gap-3'>
             <CreateRegistrantButton eventId={eventId} />
             <a
+              href={`/aps/${eventId}/registrants/export.csv`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              Download registrants CSV
+            </a>
+            <a
               href={`/aps/${eventId}/registrants/temp-credentials.csv`}
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
             >
