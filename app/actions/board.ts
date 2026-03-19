@@ -82,12 +82,12 @@ export async function fetchBoardMembers(): Promise<BoardMember[]> {
   let nextToken: string | null | undefined = null;
 
   do {
-    const data = await requestGraphQL<ListBoardsResponse>(LIST_APS_BOARDS, {
+    const response: ListBoardsResponse = await requestGraphQL(LIST_APS_BOARDS, {
       limit: 1000,
       nextToken: nextToken || undefined,
     });
 
-    const page = data.listAPSBoards;
+    const page = response.listAPSBoards;
     const items = page?.items ?? [];
     for (const item of items) {
       if (item?.id) all.push(item);
