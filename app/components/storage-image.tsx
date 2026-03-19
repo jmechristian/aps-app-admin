@@ -56,6 +56,7 @@ export default function StorageImage({
   const raw = (srcOrKey ?? '').trim();
   const [resolved, setResolved] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [useStorageFallback, setUseStorageFallback] = useState(false);
 
   const extractedKey = useMemo(() => {
     if (!raw || !isProbablyUrl(raw)) return null;
@@ -63,19 +64,23 @@ export default function StorageImage({
   }, [raw]);
 
   const effectiveKey = extractedKey ?? (raw && !isProbablyUrl(raw) ? raw : null);
-  const directUrl = useMemo(() => {
-    // If we extracted an S3 key, we should NOT use the direct URL (it may 403).
-    if (extractedKey) return null;
-    return raw && isProbablyUrl(raw) ? raw : null;
-  }, [raw, extractedKey]);
+  const directUrl = useMemo(() => (raw && isProbablyUrl(raw) ? raw : null), [raw]);
 
   useEffect(() => {
     let cancelled = false;
     setResolved(null);
     setFailed(false);
+    setUseStorageFallback(false);
+  }, [raw]);
+
+  useEffect(() => {
+    let cancelled = false;
 
     async function run() {
-      if (!effectiveKey || directUrl) return;
+      const shouldResolveFromStorage =
+        !!effectiveKey && (!directUrl || useStorageFallback);
+      if (!shouldResolveFromStorage) return;
+
       try {
         ensureAmplifyConfigured();
         const { getUrl } = await import('aws-amplify/storage');
@@ -95,9 +100,9 @@ export default function StorageImage({
     return () => {
       cancelled = true;
     };
-  }, [effectiveKey, directUrl, accessLevel]);
+  }, [effectiveKey, directUrl, accessLevel, useStorageFallback]);
 
-  const src = directUrl ?? resolved;
+  const src = useStorageFallback ? resolved : directUrl ?? resolved;
   if (!raw || failed || !src) return null;
 
   // eslint-disable-next-line @next/next/no-img-element
@@ -108,7 +113,13 @@ export default function StorageImage({
       className={className}
       width={width}
       height={height}
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (effectiveKey && !useStorageFallback) {
+          setUseStorageFallback(true);
+          return;
+        }
+        setFailed(true);
+      }}
     />
   );
 }

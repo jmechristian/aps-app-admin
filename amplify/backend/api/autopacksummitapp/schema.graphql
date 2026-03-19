@@ -84,7 +84,7 @@ type APSBoard
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, operations: [read, create, update, delete] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
