@@ -41,7 +41,8 @@ function buildSesClient(): SESClient {
     process.env.NEXT_PUBLIC_AWS_REGION ||
     'us-east-1';
 
-  const accessKeyId = process.env.AWSACCESSKEYID || process.env.AWS_ACCESS_KEY_ID;
+  const accessKeyId =
+    process.env.AWSACCESSKEYID || process.env.AWS_ACCESS_KEY_ID;
   const secretAccessKey =
     process.env.AWSSECRETACCESSKEY || process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -67,7 +68,7 @@ async function sendWelcomeEmailAndMarkSent(params: {
     const fromAddress =
       process.env.APS_WELCOME_EMAIL_FROM ||
       process.env.APS_EMAIL_FROM ||
-      'events@packagingschool.com';
+      'info@packagingschool.com';
     const apsYear = process.env.APS_EVENT_YEAR || '2026';
 
     const emailHtml = await render(
@@ -91,7 +92,7 @@ async function sendWelcomeEmailAndMarkSent(params: {
         formDataId: params.registrant.id,
         totalAmount: params.registrant.totalAmount ?? 0,
         addOnsSelected: [],
-      })
+      }),
     );
 
     const client = buildSesClient();
@@ -117,7 +118,7 @@ async function sendWelcomeEmailAndMarkSent(params: {
         },
         Source: fromAddress,
         ReplyToAddresses: [],
-      })
+      }),
     );
 
     const authOpts = params.jwt
@@ -133,11 +134,13 @@ async function sendWelcomeEmailAndMarkSent(params: {
           welcomeEmailSentDate: new Date().toISOString(),
         },
       },
-      authOpts
+      authOpts,
     );
 
     revalidatePath(`/aps/${params.eventId}`);
-    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrant.id}`);
+    revalidatePath(
+      `/aps/${params.eventId}/registrants/${params.registrant.id}`,
+    );
     return { ok: true, message: 'Welcome email sent.' };
   } catch (error) {
     console.error('Failed to send welcome email:', error);
@@ -193,7 +196,7 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
         MessageAction: suppressInvite ? 'SUPPRESS' : undefined,
         TemporaryPassword: tempPassword,
         DesiredDeliveryMediums: suppressInvite ? undefined : ['EMAIL'],
-      })
+      }),
     );
 
     const attrs = (created.User?.Attributes ?? []) as CognitoAttr[];
@@ -212,11 +215,11 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
         new AdminGetUserCommand({
           UserPoolId: userPoolId,
           Username: username,
-        })
+        }),
       );
       const existingAttrs = (existing.UserAttributes ?? []) as CognitoAttr[];
       const sub = existingAttrs.find(
-        (a: CognitoAttr) => a.Name === 'sub'
+        (a: CognitoAttr) => a.Name === 'sub',
       )?.Value;
       if (!sub) throw new Error('Cognito user exists but sub not found');
       return { sub, username, tempPassword: null };
@@ -246,7 +249,7 @@ async function deleteCognitoUserByEmail(email: string) {
       new AdminDeleteUserCommand({
         UserPoolId: userPoolId,
         Username: username,
-      })
+      }),
     );
   } catch (e: unknown) {
     const errName =
@@ -265,9 +268,7 @@ function getTempPasswordKey(): Buffer {
   }
   const key = Buffer.from(raw, 'base64');
   if (key.length !== 32) {
-    throw new Error(
-      'APS_TEMP_PASSWORD_KEY must be 32 bytes base64-encoded'
-    );
+    throw new Error('APS_TEMP_PASSWORD_KEY must be 32 bytes base64-encoded');
   }
   return key;
 }
@@ -276,7 +277,10 @@ function encryptTempPassword(plain: string) {
   const key = getTempPasswordKey();
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
-  const ciphertext = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
+  const ciphertext = Buffer.concat([
+    cipher.update(plain, 'utf8'),
+    cipher.final(),
+  ]);
   const tag = cipher.getAuthTag();
   return {
     ciphertext: ciphertext.toString('base64'),
@@ -324,7 +328,7 @@ async function storeTempPassword(params: {
           tempPasswordTag: encrypted.tag,
         },
       },
-      params.jwt ? { authMode: 'userPools', jwt: params.jwt } : undefined
+      params.jwt ? { authMode: 'userPools', jwt: params.jwt } : undefined,
     );
   } catch (error) {
     console.error('Failed to store temp password for registrant:', error);
@@ -416,7 +420,11 @@ const TEMP_CREDENTIALS_BY_APS = /* GraphQL */ `
     $limit: Int
     $nextToken: String
   ) {
-    listApsTempCredentials(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listApsTempCredentials(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
       items {
         id
         apsID
@@ -1050,7 +1058,7 @@ export type AddOn = {
  * Fetch all companies for an event
  */
 export async function fetchCompaniesByEventId(
-  eventId: string
+  eventId: string,
 ): Promise<Company[]> {
   const response = await requestGraphQL<{
     getAPS?: {
@@ -1163,7 +1171,7 @@ export async function createRegistrant(
     presentationSummary?: string | null;
     bio?: string | null;
   },
-  opts?: { jwt?: string }
+  opts?: { jwt?: string },
 ): Promise<{
   id: string;
   email: string;
@@ -1216,7 +1224,7 @@ export async function createRegistrant(
   if (input.companyId) {
     const attachedCompanies = await fetchCompaniesByEventId(input.apsID);
     const alreadyAttached = attachedCompanies.some(
-      (company) => company.id === input.companyId
+      (company) => company.id === input.companyId,
     );
     if (!alreadyAttached) {
       await ensureCompanyAttachedToEvent({
@@ -1238,7 +1246,7 @@ export async function createRegistrant(
         registrantId,
       },
     },
-    authOpts
+    authOpts,
   );
 
   if (!appUserResult.createApsAppUser?.id) {
@@ -1256,7 +1264,7 @@ export async function createRegistrant(
         appUserId,
       },
     },
-    authOpts
+    authOpts,
   );
 
   if (!linkRegistrantResult.updateApsRegistrant?.id) {
@@ -1284,7 +1292,8 @@ export async function createRegistrant(
   ]
     .map((value) => (typeof value === 'string' ? value.trim() : ''))
     .filter(Boolean);
-  const profileLocation = locationParts.length > 0 ? locationParts.join(', ') : null;
+  const profileLocation =
+    locationParts.length > 0 ? locationParts.join(', ') : null;
 
   const profileResult = await requestGraphQL<{
     createApsAppUserProfile?: { id: string; userId: string };
@@ -1304,7 +1313,7 @@ export async function createRegistrant(
         // Other fields will be filled in by the user later
       },
     },
-    authOpts
+    authOpts,
   );
 
   if (!profileResult.createApsAppUserProfile?.id) {
@@ -1324,7 +1333,7 @@ export async function createRegistrant(
         profileId,
       },
     },
-    authOpts
+    authOpts,
   );
 
   if (!linkUserResult.updateApsAppUser?.id) {
@@ -1333,9 +1342,8 @@ export async function createRegistrant(
 
   if (input.attendeeType === 'SPEAKER') {
     try {
-      const { createSpeakerFromRegistrantId } = await import(
-        '@/app/actions/speakers'
-      );
+      const { createSpeakerFromRegistrantId } =
+        await import('@/app/actions/speakers');
       await createSpeakerFromRegistrantId({
         eventId: input.apsID,
         registrantId,
@@ -1377,7 +1385,7 @@ export async function createRegistrant(
           qrCode: qrCodeUrl,
         },
       },
-      authOpts
+      authOpts,
     );
   } catch (error) {
     console.error('Failed to generate QR code for registrant:', error);
@@ -1455,7 +1463,7 @@ export async function exportTempCredentialsByApsId(apsId: string): Promise<
  * Fetch all registrants for an APS event
  */
 export async function fetchRegistrantsByApsId(
-  apsId: string
+  apsId: string,
 ): Promise<Registrant[]> {
   const allRegistrants: Registrant[] = [];
   let nextToken: string | null | undefined = null;
@@ -1496,7 +1504,7 @@ export async function fetchRegistrantsByApsId(
 
 export async function fetchRegistrantsByApsIdPage(
   apsId: string,
-  opts?: { limit?: number; nextToken?: string | null }
+  opts?: { limit?: number; nextToken?: string | null },
 ): Promise<{ items: Registrant[]; nextToken?: string | null }> {
   const response = await requestGraphQL<{
     apsRegistrantsByApsID?: {
@@ -1510,7 +1518,7 @@ export async function fetchRegistrantsByApsIdPage(
   });
 
   const items = (response.apsRegistrantsByApsID?.items ?? []).filter(
-    Boolean
+    Boolean,
   ) as Registrant[];
 
   // Best-effort: sort the page by createdAt descending.
@@ -1530,7 +1538,7 @@ export async function fetchRegistrantsByApsIdPage(
  * Fetch a single registrant by ID
  */
 export async function fetchRegistrantById(
-  id: string
+  id: string,
 ): Promise<RegistrantDetail | null> {
   try {
     const response = await requestGraphQL<{
@@ -1624,7 +1632,7 @@ type ActionState = {
 
 function readStringField(
   formData: FormData,
-  key: string
+  key: string,
 ): string | null | undefined {
   const value = formData.get(key);
   if (typeof value !== 'string') return undefined;
@@ -1634,7 +1642,7 @@ function readStringField(
 
 function readStringArrayField(
   formData: FormData,
-  key: string
+  key: string,
 ): string[] | null | undefined {
   const value = readStringField(formData, key);
   if (value === undefined) return undefined;
@@ -1649,7 +1657,7 @@ function readStringArrayField(
 async function listAllIds(
   query: string,
   responseKey: string,
-  filter: Record<string, unknown>
+  filter: Record<string, unknown>,
 ): Promise<string[]> {
   const ids: string[] = [];
   let nextToken: string | null | undefined = null;
@@ -1662,7 +1670,10 @@ async function listAllIds(
     });
 
     const listResult = response?.[responseKey] as
-      | { items?: Array<{ id?: string | null } | null> | null; nextToken?: string | null }
+      | {
+          items?: Array<{ id?: string | null } | null> | null;
+          nextToken?: string | null;
+        }
       | null
       | undefined;
 
@@ -1683,7 +1694,7 @@ async function listAllIds(
 }
 
 async function listSessionSpeakerIdsBySpeakerId(
-  speakerId: string
+  speakerId: string,
 ): Promise<string[]> {
   const ids: string[] = [];
   let nextToken: string | null | undefined = null;
@@ -1716,7 +1727,7 @@ async function listSessionSpeakerIdsBySpeakerId(
 
 async function findSpeakerIdForRegistrant(
   eventId: string,
-  profileId: string
+  profileId: string,
 ): Promise<string | null> {
   let nextToken: string | null | undefined = null;
 
@@ -1749,7 +1760,7 @@ async function findSpeakerIdForRegistrant(
 async function deleteIds(
   ids: Iterable<string>,
   mutation: string,
-  label: string
+  label: string,
 ): Promise<void> {
   for (const id of ids) {
     try {
@@ -1774,7 +1785,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
   if (registrant.companyId) {
     const attachedCompanies = await fetchCompaniesByEventId(registrant.apsID);
     const alreadyAttached = attachedCompanies.some(
-      (company) => company.id === registrant.companyId
+      (company) => company.id === registrant.companyId,
     );
     if (!alreadyAttached) {
       await ensureCompanyAttachedToEvent({
@@ -1798,7 +1809,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
           registrantId: registrant.id,
         },
       },
-      authOpts
+      authOpts,
     );
 
     if (!appUserResult.createApsAppUser?.id) {
@@ -1815,7 +1826,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
           appUserId,
         },
       },
-      authOpts
+      authOpts,
     );
 
     if (!linkRegistrantResult.updateApsRegistrant?.id) {
@@ -1865,7 +1876,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
           location: profileLocation,
         },
       },
-      authOpts
+      authOpts,
     );
 
     if (!profileResult.createApsAppUserProfile?.id) {
@@ -1884,7 +1895,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
           profileId,
         },
       },
-      authOpts
+      authOpts,
     );
 
     if (!linkUserResult.updateApsAppUser?.id) {
@@ -1892,7 +1903,8 @@ async function ensureRegistrantIdentityArtifacts(params: {
     }
 
     if (registrant.attendeeType === 'SPEAKER') {
-      const { createSpeakerFromRegistrantId } = await import('@/app/actions/speakers');
+      const { createSpeakerFromRegistrantId } =
+        await import('@/app/actions/speakers');
       await createSpeakerFromRegistrantId({
         eventId: registrant.apsID,
         registrantId: registrant.id,
@@ -1927,7 +1939,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
             qrCode: qrCodeUrl,
           },
         },
-        authOpts
+        authOpts,
       );
     } catch (error) {
       console.error('Failed to generate QR code for registrant:', error);
@@ -1939,7 +1951,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
 
 export async function updateRegistrant(
   _prevState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   try {
     const registrantId = readStringField(formData, 'registrantId');
@@ -1991,7 +2003,7 @@ export async function updateRegistrant(
 
 export async function updateAppUserProfile(
   _prevState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   try {
     const profileId = readStringField(formData, 'profileId');
@@ -2114,7 +2126,7 @@ export async function approveRegistrant(params: {
           approvedAt,
         },
       },
-      authOpts
+      authOpts,
     );
 
     const welcomeResult = await sendWelcomeEmailAndMarkSent({
@@ -2166,7 +2178,7 @@ export async function unapproveRegistrant(params: {
           approvedAt: null,
         },
       },
-      authOpts
+      authOpts,
     );
 
     revalidatePath(`/aps/${params.eventId}`);
@@ -2179,7 +2191,7 @@ export async function unapproveRegistrant(params: {
 }
 
 export async function fetchLatestTempCredentialByRegistrantId(
-  registrantId: string
+  registrantId: string,
 ): Promise<{
   id: string;
   email: string;
@@ -2224,7 +2236,7 @@ export async function fetchLatestTempCredentialByRegistrantId(
   } catch (error) {
     console.error(
       `Failed to fetch temp credential for registrant ${registrantId}:`,
-      error
+      error,
     );
     return null;
   }
@@ -2254,21 +2266,29 @@ export async function deleteRegistrantCascade({
       const affiliateIds = await listAllIds(
         LIST_PROFILE_AFFILIATES,
         'listProfileAffiliates',
-        { profileId: { eq: profileId } }
+        { profileId: { eq: profileId } },
       );
-      await deleteIds(affiliateIds, deleteProfileAffiliate, 'profile affiliate');
+      await deleteIds(
+        affiliateIds,
+        deleteProfileAffiliate,
+        'profile affiliate',
+      );
 
       const educationIds = await listAllIds(
         LIST_PROFILE_EDUCATION,
         'listProfileEducations',
-        { profileId: { eq: profileId } }
+        { profileId: { eq: profileId } },
       );
-      await deleteIds(educationIds, deleteProfileEducation, 'profile education');
+      await deleteIds(
+        educationIds,
+        deleteProfileEducation,
+        'profile education',
+      );
 
       const interestIds = await listAllIds(
         LIST_PROFILE_INTERESTS,
         'listProfileInterests',
-        { profileId: { eq: profileId } }
+        { profileId: { eq: profileId } },
       );
       await deleteIds(interestIds, deleteProfileInterest, 'profile interest');
     }
@@ -2289,7 +2309,7 @@ export async function deleteRegistrantCascade({
     const registrantNoteIds = await listAllIds(
       LIST_APP_USER_NOTES,
       'listApsAppUserNotes',
-      { registrantId: { eq: registrantId } }
+      { registrantId: { eq: registrantId } },
     );
     registrantNoteIds.forEach((id) => noteIds.add(id));
     await deleteIds(noteIds, deleteApsAppUserNote, 'app user note');
@@ -2297,12 +2317,12 @@ export async function deleteRegistrantCascade({
     const addOnRequestIds = await listAllIds(
       LIST_REGISTRANT_ADDON_REQUESTS,
       'listRegistrantAddOnRequests',
-      { registrantId: { eq: registrantId } }
+      { registrantId: { eq: registrantId } },
     );
     await deleteIds(
       addOnRequestIds,
       deleteRegistrantAddOnRequest,
-      'registrant add-on request'
+      'registrant add-on request',
     );
 
     const contactIds = new Set<string>();
@@ -2310,7 +2330,7 @@ export async function deleteRegistrantCascade({
       const ids = await listAllIds(
         LIST_APP_USER_CONTACTS,
         'listApsAppUserContacts',
-        { userId: { eq: appUserId } }
+        { userId: { eq: appUserId } },
       );
       ids.forEach((id) => contactIds.add(id));
     }
@@ -2318,7 +2338,7 @@ export async function deleteRegistrantCascade({
       const ids = await listAllIds(
         LIST_APP_USER_CONTACTS,
         'listApsAppUserContacts',
-        { contactId: { eq: profileId } }
+        { contactId: { eq: profileId } },
       );
       ids.forEach((id) => contactIds.add(id));
     }
@@ -2326,19 +2346,15 @@ export async function deleteRegistrantCascade({
 
     const leadIds = new Set<string>();
     if (appUserId) {
-      const ids = await listAllIds(
-        LIST_APP_USER_LEADS,
-        'listApsAppUserLeads',
-        { userId: { eq: appUserId } }
-      );
+      const ids = await listAllIds(LIST_APP_USER_LEADS, 'listApsAppUserLeads', {
+        userId: { eq: appUserId },
+      });
       ids.forEach((id) => leadIds.add(id));
     }
     if (profileId) {
-      const ids = await listAllIds(
-        LIST_APP_USER_LEADS,
-        'listApsAppUserLeads',
-        { contactId: { eq: profileId } }
-      );
+      const ids = await listAllIds(LIST_APP_USER_LEADS, 'listApsAppUserLeads', {
+        contactId: { eq: profileId },
+      });
       ids.forEach((id) => leadIds.add(id));
     }
     await deleteIds(leadIds, deleteApsAppUserLead, 'app user lead');
@@ -2347,36 +2363,36 @@ export async function deleteRegistrantCascade({
       const photoIds = await listAllIds(
         LIST_APP_USER_PHOTOS,
         'listApsAppUserPhotos',
-        { userId: { eq: appUserId } }
+        { userId: { eq: appUserId } },
       );
       await deleteIds(photoIds, deleteApsAppUserPhoto, 'app user photo');
 
       const sessionQuestionIds = await listAllIds(
         LIST_APP_USER_SESSION_QUESTIONS,
         'listApsAppSessionQuestions',
-        { userId: { eq: appUserId } }
+        { userId: { eq: appUserId } },
       );
       await deleteIds(
         sessionQuestionIds,
         deleteApsAppSessionQuestion,
-        'app session question'
+        'app session question',
       );
 
       const exhibitorDealIds = await listAllIds(
         LIST_APP_USER_EXHIBITOR_DEALS,
         'listApsAppExhibitorDeals',
-        { userId: { eq: appUserId } }
+        { userId: { eq: appUserId } },
       );
       await deleteIds(
         exhibitorDealIds,
         deleteApsAppExhibitorDeal,
-        'app exhibitor deal'
+        'app exhibitor deal',
       );
 
       const messageIds = await listAllIds(
         LIST_DM_MESSAGES,
         'listApsDmMessages',
-        { senderUserId: { eq: appUserId } }
+        { senderUserId: { eq: appUserId } },
       );
       await deleteIds(messageIds, deleteApsDmMessage, 'dm message');
     }
@@ -2391,14 +2407,16 @@ export async function deleteRegistrantCascade({
       await deleteIds(
         sessionSpeakerIds,
         deleteSessionSpeakers,
-        'session speaker'
+        'session speaker',
       );
 
       await requestGraphQL(deleteAPSSpeaker, { input: { id: speakerId } });
     }
 
     if (profileId) {
-      await requestGraphQL(deleteApsAppUserProfile, { input: { id: profileId } });
+      await requestGraphQL(deleteApsAppUserProfile, {
+        input: { id: profileId },
+      });
     }
     if (appUserId) {
       await requestGraphQL(deleteApsAppUser, { input: { id: appUserId } });
