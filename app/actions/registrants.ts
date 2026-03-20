@@ -26,10 +26,124 @@ import {
   AdminGetUserCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { render } from '@react-email/render';
+import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
 import { revalidatePath } from 'next/cache';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 type CognitoAttr = { Name?: string; Value?: string };
+
+function buildSesClient(): SESClient {
+  const region =
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    process.env.NEXT_PUBLIC_AWS_REGION ||
+    'us-east-1';
+
+  const accessKeyId = process.env.AWSACCESSKEYID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey =
+    process.env.AWSSECRETACCESSKEY || process.env.AWS_SECRET_ACCESS_KEY;
+
+  if (accessKeyId && secretAccessKey) {
+    return new SESClient({
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+  }
+
+  return new SESClient({ region });
+}
+
+async function sendWelcomeEmailAndMarkSent(params: {
+  registrant: RegistrantDetail;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<{ ok: boolean; message: string }> {
+  try {
+    const fromAddress =
+      process.env.APS_WELCOME_EMAIL_FROM ||
+      process.env.APS_EMAIL_FROM ||
+      'events@packagingschool.com';
+    const apsYear = process.env.APS_EVENT_YEAR || '2026';
+
+    const emailHtml = await render(
+      WelcomeEmail({
+        formData: {
+          firstName: params.registrant.firstName ?? '',
+          lastName: params.registrant.lastName ?? '',
+          email: params.registrant.email,
+          companyName: params.registrant.company?.name ?? '',
+          jobTitle: params.registrant.jobTitle ?? '',
+          phone: params.registrant.phone ?? '',
+          attendeeType: params.registrant.attendeeType ?? '',
+          billingAddress: {
+            street: params.registrant.billingAddressStreet ?? '',
+            city: params.registrant.billingAddressCity ?? '',
+            state: params.registrant.billingAddressState ?? '',
+            zip: params.registrant.billingAddressZip ?? '',
+          },
+          speedNetworking: Boolean(params.registrant.speedNetworking),
+        },
+        formDataId: params.registrant.id,
+        totalAmount: params.registrant.totalAmount ?? 0,
+        addOnsSelected: [],
+      })
+    );
+
+    const client = buildSesClient();
+    await client.send(
+      new SendEmailCommand({
+        Destination: {
+          ToAddresses: [params.registrant.email],
+        },
+        Message: {
+          Body: {
+            Html: {
+              Data: emailHtml,
+            },
+            Text: {
+              Charset: 'UTF-8',
+              Data: `Welcome to Automotive Packaging Summit ${apsYear}. View your dashboard: https://www.autopacksummit.com/registrants/${params.registrant.id}`,
+            },
+          },
+          Subject: {
+            Charset: 'UTF-8',
+            Data: `Automotive Packaging Summit ${apsYear} - Welcome`,
+          },
+        },
+        Source: fromAddress,
+        ReplyToAddresses: [],
+      })
+    );
+
+    const authOpts = params.jwt
+      ? { authMode: 'userPools' as const, jwt: params.jwt }
+      : undefined;
+
+    await requestGraphQL(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: params.registrant.id,
+          welcomeEmailSent: true,
+          welcomeEmailSentDate: new Date().toISOString(),
+        },
+      },
+      authOpts
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrant.id}`);
+    return { ok: true, message: 'Welcome email sent.' };
+  } catch (error) {
+    console.error('Failed to send welcome email:', error);
+    return { ok: false, message: 'Failed to send welcome email.' };
+  }
+}
 
 async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
   sub: string;
@@ -414,6 +528,8 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
         jobTitle
         attendeeType
         status
+        registrationEmailSent
+        welcomeEmailSent
         createdAt
         updatedAt
       }
@@ -439,6 +555,8 @@ const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
         jobTitle
         attendeeType
         status
+        registrationEmailSent
+        welcomeEmailSent
         createdAt
         updatedAt
       }
@@ -795,6 +913,8 @@ export type Registrant = {
   jobTitle?: string | null;
   attendeeType: string;
   status: string;
+  registrationEmailSent?: boolean | null;
+  welcomeEmailSent?: boolean | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -1938,6 +2058,28 @@ export async function updateAppUserProfile(
   }
 }
 
+export async function sendWelcomeEmail(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<ActionState> {
+  try {
+    const registrant = await fetchRegistrantById(params.registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    return await sendWelcomeEmailAndMarkSent({
+      registrant,
+      eventId: params.eventId,
+      jwt: params.jwt ?? null,
+    });
+  } catch (error) {
+    console.error('Failed to send welcome email action:', error);
+    return { ok: false, message: 'Failed to send welcome email.' };
+  }
+}
+
 export async function approveRegistrant(params: {
   registrantId: string;
   eventId: string;
@@ -1975,10 +2117,26 @@ export async function approveRegistrant(params: {
       authOpts
     );
 
+    const welcomeResult = await sendWelcomeEmailAndMarkSent({
+      registrant: {
+        ...registrant,
+        status: 'APPROVED',
+        approvedAt,
+      },
+      eventId: params.eventId,
+      jwt: params.jwt ?? null,
+    });
+
     revalidatePath(`/aps/${params.eventId}`);
     revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
 
-    return { ok: true, message: 'Registrant approved.', tempPassword };
+    return {
+      ok: true,
+      message: welcomeResult.ok
+        ? 'Registrant approved and welcome email sent.'
+        : 'Registrant approved, but welcome email failed to send.',
+      tempPassword,
+    };
   } catch (error) {
     console.error('Failed to approve registrant:', error);
     return {

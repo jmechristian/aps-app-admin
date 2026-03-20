@@ -3,7 +3,11 @@
 import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { deleteRegistrantCascade, type Registrant } from '@/app/actions/registrants';
+import {
+  deleteRegistrantCascade,
+  sendWelcomeEmail,
+  type Registrant,
+} from '@/app/actions/registrants';
 
 type RegistrantsTableProps = {
   registrants: Registrant[];
@@ -22,6 +26,7 @@ export default function RegistrantsTable({
 }: RegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [emailingId, setEmailingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -84,6 +89,13 @@ export default function RegistrantsTable({
     }
   };
 
+  const getBooleanIndicator = (value?: boolean | null) => {
+    if (value) {
+      return <span className='text-sm font-semibold text-green-700'>✓</span>;
+    }
+    return <span className='text-sm font-semibold text-red-600'>✕</span>;
+  };
+
   const handleDelete = (registrantId: string, name: string) => {
     const confirmed = window.confirm(
       `Delete ${name || 'this registrant'}? This will remove their app user and profile data.`
@@ -100,6 +112,23 @@ export default function RegistrantsTable({
         window.alert(result.message || 'Failed to delete registrant.');
       }
       setDeletingId(null);
+      router.refresh();
+    });
+  };
+
+  const handleWelcomeEmailClick = (registrantId: string) => {
+    setEmailingId(registrantId);
+    startTransition(async () => {
+      const result = await sendWelcomeEmail({
+        registrantId,
+        eventId,
+      });
+      if (!result.ok) {
+        window.alert(result.message || 'Failed to send welcome email.');
+      } else {
+        window.alert('Welcome email sent.');
+      }
+      setEmailingId(null);
       router.refresh();
     });
   };
@@ -144,16 +173,22 @@ export default function RegistrantsTable({
                   Email
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Company
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Title
+                  Company / Title
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Type
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Status
+                </th>
+                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  Reg Email Sent
+                </th>
+                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  Welcome Email Sent
+                </th>
+                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  Welcome Email
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Actions
@@ -177,11 +212,11 @@ export default function RegistrantsTable({
                       </Link>
                     </td>
                     <td className='px-4 py-3 text-sm text-slate-600'>{registrant.email}</td>
-                    <td className='px-4 py-3 text-sm text-slate-600'>
-                      {registrant.company?.name || '—'}
-                    </td>
-                    <td className='px-4 py-3 text-sm text-slate-600'>
-                      {registrant.jobTitle || '—'}
+                    <td className='px-4 py-3 text-sm'>
+                      <div className='flex flex-col gap-0.5'>
+                        <span className='text-slate-700'>{registrant.company?.name || '—'}</span>
+                        <span className='text-xs text-slate-500'>{registrant.jobTitle || '—'}</span>
+                      </div>
                     </td>
                     <td className='px-4 py-3 text-sm text-slate-600'>
                       {getAttendeeTypeLabel(registrant.attendeeType)}
@@ -192,6 +227,39 @@ export default function RegistrantsTable({
                       >
                         {registrant.status}
                       </span>
+                    </td>
+                    <td className='px-4 py-3 text-center'>
+                      {getBooleanIndicator(registrant.registrationEmailSent)}
+                    </td>
+                    <td className='px-4 py-3 text-center'>
+                      {getBooleanIndicator(registrant.welcomeEmailSent)}
+                    </td>
+                    <td className='px-4 py-3 text-center'>
+                      <button
+                        type='button'
+                        onClick={() => handleWelcomeEmailClick(registrant.id)}
+                        disabled={isPending && emailingId === registrant.id}
+                        className='inline-flex h-12 w-12 items-center justify-center rounded-lg border border-black bg-white text-black transition hover:bg-slate-100'
+                        aria-label={`Send welcome email to ${name}`}
+                        title={
+                          registrant.welcomeEmailSent
+                            ? 'Resend welcome email'
+                            : 'Send welcome email'
+                        }
+                      >
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='currentColor'
+                          strokeWidth='1.8'
+                          className='h-7 w-7'
+                          aria-hidden='true'
+                        >
+                          <rect x='3.5' y='5.5' width='17' height='13' rx='2' />
+                          <path d='M4 7l8 6 8-6' />
+                        </svg>
+                      </button>
                     </td>
                     <td className='px-4 py-3'>
                       <button
