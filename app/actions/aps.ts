@@ -148,7 +148,7 @@ export async function fetchCodesByEventId(eventId: string): Promise<APSCodeItem[
     nextToken = data.aPSCodesByEventId?.nextToken ?? null;
   } while (nextToken);
 
-  return items;
+  return items.sort((a, b) => a.code.localeCompare(b.code, undefined, { sensitivity: 'base' }));
 }
 
 export async function createAps(formData: FormData) {
