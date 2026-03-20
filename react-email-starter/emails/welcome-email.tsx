@@ -1055,14 +1055,14 @@ export const WelcomeEmail = ({
               >
                 For additional questions, please contact{' '}
                 <Link
-                  href='mailto:events@packagingschool.com'
+                  href='mailto:info@packagingschool.com'
                   style={{
                     color: APS_YELLOW,
                     fontWeight: 700,
                     textDecoration: 'underline',
                   }}
                 >
-                  events@packagingschool.com
+                  info@packagingschool.com
                 </Link>
                 .
               </Text>
