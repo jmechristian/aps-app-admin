@@ -9,6 +9,7 @@ import { ensureAmplifyConfigured } from '@/src/amplify-client';
 import StorageImage from '@/app/components/storage-image';
 import {
   updateAppUserProfile,
+  updateRegistrantEmailSync,
   type RegistrantDetail,
 } from '@/app/actions/registrants';
 
@@ -46,12 +47,16 @@ export default function RegistrantEditForm({
     updateAppUserProfile,
     initialState,
   );
+  const [emailState, emailAction] = useActionState(
+    updateRegistrantEmailSync,
+    initialState,
+  );
 
   useEffect(() => {
-    if (profileState.ok) {
+    if (profileState.ok || emailState.ok) {
       router.refresh();
     }
-  }, [profileState.ok, router]);
+  }, [profileState.ok, emailState.ok, router]);
 
   const profile = registrant.appUser?.profile ?? null;
   const [profilePicture, setProfilePicture] = useState(
@@ -114,6 +119,39 @@ export default function RegistrantEditForm({
 
   return (
     <div className='space-y-6'>
+      <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+        <div className='mb-6 flex items-center justify-between'>
+          <h2 className='text-xl font-bold text-slate-900'>Registrant Email</h2>
+          {emailState.message ? (
+            <p
+              className={`text-sm ${
+                emailState.ok ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {emailState.message}
+            </p>
+          ) : null}
+        </div>
+        <form action={emailAction} className='space-y-4'>
+          <input type='hidden' name='registrantId' value={registrant.id} />
+          <input type='hidden' name='eventId' value={eventId} />
+          <input type='hidden' name='profileId' value={profile?.id ?? ''} />
+          <label className='space-y-1 text-sm text-slate-700'>
+            <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
+              Email
+            </span>
+            <input
+              name='email'
+              type='email'
+              required
+              defaultValue={registrant.email ?? profile?.email ?? ''}
+              className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
+            />
+          </label>
+          <SubmitButton label='Save email' />
+        </form>
+      </div>
+
       <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
         <div className='mb-6 flex items-center justify-between'>
           <h2 className='text-xl font-bold text-slate-900'>
@@ -214,17 +252,6 @@ export default function RegistrantEditForm({
               </label>
               <label className='space-y-1 text-sm text-slate-700'>
                 <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
-                  Email
-                </span>
-                <input
-                  name='email'
-                  type='email'
-                  defaultValue={profile.email ?? ''}
-                  className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
-                />
-              </label>
-              <label className='space-y-1 text-sm text-slate-700'>
-                <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
                   Phone
                 </span>
                 <input
@@ -248,8 +275,9 @@ export default function RegistrantEditForm({
                   Attendee Type
                 </span>
                 <select
+                  key={`attendee-type-${registrant.attendeeType ?? profile.attendeeType ?? ''}`}
                   name='attendeeType'
-                  defaultValue={profile.attendeeType ?? ''}
+                  defaultValue={registrant.attendeeType ?? profile.attendeeType ?? ''}
                   className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
                 >
                   <option value=''>Select type</option>

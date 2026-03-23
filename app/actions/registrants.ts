@@ -2018,7 +2018,6 @@ export async function updateAppUserProfile(
     const fields = [
       'firstName',
       'lastName',
-      'email',
       'phone',
       'company',
       'jobTitle',
@@ -2089,6 +2088,60 @@ export async function sendWelcomeEmail(params: {
   } catch (error) {
     console.error('Failed to send welcome email action:', error);
     return { ok: false, message: 'Failed to send welcome email.' };
+  }
+}
+
+export async function updateRegistrantEmailSync(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const registrantId = readStringField(formData, 'registrantId');
+    const profileId = readStringField(formData, 'profileId');
+    const eventId = readStringField(formData, 'eventId');
+    const email = readStringField(formData, 'email');
+
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    if (!email) {
+      return { ok: false, message: 'Email is required.' };
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    await requestGraphQL(UPDATE_REGISTRANT, {
+      input: {
+        id: registrantId,
+        email: normalizedEmail,
+      },
+    });
+
+    if (profileId) {
+      await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+        input: {
+          id: profileId,
+          email: normalizedEmail,
+        },
+      });
+    }
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+      revalidatePath(`/aps/${eventId}/speakers`);
+    }
+
+    return {
+      ok: true,
+      message: profileId
+        ? 'Email updated on registrant and app user profile.'
+        : 'Registrant email updated.',
+    };
+  } catch (error) {
+    console.error('Failed to update registrant/profile email:', error);
+    return { ok: false, message: 'Failed to update email.' };
   }
 }
 
