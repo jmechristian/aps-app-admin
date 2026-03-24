@@ -1,30 +1,29 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
-  fetchExhibitorProfileById,
   fetchRegistrantListsForCompanyInEvent,
+  fetchSponsorById,
 } from '@/app/actions/event-content';
 import { fetchCompanyContacts } from '@/app/actions/companies';
-import { updateExhibitorBoothNumber } from '@/app/actions/exhibitors';
+import SponsorTypeSelect from '../sponsor-type-select';
 import StorageImage from '@/app/components/storage-image';
 
 type PageProps = {
-  params: Promise<{ id: string; exhibitorId: string }>;
+  params: Promise<{ id: string; sponsorId: string }>;
 };
 
-export default async function ExhibitorDetailPage({ params }: PageProps) {
-  const { id: eventId, exhibitorId } = await params;
-  const exhibitor = await fetchExhibitorProfileById(exhibitorId);
+export default async function SponsorDetailPage({ params }: PageProps) {
+  const { id: eventId, sponsorId } = await params;
+  const sponsor = await fetchSponsorById(sponsorId);
+  if (!sponsor) notFound();
 
-  if (!exhibitor) notFound();
-
-  const contacts = exhibitor.company?.id
-    ? await fetchCompanyContacts(exhibitor.company.id)
+  const contacts = sponsor.company?.id
+    ? await fetchCompanyContacts(sponsor.company.id)
     : [];
-  const registrantsByStatus = exhibitor.company?.id
+  const registrantsByStatus = sponsor.company?.id
     ? await fetchRegistrantListsForCompanyInEvent({
         eventId,
-        companyId: exhibitor.company.id,
+        companyId: sponsor.company.id,
       })
     : { registered: [], approved: [] };
 
@@ -34,21 +33,19 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
         <header className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
-              Exhibitor
+              Sponsor
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>
-              {exhibitor.company?.name ?? exhibitor.companyId}
+              {sponsor.company?.name ?? sponsor.companyId}
             </h1>
-            <p className='text-slate-600'>
-              {exhibitor.boothNumber ? `Booth ${exhibitor.boothNumber}` : '—'}
-            </p>
+            <p className='text-slate-600'>{sponsor.type ?? 'No sponsor type set'}</p>
           </div>
           <div className='flex flex-wrap gap-3'>
             <Link
-              href={`/aps/${eventId}/exhibitors`}
+              href={`/aps/${eventId}/sponsors`}
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
             >
-              ← Back to exhibitors
+              ← Back to sponsors
             </Link>
             <Link
               href={`/aps/${eventId}`}
@@ -67,18 +64,18 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
                   Company
                 </p>
                 <p className='mt-1 text-lg font-semibold text-slate-900'>
-                  {exhibitor.company?.name ?? exhibitor.companyId}
+                  {sponsor.company?.name ?? sponsor.companyId}
                 </p>
                 <p className='mt-1 text-sm text-slate-600'>
-                  {exhibitor.company?.email ?? '—'}
+                  {sponsor.company?.email ?? '—'}
                 </p>
               </div>
-              {exhibitor.company?.logo ? (
+              {sponsor.company?.logo ? (
                 <div className='flex items-center gap-4'>
                   <div className='h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-white'>
                     <StorageImage
-                      srcOrKey={exhibitor.company.logo}
-                      alt={`${exhibitor.company?.name ?? 'Company'} logo`}
+                      srcOrKey={sponsor.company.logo}
+                      alt={`${sponsor.company?.name ?? 'Company'} logo`}
                       className='h-full w-full object-contain'
                       accessLevel='guest'
                     />
@@ -91,14 +88,12 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
                   </div>
                 </div>
               ) : null}
-              {exhibitor.company?.description ? (
+              {sponsor.company?.description ? (
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Description
                   </p>
-                  <p className='mt-1 text-slate-900'>
-                    {exhibitor.company.description}
-                  </p>
+                  <p className='mt-1 text-slate-900'>{sponsor.company.description}</p>
                 </div>
               ) : null}
               <div className='grid gap-3 sm:grid-cols-2'>
@@ -106,18 +101,16 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Phone
                   </p>
-                  <p className='mt-1 text-slate-900'>
-                    {exhibitor.company?.phone ?? '—'}
-                  </p>
+                  <p className='mt-1 text-slate-900'>{sponsor.company?.phone ?? '—'}</p>
                 </div>
                 <div>
                   <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
                     Website
                   </p>
                   <p className='mt-1 text-slate-900'>
-                    {exhibitor.company?.website ? (
+                    {sponsor.company?.website ? (
                       <a
-                        href={exhibitor.company.website}
+                        href={sponsor.company.website}
                         target='_blank'
                         rel='noopener noreferrer'
                         className='hover:underline'
@@ -127,22 +120,6 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
                     ) : (
                       '—'
                     )}
-                  </p>
-                </div>
-                <div className='sm:col-span-2'>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Address
-                  </p>
-                  <p className='mt-1 text-slate-900'>
-                    {[
-                      exhibitor.company?.address,
-                      exhibitor.company?.city,
-                      exhibitor.company?.state,
-                      exhibitor.company?.zip,
-                      exhibitor.company?.country,
-                    ]
-                      .filter(Boolean)
-                      .join(', ') || '—'}
                   </p>
                 </div>
                 <div className='sm:col-span-2'>
@@ -175,58 +152,27 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
             </div>
 
             <div className='space-y-4'>
-              <form
-                action={updateExhibitorBoothNumber}
-                className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'
-              >
-                <div className='mb-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800'>
-                  <span className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Booth
-                  </span>
-                  <div className='mt-1 text-lg font-semibold text-slate-900'>
-                    {exhibitor.boothNumber ? `Booth ${exhibitor.boothNumber}` : '—'}
-                  </div>
-                </div>
-                <input type='hidden' name='id' value={exhibitor.id} />
-                <input type='hidden' name='eventId' value={eventId} />
-                <label className='block text-sm font-semibold text-slate-700'>
-                  Booth number
-                  <input
-                    name='boothNumber'
-                    defaultValue={exhibitor.boothNumber ?? ''}
-                    className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+              <div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Sponsor Type
+                </p>
+                <div className='mt-2'>
+                  <SponsorTypeSelect
+                    sponsorId={sponsor.id}
+                    eventId={eventId}
+                    value={sponsor.type}
                   />
-                </label>
-                <button
-                  type='submit'
-                  className='mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
-                >
-                  Save booth number
-                </button>
-              </form>
+                </div>
+              </div>
 
               <div className='rounded-2xl border border-slate-200 bg-white p-6'>
                 <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                  Exhibitor ID
+                  Sponsor ID
                 </p>
-                <p className='mt-1 font-mono text-xs text-slate-900'>
-                  {exhibitor.id}
-                </p>
+                <p className='mt-1 font-mono text-xs text-slate-900'>{sponsor.id}</p>
               </div>
             </div>
           </div>
-
-          {(exhibitor.video || exhibitor.videoCaption) && (
-            <div className='mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6'>
-              <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                Video
-              </p>
-              <p className='mt-2 text-slate-900'>{exhibitor.video || '—'}</p>
-              {exhibitor.videoCaption && (
-                <p className='mt-1 text-slate-700'>{exhibitor.videoCaption}</p>
-              )}
-            </div>
-          )}
 
           <div className='mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6'>
             <h3 className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -282,5 +228,3 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
     </div>
   );
 }
-
-

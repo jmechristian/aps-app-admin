@@ -8,6 +8,7 @@ import {
   updateCompany,
   updateCompanyContact,
 } from '@/app/actions/companies';
+import { fetchRegistrantListsForCompanyInEvent } from '@/app/actions/event-content';
 import CompanyLogoField from './company-logo-field';
 
 type PageProps = {
@@ -16,8 +17,11 @@ type PageProps = {
 
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id: eventId, companyId } = await params;
-  const company = await fetchCompanyById(companyId);
-  const contacts = await fetchCompanyContacts(companyId);
+  const [company, contacts, registrantsByStatus] = await Promise.all([
+    fetchCompanyById(companyId),
+    fetchCompanyContacts(companyId),
+    fetchRegistrantListsForCompanyInEvent({ eventId, companyId }),
+  ]);
 
   return (
     <CategoryPageShell
@@ -158,6 +162,58 @@ export default async function CompanyDetailPage({ params }: PageProps) {
             </button>
           </div>
         </form>
+
+        <div className='mt-10 border-t border-slate-200 pt-6'>
+          <h3 className='text-lg font-semibold text-slate-900'>Registrants</h3>
+          <p className='mt-1 text-sm text-slate-600'>
+            Registrants currently assigned to this company for this event.
+          </p>
+          <div className='mt-4 grid gap-6 md:grid-cols-2'>
+            <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                Registered ({registrantsByStatus.registered.length})
+              </p>
+              {registrantsByStatus.registered.length === 0 ? (
+                <p className='mt-2 text-sm text-slate-700'>—</p>
+              ) : (
+                <div className='mt-2 flex flex-wrap gap-2'>
+                  {registrantsByStatus.registered.map((registrant) => (
+                    <Link
+                      key={registrant.id}
+                      href={`/aps/${eventId}/registrants/${registrant.id}`}
+                      className='rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100 hover:underline'
+                      title={`${registrant.email} · ${registrant.status}`}
+                    >
+                      {registrant.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                Approved ({registrantsByStatus.approved.length})
+              </p>
+              {registrantsByStatus.approved.length === 0 ? (
+                <p className='mt-2 text-sm text-slate-700'>—</p>
+              ) : (
+                <div className='mt-2 flex flex-wrap gap-2'>
+                  {registrantsByStatus.approved.map((registrant) => (
+                    <Link
+                      key={registrant.id}
+                      href={`/aps/${eventId}/registrants/${registrant.id}`}
+                      className='rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-800 hover:bg-emerald-100 hover:underline'
+                      title={registrant.email}
+                    >
+                      {registrant.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         <div className='mt-10 border-t border-slate-200 pt-6'>
           <h3 className='text-lg font-semibold text-slate-900'>Contacts</h3>

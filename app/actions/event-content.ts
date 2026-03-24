@@ -685,6 +685,19 @@ export type CompanyWithRegistrantCount = {
   registrantCount: number;
 };
 
+export type ApprovedRegistrantSummary = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type CompanyRegistrantSummary = {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+};
+
 /**
  * Used for company pickers: restrict to companies that have at least one registrant
  * for this event, and include a count for UX.
@@ -712,6 +725,129 @@ export async function fetchCompaniesWithRegistrantsByEventId(eventId: string) {
 
   filtered.sort((a, b) => a.name.localeCompare(b.name));
   return filtered;
+}
+
+export async function fetchApprovedRegistrantsByCompanyForEvent(eventId: string): Promise<
+  Record<string, ApprovedRegistrantSummary[]>
+> {
+  const registrants = await fetchRegistrantsByApsId(eventId);
+  const byCompany: Record<string, ApprovedRegistrantSummary[]> = {};
+  const seenRegistrantIds = new Set<string>();
+
+  for (const registrant of registrants) {
+    if (seenRegistrantIds.has(registrant.id)) continue;
+    seenRegistrantIds.add(registrant.id);
+
+    if (registrant.status !== 'APPROVED') continue;
+    const companyId = registrant.company?.id ?? registrant.companyId ?? null;
+    if (!companyId) continue;
+
+    const fullName =
+      `${registrant.firstName ?? ''} ${registrant.lastName ?? ''}`.trim() ||
+      registrant.email;
+
+    if (!byCompany[companyId]) {
+      byCompany[companyId] = [];
+    }
+
+    byCompany[companyId].push({
+      id: registrant.id,
+      name: fullName,
+      email: registrant.email,
+    });
+  }
+
+  for (const companyId of Object.keys(byCompany)) {
+    byCompany[companyId].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  return byCompany;
+}
+
+export async function fetchRegistrantListsForCompanyInEvent(input: {
+  eventId: string;
+  companyId: string;
+}): Promise<{
+  registered: CompanyRegistrantSummary[];
+  approved: CompanyRegistrantSummary[];
+}> {
+  const registrants = await fetchRegistrantsByApsId(input.eventId);
+  const registered: CompanyRegistrantSummary[] = [];
+  const approved: CompanyRegistrantSummary[] = [];
+  const seenRegistrantIds = new Set<string>();
+
+  for (const registrant of registrants) {
+    if (seenRegistrantIds.has(registrant.id)) continue;
+    seenRegistrantIds.add(registrant.id);
+
+    const registrantCompanyId = registrant.company?.id ?? registrant.companyId ?? null;
+    if (!registrantCompanyId || registrantCompanyId !== input.companyId) {
+      continue;
+    }
+
+    const fullName =
+      `${registrant.firstName ?? ''} ${registrant.lastName ?? ''}`.trim() ||
+      registrant.email;
+    const summary: CompanyRegistrantSummary = {
+      id: registrant.id,
+      name: fullName,
+      email: registrant.email,
+      status: registrant.status,
+    };
+
+    registered.push(summary);
+    if (registrant.status === 'APPROVED') {
+      approved.push(summary);
+    }
+  }
+
+  const byName = (a: CompanyRegistrantSummary, b: CompanyRegistrantSummary) =>
+    a.name.localeCompare(b.name);
+  registered.sort(byName);
+  approved.sort(byName);
+
+  return { registered, approved };
+}
+
+export type SponsorDetail = SponsorListItem & {
+  company?: {
+    id: string;
+    name: string;
+    email?: string | null;
+    website?: string | null;
+    phone?: string | null;
+    description?: string | null;
+    logo?: string | null;
+  } | null;
+};
+
+export async function fetchSponsorById(sponsorId: string) {
+  const GET_SPONSOR = /* GraphQL */ `
+    query GetApsSponsor($id: ID!) {
+      getApsSponsor(id: $id) {
+        id
+        eventId
+        companyId
+        type
+        company {
+          id
+          name
+          email
+          website
+          phone
+          description
+          logo
+        }
+      }
+    }
+  `;
+
+  const response = await requestGraphQL<{ getApsSponsor?: SponsorDetail | null }>(
+    GET_SPONSOR,
+    { id: sponsorId },
+  );
+
+  return response.getApsSponsor ?? null;
 }
 
 

@@ -1,6 +1,9 @@
 import CategoryPageShell from '../category-page-shell';
 import Link from 'next/link';
-import { fetchSponsorsByEventId } from '@/app/actions/event-content';
+import {
+  fetchApprovedRegistrantsByCompanyForEvent,
+  fetchSponsorsByEventId,
+} from '@/app/actions/event-content';
 import { fetchCompaniesByEventId } from '@/app/actions/registrants';
 import CreateSponsorButton from './create-sponsor-button';
 import SponsorTypeSelect from './sponsor-type-select';
@@ -12,9 +15,10 @@ type PageProps = {
 
 export default async function SponsorsPage({ params }: PageProps) {
   const { id: eventId } = await params;
-  const [sponsors, companies] = await Promise.all([
+  const [sponsors, companies, approvedByCompany] = await Promise.all([
     fetchSponsorsByEventId(eventId),
     fetchCompaniesByEventId(eventId),
+    fetchApprovedRegistrantsByCompanyForEvent(eventId),
   ]);
 
   return (
@@ -47,51 +51,88 @@ export default async function SponsorsPage({ params }: PageProps) {
                 <tr>
                   <th className='px-4 py-3'>Company</th>
                   <th className='px-4 py-3'>Type</th>
+                  <th className='px-4 py-3'>Approved Registrants</th>
                   <th className='px-4 py-3'>Sponsor ID</th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-slate-200'>
-                {sponsors.map((sponsor) => (
-                  <tr key={sponsor.id} className='bg-white'>
-                    <td className='px-4 py-3 font-semibold text-slate-900'>
-                      <div className='flex items-center gap-3'>
-                        {sponsor.company?.logo ? (
-                          <StorageImage
-                            srcOrKey={sponsor.company.logo}
-                            alt={`${sponsor.company?.name ?? 'Sponsor'} logo`}
-                            className='h-8 w-8 rounded-full border border-slate-200 bg-white object-contain'
-                            accessLevel='guest'
-                          />
-                        ) : (
-                          <div
-                            className='h-8 w-8 rounded-full bg-slate-200'
-                            aria-label='No sponsor logo'
-                          />
-                        )}
-                        {sponsor.companyId ? (
+                {sponsors.map((sponsor) => {
+                  const approved =
+                    approvedByCompany[sponsor.company?.id ?? sponsor.companyId ?? ''] ?? [];
+                  const preview = approved.slice(0, 3);
+                  const remaining = approved.length - preview.length;
+
+                  return (
+                    <tr key={sponsor.id} className='bg-white'>
+                      <td className='px-4 py-3 font-semibold text-slate-900'>
+                        <div className='flex items-center gap-3'>
+                          {sponsor.company?.logo ? (
+                            <StorageImage
+                              srcOrKey={sponsor.company.logo}
+                              alt={`${sponsor.company?.name ?? 'Sponsor'} logo`}
+                              className='h-8 w-8 rounded-full border border-slate-200 bg-white object-contain'
+                              accessLevel='guest'
+                            />
+                          ) : (
+                            <div
+                              className='h-8 w-8 rounded-full bg-slate-200'
+                              aria-label='No sponsor logo'
+                            />
+                          )}
                           <Link
-                            href={`/aps/${eventId}/companies/${sponsor.companyId}`}
+                            href={`/aps/${eventId}/sponsors/${sponsor.id}`}
                             className='hover:underline'
                           >
-                            {sponsor.company?.name ?? sponsor.companyId}
+                            {sponsor.company?.name ?? sponsor.companyId ?? 'Unknown company'}
                           </Link>
+                        </div>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <SponsorTypeSelect
+                          sponsorId={sponsor.id}
+                          eventId={eventId}
+                          value={sponsor.type}
+                        />
+                      </td>
+                      <td className='px-4 py-3 text-slate-700'>
+                        {approved.length === 0 ? (
+                          '—'
                         ) : (
-                          sponsor.company?.name ?? 'Unknown company'
+                          <div className='space-y-1'>
+                            <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                              {approved.length} approved
+                            </p>
+                            <div className='flex flex-wrap gap-2'>
+                              {preview.map((registrant) => (
+                                <Link
+                                  key={registrant.id}
+                                  href={`/aps/${eventId}/registrants/${registrant.id}`}
+                                  className='rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100 hover:underline'
+                                  title={registrant.email}
+                                >
+                                  {registrant.name}
+                                </Link>
+                              ))}
+                              {remaining > 0 ? (
+                                <span className='rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-600'>
+                                  +{remaining} more
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </td>
-                    <td className='px-4 py-3'>
-                      <SponsorTypeSelect
-                        sponsorId={sponsor.id}
-                        eventId={eventId}
-                        value={sponsor.type}
-                      />
-                    </td>
-                    <td className='px-4 py-3 font-mono text-xs text-slate-700'>
-                      {sponsor.id}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className='px-4 py-3 font-mono text-xs text-slate-700'>
+                        <Link
+                          href={`/aps/${eventId}/sponsors/${sponsor.id}`}
+                          className='hover:underline'
+                        >
+                          {sponsor.id}
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
