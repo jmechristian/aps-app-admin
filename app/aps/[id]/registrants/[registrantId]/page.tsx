@@ -55,7 +55,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
   const vCardPreview = buildVCardPreview(registrant);
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
+    <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
       <main className='page-container flex flex-col gap-8'>
         <header className='flex items-center justify-between gap-4'>
           <div className='space-y-2'>
@@ -67,7 +67,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
           </div>
           <Link
             href={`/aps/${eventId}`}
-            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
           >
             ← Back to event
           </Link>

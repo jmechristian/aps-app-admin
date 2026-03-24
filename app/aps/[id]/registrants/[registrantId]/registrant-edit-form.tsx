@@ -7,6 +7,7 @@ import { uploadData } from 'aws-amplify/storage';
 import heic2any from 'heic2any';
 import { ensureAmplifyConfigured } from '@/src/amplify-client';
 import StorageImage from '@/app/components/storage-image';
+import InvoicePreview from './invoice-preview';
 import {
   updateAppUserProfile,
   updateRegistrantEmailSync,
@@ -24,6 +25,11 @@ type ActionState = {
 };
 
 const initialState: ActionState = { ok: false, message: '' };
+
+function displayText(value?: string | null) {
+  const text = value?.trim();
+  return text && text.length > 0 ? text : '—';
+}
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
@@ -151,6 +157,121 @@ export default function RegistrantEditForm({
           <SubmitButton label='Save email' />
         </form>
       </div>
+
+      <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+        <h2 className='mb-6 text-xl font-bold text-slate-900'>
+          Registration & Payment
+        </h2>
+        <div className='grid gap-6 lg:grid-cols-2'>
+          <div className='rounded-2xl border border-slate-200 bg-slate-50 p-5'>
+            <h3 className='mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
+              Registration Questions
+            </h3>
+            <div className='space-y-4 text-sm text-slate-900'>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Terms Accepted
+                </p>
+                <p className='mt-1'>
+                  {registrant.termsAccepted === null ||
+                  registrant.termsAccepted === undefined
+                    ? '—'
+                    : registrant.termsAccepted
+                      ? 'Yes'
+                      : 'No'}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Interests
+                </p>
+                <p className='mt-1'>
+                  {registrant.interests && registrant.interests.length > 0
+                    ? registrant.interests.join(', ')
+                    : '—'}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Other Interest
+                </p>
+                <p className='mt-1'>{displayText(registrant.otherInterest)}</p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Buyer Question
+                </p>
+                <p className='mt-1 whitespace-pre-wrap'>
+                  {displayText(registrant.buyerQuestion)}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Packaging Challenge
+                </p>
+                <p className='mt-1 whitespace-pre-wrap'>
+                  {displayText(registrant.packagingChallenge)}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Certification
+                </p>
+                <p className='mt-1'>
+                  {displayText(registrant.certification) === 'true'
+                    ? 'Yes'
+                    : displayText(registrant.certification) === 'false'
+                      ? 'No'
+                      : displayText(registrant.certification)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className='rounded-2xl border border-slate-200 bg-slate-50 p-5'>
+            <h3 className='mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
+              Payment Details
+            </h3>
+            <div className='space-y-4 text-sm text-slate-900'>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Total Amount
+                </p>
+                <p className='mt-1'>
+                  {registrant.totalAmount === null ||
+                  registrant.totalAmount === undefined
+                    ? '—'
+                    : `$${registrant.totalAmount.toLocaleString()}`}
+                </p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Discount Code
+                </p>
+                <p className='mt-1'>{displayText(registrant.discountCode)}</p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Payment Confirmation
+                </p>
+                <p className='mt-1'>{displayText(registrant.paymentConfirmation)}</p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Status
+                </p>
+                <p className='mt-1'>{displayText(registrant.status)}</p>
+              </div>
+              <div>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Receipt
+                </p>
+                <InvoicePreview invoice={registrant.invoice} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
         <div className='mb-6 flex items-center justify-between'>

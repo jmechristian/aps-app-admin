@@ -597,6 +597,9 @@ const GET_REGISTRANT = /* GraphQL */ `
       termsAccepted
       interests
       otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
       billingAddressFirstName
       billingAddressLastName
       billingAddressEmail
@@ -621,6 +624,7 @@ const GET_REGISTRANT = /* GraphQL */ `
       welcomeEmailReceivedDate
       paymentMethod
       paymentLast4
+      invoice
       approvedAt
       headshot
       presentation
@@ -989,6 +993,9 @@ export type RegistrantDetail = Registrant & {
   termsAccepted?: boolean | null;
   interests?: string[] | null;
   otherInterest?: string | null;
+  buyerQuestion?: string | null;
+  packagingChallenge?: string | null;
+  certification?: string | null;
   speedNetworking?: boolean | null;
   speedNetworkingStatus?: string | null;
   billingAddressFirstName?: string | null;
@@ -1021,6 +1028,7 @@ export type RegistrantDetail = Registrant & {
   welcomeEmailReceivedDate?: string | null;
   paymentMethod?: string | null;
   paymentLast4?: string | null;
+  invoice?: string | null;
   approvedAt?: string | null;
   headshot?: string | null;
   presentation?: string | null;
