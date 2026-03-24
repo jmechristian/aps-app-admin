@@ -566,6 +566,1185 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
   APITypes.OnDeleteApsAppUserNoteSubscriptionVariables,
   APITypes.OnDeleteApsAppUserNoteSubscription
 >;
+export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteExhibitor(
+  $filter: ModelSubscriptionApsAppUserFavoriteExhibitorFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserFavoriteExhibitor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteExhibitorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserFavoriteExhibitorSubscriptionVariables,
+  APITypes.OnCreateApsAppUserFavoriteExhibitorSubscription
+>;
+export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription OnUpdateApsAppUserFavoriteExhibitor(
+  $filter: ModelSubscriptionApsAppUserFavoriteExhibitorFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserFavoriteExhibitor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteExhibitorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserFavoriteExhibitorSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserFavoriteExhibitorSubscription
+>;
+export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription OnDeleteApsAppUserFavoriteExhibitor(
+  $filter: ModelSubscriptionApsAppUserFavoriteExhibitorFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserFavoriteExhibitor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteExhibitorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserFavoriteExhibitorSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserFavoriteExhibitorSubscription
+>;
+export const onCreateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteSpeaker(
+  $filter: ModelSubscriptionApsAppUserFavoriteSpeakerFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserFavoriteSpeaker(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSpeakersId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserFavoriteSpeakerSubscriptionVariables,
+  APITypes.OnCreateApsAppUserFavoriteSpeakerSubscription
+>;
+export const onUpdateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnUpdateApsAppUserFavoriteSpeaker(
+  $filter: ModelSubscriptionApsAppUserFavoriteSpeakerFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserFavoriteSpeaker(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSpeakersId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserFavoriteSpeakerSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserFavoriteSpeakerSubscription
+>;
+export const onDeleteApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnDeleteApsAppUserFavoriteSpeaker(
+  $filter: ModelSubscriptionApsAppUserFavoriteSpeakerFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserFavoriteSpeaker(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    speakerId
+    speaker {
+      id
+      presentationTitle
+      presentationSummary
+      profileId
+      eventId
+      createdAt
+      updatedAt
+      aPSSpeakersId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSpeakersId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserFavoriteSpeakerSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserFavoriteSpeakerSubscription
+>;
+export const onCreateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteSponsor(
+  $filter: ModelSubscriptionApsAppUserFavoriteSponsorFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserFavoriteSponsor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sponsorId
+    sponsor {
+      id
+      companyId
+      eventId
+      type
+      createdAt
+      updatedAt
+      aPSSponsorsId
+      apsSponsorProfileId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSponsorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserFavoriteSponsorSubscriptionVariables,
+  APITypes.OnCreateApsAppUserFavoriteSponsorSubscription
+>;
+export const onUpdateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnUpdateApsAppUserFavoriteSponsor(
+  $filter: ModelSubscriptionApsAppUserFavoriteSponsorFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserFavoriteSponsor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sponsorId
+    sponsor {
+      id
+      companyId
+      eventId
+      type
+      createdAt
+      updatedAt
+      aPSSponsorsId
+      apsSponsorProfileId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSponsorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserFavoriteSponsorSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserFavoriteSponsorSubscription
+>;
+export const onDeleteApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnDeleteApsAppUserFavoriteSponsor(
+  $filter: ModelSubscriptionApsAppUserFavoriteSponsorFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserFavoriteSponsor(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sponsorId
+    sponsor {
+      id
+      companyId
+      eventId
+      type
+      createdAt
+      updatedAt
+      aPSSponsorsId
+      apsSponsorProfileId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSponsorsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserFavoriteSponsorSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserFavoriteSponsorSubscription
+>;
+export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteSession(
+  $filter: ModelSubscriptionApsAppUserFavoriteSessionFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserFavoriteSession(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sessionId
+    session {
+      id
+      title
+      date
+      startTime
+      endTime
+      location
+      description
+      agendaId
+      createdAt
+      updatedAt
+      apsAgendaItemsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSessionsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserFavoriteSessionSubscriptionVariables,
+  APITypes.OnCreateApsAppUserFavoriteSessionSubscription
+>;
+export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnUpdateApsAppUserFavoriteSession(
+  $filter: ModelSubscriptionApsAppUserFavoriteSessionFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserFavoriteSession(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sessionId
+    session {
+      id
+      title
+      date
+      startTime
+      endTime
+      location
+      description
+      agendaId
+      createdAt
+      updatedAt
+      apsAgendaItemsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSessionsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserFavoriteSessionSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserFavoriteSessionSubscription
+>;
+export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnDeleteApsAppUserFavoriteSession(
+  $filter: ModelSubscriptionApsAppUserFavoriteSessionFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserFavoriteSession(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    sessionId
+    session {
+      id
+      title
+      date
+      startTime
+      endTime
+      location
+      description
+      agendaId
+      createdAt
+      updatedAt
+      apsAgendaItemsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteSessionsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserFavoriteSessionSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserFavoriteSessionSubscription
+>;
+export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteContact(
+  $filter: ModelSubscriptionApsAppUserFavoriteContactFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserFavoriteContact(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    contactProfileId
+    contactProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteContactsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserFavoriteContactSubscriptionVariables,
+  APITypes.OnCreateApsAppUserFavoriteContactSubscription
+>;
+export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnUpdateApsAppUserFavoriteContact(
+  $filter: ModelSubscriptionApsAppUserFavoriteContactFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserFavoriteContact(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    contactProfileId
+    contactProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteContactsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserFavoriteContactSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserFavoriteContactSubscription
+>;
+export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnDeleteApsAppUserFavoriteContact(
+  $filter: ModelSubscriptionApsAppUserFavoriteContactFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserFavoriteContact(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    contactProfileId
+    contactProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    favoriteKey
+    createdAt
+    updatedAt
+    aPSFavoriteContactsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserFavoriteContactSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserFavoriteContactSubscription
+>;
 export const onCreateApsContactRequest = /* GraphQL */ `subscription OnCreateApsContactRequest(
   $filter: ModelSubscriptionApsContactRequestFilterInput
 ) {
@@ -1175,6 +2354,26 @@ export const onCreateAPS = /* GraphQL */ `subscription OnCreateAPS($filter: Mode
       nextToken
       __typename
     }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
+      nextToken
+      __typename
+    }
     addOns {
       nextToken
       __typename
@@ -1252,6 +2451,26 @@ export const onUpdateAPS = /* GraphQL */ `subscription OnUpdateAPS($filter: Mode
       nextToken
       __typename
     }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
+      nextToken
+      __typename
+    }
     addOns {
       nextToken
       __typename
@@ -1326,6 +2545,26 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
       __typename
     }
     exhibitorHandouts {
+      nextToken
+      __typename
+    }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
       nextToken
       __typename
     }
@@ -2745,6 +3984,30 @@ export const onCreateApsAppUserProfile = /* GraphQL */ `subscription OnCreateAps
       nextToken
       __typename
     }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
+      nextToken
+      __typename
+    }
+    favoritedByProfiles {
+      nextToken
+      __typename
+    }
     notes {
       nextToken
       __typename
@@ -2822,6 +4085,30 @@ export const onUpdateApsAppUserProfile = /* GraphQL */ `subscription OnUpdateAps
       nextToken
       __typename
     }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
+      nextToken
+      __typename
+    }
+    favoritedByProfiles {
+      nextToken
+      __typename
+    }
     notes {
       nextToken
       __typename
@@ -2896,6 +4183,30 @@ export const onDeleteApsAppUserProfile = /* GraphQL */ `subscription OnDeleteAps
       __typename
     }
     leads {
+      nextToken
+      __typename
+    }
+    favoriteExhibitors {
+      nextToken
+      __typename
+    }
+    favoriteSpeakers {
+      nextToken
+      __typename
+    }
+    favoriteSponsors {
+      nextToken
+      __typename
+    }
+    favoriteSessions {
+      nextToken
+      __typename
+    }
+    favoriteContacts {
+      nextToken
+      __typename
+    }
+    favoritedByProfiles {
       nextToken
       __typename
     }
@@ -3496,6 +4807,10 @@ export const onCreateApsAppSession = /* GraphQL */ `subscription OnCreateApsAppS
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -3541,6 +4856,10 @@ export const onUpdateApsAppSession = /* GraphQL */ `subscription OnUpdateApsAppS
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -3583,6 +4902,10 @@ export const onDeleteApsAppSession = /* GraphQL */ `subscription OnDeleteApsAppS
       __typename
     }
     sponsors {
+      nextToken
+      __typename
+    }
+    favoriteByUsers {
       nextToken
       __typename
     }
@@ -3771,6 +5094,10 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSSpeakersId
@@ -3836,6 +5163,10 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSSpeakersId
@@ -3898,6 +5229,10 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
       __typename
     }
     sessions {
+      nextToken
+      __typename
+    }
+    favoriteByUsers {
       nextToken
       __typename
     }
@@ -3971,6 +5306,10 @@ export const onCreateApsSponsor = /* GraphQL */ `subscription OnCreateApsSponsor
       __typename
     }
     sessions {
+      nextToken
+      __typename
+    }
+    favoriteByUsers {
       nextToken
       __typename
     }
@@ -4049,6 +5388,10 @@ export const onUpdateApsSponsor = /* GraphQL */ `subscription OnUpdateApsSponsor
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     type
     createdAt
     updatedAt
@@ -4121,6 +5464,10 @@ export const onDeleteApsSponsor = /* GraphQL */ `subscription OnDeleteApsSponsor
       __typename
     }
     sessions {
+      nextToken
+      __typename
+    }
+    favoriteByUsers {
       nextToken
       __typename
     }
@@ -4547,6 +5894,10 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSExhibitorsId
@@ -4638,6 +5989,10 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
       nextToken
       __typename
     }
+    favoriteByUsers {
+      nextToken
+      __typename
+    }
     createdAt
     updatedAt
     aPSExhibitorsId
@@ -4726,6 +6081,10 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
     views
     likes
     notes {
+      nextToken
+      __typename
+    }
+    favoriteByUsers {
       nextToken
       __typename
     }

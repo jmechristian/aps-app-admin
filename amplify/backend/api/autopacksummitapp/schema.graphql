@@ -60,6 +60,12 @@ type APS
   exhibitorDeals: [ApsAppExhibitorDeal] @hasMany(indexName: "byEvent")
   exhibitorPhotos: [ApsAppExhibitorPhoto] @hasMany(indexName: "byEvent")
   exhibitorHandouts: [ApsAppExhibitorHandout] @hasMany(indexName: "byEvent")
+  favoriteExhibitors: [ApsAppUserFavoriteExhibitor]
+    @hasMany(indexName: "byEvent")
+  favoriteSpeakers: [ApsAppUserFavoriteSpeaker] @hasMany(indexName: "byEvent")
+  favoriteSponsors: [ApsAppUserFavoriteSponsor] @hasMany(indexName: "byEvent")
+  favoriteSessions: [ApsAppUserFavoriteSession] @hasMany(indexName: "byEvent")
+  favoriteContacts: [ApsAppUserFavoriteContact] @hasMany(indexName: "byEvent")
   addOns: [ApsAddOn] @hasMany(indexName: "byEvent")
 }
 
@@ -328,6 +334,18 @@ type ApsAppUserProfile
   # Reverse relationships required for @belongsTo in Contact/Lead
   contacts: [ApsAppUserContact] @hasMany(indexName: "byContact", fields: ["id"])
   leads: [ApsAppUserLead] @hasMany(indexName: "byContact", fields: ["id"])
+  favoriteExhibitors: [ApsAppUserFavoriteExhibitor]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
+  favoriteSpeakers: [ApsAppUserFavoriteSpeaker]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
+  favoriteSponsors: [ApsAppUserFavoriteSponsor]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
+  favoriteSessions: [ApsAppUserFavoriteSession]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
+  favoriteContacts: [ApsAppUserFavoriteContact]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
+  favoritedByProfiles: [ApsAppUserFavoriteContact]
+    @hasMany(indexName: "byContactProfile", fields: ["id"])
 
   # Notes about this profile (contact notes)
   notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
@@ -424,6 +442,8 @@ type ApsAppSession
   notes: [ApsAppUserNote] @hasMany(indexName: "bySession", fields: ["id"])
   speakers: [APSSpeaker] @manyToMany(relationName: "SessionSpeakers")
   sponsors: [ApsSponsor] @manyToMany(relationName: "SessionSponsors")
+  favoriteByUsers: [ApsAppUserFavoriteSession]
+    @hasMany(indexName: "bySession", fields: ["id"])
 }
 
 # Session Questions
@@ -460,6 +480,8 @@ type APSSpeaker
   eventId: ID! @index(name: "byEvent")
   event: APS! @belongsTo(fields: ["eventId"])
   sessions: [ApsAppSession] @manyToMany(relationName: "SessionSpeakers")
+  favoriteByUsers: [ApsAppUserFavoriteSpeaker]
+    @hasMany(indexName: "bySpeaker", fields: ["id"])
 }
 
 # Sponsors
@@ -478,6 +500,8 @@ type ApsSponsor
   event: APS! @belongsTo(fields: ["eventId"])
   profile: ApsAppExhibitorProfile @hasOne
   sessions: [ApsAppSession] @manyToMany(relationName: "SessionSponsors")
+  favoriteByUsers: [ApsAppUserFavoriteSponsor]
+    @hasMany(indexName: "bySponsor", fields: ["id"])
   type: SponsorType
 }
 
@@ -539,7 +563,7 @@ type ApsAppExhibitorProfile
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -561,6 +585,124 @@ type ApsAppExhibitorProfile
   views: Int
   likes: Int
   notes: [ApsAppUserNote] @hasMany(indexName: "byExhibitor", fields: ["id"])
+  favoriteByUsers: [ApsAppUserFavoriteExhibitor]
+    @hasMany(indexName: "byExhibitor", fields: ["id"])
+}
+
+# Favorites: Exhibitors
+type ApsAppUserFavoriteExhibitor
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  exhibitorId: ID! @index(name: "byExhibitor", sortKeyFields: ["createdAt"])
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  favoriteKey: String! @index(name: "byFavoriteKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Favorites: Speakers
+type ApsAppUserFavoriteSpeaker
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  speakerId: ID! @index(name: "bySpeaker", sortKeyFields: ["createdAt"])
+  speaker: APSSpeaker! @belongsTo(fields: ["speakerId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  favoriteKey: String! @index(name: "byFavoriteKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Favorites: Sponsors
+type ApsAppUserFavoriteSponsor
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  sponsorId: ID! @index(name: "bySponsor", sortKeyFields: ["createdAt"])
+  sponsor: ApsSponsor! @belongsTo(fields: ["sponsorId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  favoriteKey: String! @index(name: "byFavoriteKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Favorites: Sessions
+type ApsAppUserFavoriteSession
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  sessionId: ID! @index(name: "bySession", sortKeyFields: ["createdAt"])
+  session: ApsAppSession! @belongsTo(fields: ["sessionId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  favoriteKey: String! @index(name: "byFavoriteKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Favorites: Contacts
+type ApsAppUserFavoriteContact
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  contactProfileId: ID!
+    @index(name: "byContactProfile", sortKeyFields: ["createdAt"])
+  contactProfile: ApsAppUserProfile! @belongsTo(fields: ["contactProfileId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  favoriteKey: String! @index(name: "byFavoriteKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # Exhibitor Promotions

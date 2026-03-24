@@ -7,9 +7,11 @@ import { uploadData } from 'aws-amplify/storage';
 import heic2any from 'heic2any';
 import { ensureAmplifyConfigured } from '@/src/amplify-client';
 import StorageImage from '@/app/components/storage-image';
+import CompanyPicker from '../../company-picker';
 import InvoicePreview from './invoice-preview';
 import {
   updateAppUserProfile,
+  updateRegistrantCompanyAssignment,
   updateRegistrantEmailSync,
   type RegistrantDetail,
 } from '@/app/actions/registrants';
@@ -17,6 +19,7 @@ import {
 type RegistrantEditFormProps = {
   registrant: RegistrantDetail;
   eventId: string;
+  companies: Array<{ id: string; name: string; email: string }>;
 };
 
 type ActionState = {
@@ -47,6 +50,7 @@ function SubmitButton({ label }: { label: string }) {
 export default function RegistrantEditForm({
   registrant,
   eventId,
+  companies,
 }: RegistrantEditFormProps) {
   const router = useRouter();
   const [profileState, profileAction] = useActionState(
@@ -57,12 +61,23 @@ export default function RegistrantEditForm({
     updateRegistrantEmailSync,
     initialState,
   );
+  const [companyState, companyAction] = useActionState(
+    updateRegistrantCompanyAssignment,
+    initialState,
+  );
+  const [selectedCompanyId, setSelectedCompanyId] = useState(
+    registrant.company?.id ?? registrant.companyId ?? '',
+  );
 
   useEffect(() => {
-    if (profileState.ok || emailState.ok) {
+    setSelectedCompanyId(registrant.company?.id ?? registrant.companyId ?? '');
+  }, [registrant.company?.id, registrant.companyId]);
+
+  useEffect(() => {
+    if (profileState.ok || emailState.ok || companyState.ok) {
       router.refresh();
     }
-  }, [profileState.ok, emailState.ok, router]);
+  }, [profileState.ok, emailState.ok, companyState.ok, router]);
 
   const profile = registrant.appUser?.profile ?? null;
   const [profilePicture, setProfilePicture] = useState(
@@ -73,6 +88,10 @@ export default function RegistrantEditForm({
   >('idle');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const previewValue = useMemo(() => profilePicture.trim(), [profilePicture]);
+  const selectedCompany = useMemo(
+    () => companies.find((company) => company.id === selectedCompanyId) ?? null,
+    [companies, selectedCompanyId],
+  );
 
   function isHeicFile(file: File) {
     const lowerName = file.name.toLowerCase();
@@ -155,6 +174,81 @@ export default function RegistrantEditForm({
             />
           </label>
           <SubmitButton label='Save email' />
+        </form>
+      </div>
+
+      <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+        <div className='mb-6 flex items-center justify-between'>
+          <h2 className='text-xl font-bold text-slate-900'>Company Assignment</h2>
+          {companyState.message ? (
+            <p
+              className={`text-sm ${
+                companyState.ok ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {companyState.message}
+            </p>
+          ) : null}
+        </div>
+
+        <form action={companyAction} className='space-y-4'>
+          <input type='hidden' name='registrantId' value={registrant.id} />
+          <input type='hidden' name='eventId' value={eventId} />
+          <input type='hidden' name='companyId' value={selectedCompanyId} />
+
+          <div className='grid gap-4 md:grid-cols-[2fr_1fr]'>
+            <label className='space-y-1 text-sm text-slate-700'>
+              <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
+                Company
+              </span>
+              <CompanyPicker
+                companies={companies.map((company) => ({
+                  id: company.id,
+                  name: `${company.name} (${company.email}) · ${company.id.slice(0, 8)}`,
+                }))}
+                value={selectedCompanyId}
+                onChange={setSelectedCompanyId}
+                placeholder='Select company'
+              />
+              <p className='text-xs text-slate-600'>
+                Selected ID:{' '}
+                <span className='font-mono text-slate-800'>
+                  {selectedCompany?.id ?? '—'}
+                </span>
+              </p>
+            </label>
+
+            <div className='rounded-2xl border border-slate-100 bg-slate-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                Current
+              </p>
+              <p className='mt-1 text-sm font-semibold text-slate-900'>
+                {registrant.company?.name ?? 'No company'}
+              </p>
+              <p className='mt-1 text-xs text-slate-600'>
+                {registrant.company?.email ?? '—'}
+              </p>
+              <p className='mt-2 text-xs text-slate-600'>
+                Company ID:{' '}
+                <span className='font-mono text-slate-800'>
+                  {registrant.company?.id ?? registrant.companyId ?? '—'}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <SubmitButton label='Save company assignment' />
+            {selectedCompanyId ? (
+              <button
+                type='button'
+                onClick={() => setSelectedCompanyId('')}
+                className='inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50'
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
         </form>
       </div>
 

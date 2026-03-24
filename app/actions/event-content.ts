@@ -90,7 +90,13 @@ export async function fetchExhibitorProfilesByEventId(eventId: string) {
   const { fetchCompanyById } = await import('@/app/actions/companies');
 
   const resolved: ExhibitorProfileListItem[] = [];
+  const seenExhibitorIds = new Set<string>();
   for (const exhibitor of items) {
+    if (!exhibitor.id || seenExhibitorIds.has(exhibitor.id)) {
+      continue;
+    }
+    seenExhibitorIds.add(exhibitor.id);
+
     if (!exhibitor.companyId) {
       await requestGraphQL(DELETE_EXHIBITOR, { input: { id: exhibitor.id } });
       continue;

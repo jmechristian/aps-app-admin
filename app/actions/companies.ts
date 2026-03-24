@@ -35,6 +35,7 @@ type CompanyContact = {
 };
 
 type ActionState = { ok: boolean; message: string; removedCount?: number; skippedWithEvents?: number; processed?: number };
+type CompanyEventLink = { id: string; aPSCompanyId?: string | null; aPSId?: string | null };
 
 const CREATE_COMPANY = /* GraphQL */ `
   mutation CreateAPSCompany($input: CreateAPSCompanyInput!) {
@@ -324,13 +325,41 @@ export async function fetchCompaniesByEventId(
   const data = await requestGraphQL<{
     getAPS?: {
       companies?: {
-        items?: Array<{ aPSCompany?: Company | null } | null> | null;
+        items?: Array<{ id?: string | null; aPSCompany?: Company | null } | null> | null;
       } | null;
     } | null;
   }>(GET_APS_COMPANIES, { id: eventId });
 
   const items = data.getAPS?.companies?.items ?? [];
-  return items.map((item) => item?.aPSCompany).filter(Boolean) as Company[];
+  const dedupedCompanies: Company[] = [];
+  const seenCompanyIds = new Set<string>();
+  const duplicateLinkIds: string[] = [];
+
+  for (const item of items) {
+    const company = item?.aPSCompany;
+    if (!company?.id) continue;
+
+    if (seenCompanyIds.has(company.id)) {
+      if (item?.id) duplicateLinkIds.push(item.id);
+      continue;
+    }
+
+    seenCompanyIds.add(company.id);
+    dedupedCompanies.push(company);
+  }
+
+  // Self-heal duplicate link rows so they stop reappearing.
+  if (duplicateLinkIds.length > 0) {
+    for (const id of duplicateLinkIds) {
+      try {
+        await requestGraphQL(DELETE_APS_COMPANY_EVENT, { input: { id } });
+      } catch (error) {
+        console.error(`Failed to delete duplicate APSCompanyEvents row ${id}:`, error);
+      }
+    }
+  }
+
+  return dedupedCompanies;
 }
 
 export async function fetchAllCompanies(): Promise<Company[]> {
@@ -456,6 +485,17 @@ export async function attachCompanyToEvent(formData: FormData) {
   if (!eventId) throw new Error("Missing event id");
   if (!companyId) throw new Error("Missing company id");
 
+  const existingLinks = await listCompanyEventLinksByEventAndCompany({ eventId, companyId });
+  if (existingLinks.length > 0) {
+    // Keep one link and clean up accidental duplicates.
+    for (const duplicate of existingLinks.slice(1)) {
+      await requestGraphQL(DELETE_APS_COMPANY_EVENT, { input: { id: duplicate.id } });
+    }
+    revalidatePath(`/aps/${eventId}/companies`);
+    revalidatePath(`/aps/${eventId}/sponsors`);
+    return;
+  }
+
   await requestGraphQL(CREATE_APS_COMPANY_EVENT, {
     input: {
       aPSId: eventId,
@@ -476,24 +516,22 @@ export async function ensureCompanyAttachedToEvent(input: {
   if (!eventId) throw new Error("Missing event id");
   if (!companyId) throw new Error("Missing company id");
 
-  const data: {
-    aPSCompanyEventsByAPSId?: {
-      items?: Array<{ id?: string | null; aPSCompanyId?: string | null } | null>;
-    } | null;
-  } = await requestGraphQL(
-    APS_COMPANY_EVENTS_BY_APS_ID,
-    {
-      aPSId: eventId,
-      filter: { aPSCompanyId: { eq: companyId } },
-      limit: 1,
-    },
-    jwt ? { authMode: "userPools", jwt } : undefined
-  );
-
-  const existing = data.aPSCompanyEventsByAPSId?.items?.find(
-    (item) => item?.aPSCompanyId === companyId
-  );
-  if (existing?.id) return;
+  const existingLinks = await listCompanyEventLinksByEventAndCompany({
+    eventId,
+    companyId,
+    jwt,
+  });
+  if (existingLinks.length > 0) {
+    // Keep one link and clean up accidental duplicates.
+    for (const duplicate of existingLinks.slice(1)) {
+      await requestGraphQL(
+        DELETE_APS_COMPANY_EVENT,
+        { input: { id: duplicate.id } },
+        jwt ? { authMode: "userPools", jwt } : undefined
+      );
+    }
+    return;
+  }
 
   await requestGraphQL(
     CREATE_APS_COMPANY_EVENT,
@@ -508,6 +546,44 @@ export async function ensureCompanyAttachedToEvent(input: {
 
   revalidatePath(`/aps/${eventId}/companies`);
   revalidatePath(`/aps/${eventId}/sponsors`);
+}
+
+async function listCompanyEventLinksByEventAndCompany(input: {
+  eventId: string;
+  companyId: string;
+  jwt?: string | null;
+}): Promise<CompanyEventLink[]> {
+  const links: CompanyEventLink[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const data: {
+      aPSCompanyEventsByAPSId?: {
+        items?: Array<CompanyEventLink | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(
+      APS_COMPANY_EVENTS_BY_APS_ID,
+      {
+        aPSId: input.eventId,
+        filter: { aPSCompanyId: { eq: input.companyId } },
+        limit: 1000,
+        nextToken: nextToken || undefined,
+      },
+      input.jwt ? { authMode: "userPools", jwt: input.jwt } : undefined
+    );
+
+    for (const item of data.aPSCompanyEventsByAPSId?.items ?? []) {
+      if (item?.id) links.push(item);
+    }
+
+    nextToken = data.aPSCompanyEventsByAPSId?.nextToken ?? null;
+    if (nextToken) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  } while (nextToken);
+
+  return links;
 }
 
 export async function detachCompanyFromEvent(formData: FormData) {

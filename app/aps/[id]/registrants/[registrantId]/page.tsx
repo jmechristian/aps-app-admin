@@ -5,6 +5,7 @@ import {
   fetchRegistrantById,
 } from '@/app/actions/registrants';
 import { fetchAddOnRequestsByRegistrantId } from '@/app/actions/add-ons';
+import { fetchAllCompanies } from '@/app/actions/companies';
 import CompanyLogoForm from './company-logo-form';
 import RegistrantEditForm from './registrant-edit-form';
 import RegistrantWorkflowPanel from './registrant-workflow-panel';
@@ -39,10 +40,11 @@ function buildVCardPreview(registrant: {
 
 export default async function RegistrantProfile({ params }: PageProps) {
   const { id: eventId, registrantId } = await params;
-  const [registrant, addOnRequests, latestCredential] = await Promise.all([
+  const [registrant, addOnRequests, latestCredential, companies] = await Promise.all([
     fetchRegistrantById(registrantId),
     fetchAddOnRequestsByRegistrantId(registrantId),
     fetchLatestTempCredentialByRegistrantId(registrantId),
+    fetchAllCompanies(),
   ]);
 
   if (!registrant) {
@@ -73,7 +75,11 @@ export default async function RegistrantProfile({ params }: PageProps) {
           </Link>
         </header>
 
-        <RegistrantEditForm registrant={registrant} eventId={eventId} />
+        <RegistrantEditForm
+          registrant={registrant}
+          eventId={eventId}
+          companies={companies}
+        />
 
         <RegistrantWorkflowPanel
           eventId={eventId}

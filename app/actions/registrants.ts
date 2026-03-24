@@ -2153,6 +2153,97 @@ export async function updateRegistrantEmailSync(
   }
 }
 
+export async function updateRegistrantCompanyAssignment(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const registrantId = readStringField(formData, 'registrantId');
+    const eventId = readStringField(formData, 'eventId');
+
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    const registrant = await fetchRegistrantById(registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    const companyId = readStringField(formData, 'companyId') ?? null;
+    let companyNameForProfile: string | null = null;
+
+    if (companyId) {
+      await ensureCompanyAttachedToEvent({
+        eventId: registrant.apsID,
+        companyId,
+      });
+
+      try {
+        const companyResult = await requestGraphQL<{
+          getAPSCompany?: { name: string } | null;
+        }>(GET_COMPANY, { id: companyId });
+        companyNameForProfile = companyResult.getAPSCompany?.name ?? null;
+      } catch (error) {
+        console.warn('Failed to fetch company during registrant company update:', error);
+      }
+    }
+
+    await requestGraphQL(UPDATE_REGISTRANT, {
+      input: {
+        id: registrantId,
+        companyId,
+      },
+    });
+
+    if (registrant.appUser?.profile?.id) {
+      await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+        input: {
+          id: registrant.appUser.profile.id,
+          company: companyNameForProfile,
+        },
+      });
+    }
+
+    try {
+      const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
+      const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
+        firstName: registrant.firstName ?? null,
+        lastName: registrant.lastName ?? null,
+        email: registrant.email,
+        phone: registrant.phone ?? null,
+        company: companyNameForProfile,
+        jobTitle: registrant.jobTitle ?? null,
+      });
+      await requestGraphQL(UPDATE_REGISTRANT, {
+        input: {
+          id: registrantId,
+          qrCode: qrCodeUrl,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to refresh QR code during company update:', error);
+    }
+
+    const effectiveEventId = eventId ?? registrant.apsID;
+    if (effectiveEventId) {
+      revalidatePath(`/aps/${effectiveEventId}`);
+      revalidatePath(`/aps/${effectiveEventId}/registrants/${registrantId}`);
+      revalidatePath(`/aps/${effectiveEventId}/companies`);
+    }
+
+    return {
+      ok: true,
+      message: companyNameForProfile
+        ? `Company updated to ${companyNameForProfile}.`
+        : 'Company assignment cleared.',
+    };
+  } catch (error) {
+    console.error('Failed to update registrant company assignment:', error);
+    return { ok: false, message: 'Failed to update company assignment.' };
+  }
+}
+
 export async function approveRegistrant(params: {
   registrantId: string;
   eventId: string;
