@@ -486,13 +486,13 @@ type APSCompany
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
   id: ID!
   name: String!
-  email: String!
+  email: String
   type: CompanyType
   description: String
   website: String
