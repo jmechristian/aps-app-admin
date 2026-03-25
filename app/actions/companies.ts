@@ -696,6 +696,7 @@ export async function deleteCompany(formData: FormData) {
 export async function updateCompany(formData: FormData) {
   const id = formData.get("id")?.toString();
   const eventId = formData.get("eventId")?.toString();
+  const exhibitorId = formData.get("exhibitorId")?.toString();
   const name = formData.get("name")?.toString().trim() || "";
   const email = formData.get("email")?.toString().trim() || "";
   const type = parseCompanyType(formData.get("type")?.toString() || "");
@@ -724,6 +725,10 @@ export async function updateCompany(formData: FormData) {
   if (eventId) {
     revalidatePath(`/aps/${eventId}/companies/${id}`);
     revalidatePath(`/aps/${eventId}/sponsors`);
+    if (exhibitorId) {
+      revalidatePath(`/aps/${eventId}/exhibitors/${exhibitorId}`);
+      revalidatePath(`/aps/${eventId}/exhibitors`);
+    }
   }
   if (id) {
     revalidatePath(`/companies/${id}`);

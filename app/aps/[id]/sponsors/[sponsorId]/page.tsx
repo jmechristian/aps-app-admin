@@ -39,6 +39,10 @@ export default async function SponsorDetailPage({ params }: PageProps) {
               {sponsor.company?.name ?? sponsor.companyId}
             </h1>
             <p className='text-slate-600'>{sponsor.type ?? 'No sponsor type set'}</p>
+            <p className='font-mono text-xs text-slate-600'>
+              Sponsor ID: {sponsor.id} · Company ID:{' '}
+              {sponsor.company?.id ?? sponsor.companyId}
+            </p>
           </div>
           <div className='flex flex-wrap gap-3'>
             <Link
@@ -65,6 +69,9 @@ export default async function SponsorDetailPage({ params }: PageProps) {
                 </p>
                 <p className='mt-1 text-lg font-semibold text-slate-900'>
                   {sponsor.company?.name ?? sponsor.companyId}
+                </p>
+                <p className='mt-1 font-mono text-xs text-slate-600'>
+                  Company ID: {sponsor.company?.id ?? sponsor.companyId}
                 </p>
                 <p className='mt-1 text-sm text-slate-600'>
                   {sponsor.company?.email ?? '—'}

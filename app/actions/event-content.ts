@@ -126,6 +126,7 @@ export type ExhibitorProfileDetail = ExhibitorProfileListItem & {
     id: string;
     name: string;
     email?: string | null;
+    type?: string | null;
     description?: string | null;
     website?: string | null;
     phone?: string | null;
@@ -153,6 +154,7 @@ export async function fetchExhibitorProfileById(exhibitorId: string) {
           id
           name
           email
+          type
           description
           website
           phone

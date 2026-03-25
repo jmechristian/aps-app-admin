@@ -69,7 +69,12 @@ export default async function ExhibitorsPage({ params }: PageProps) {
                           href={`/aps/${eventId}/exhibitors/${exhibitor.id}`}
                           className='hover:underline'
                         >
-                          {exhibitor.company?.name ?? exhibitor.companyId}
+                          <span className='block'>
+                            {exhibitor.company?.name ?? exhibitor.companyId}
+                          </span>
+                          <span className='mt-0.5 block font-mono text-xs font-normal text-slate-500'>
+                            {exhibitor.company?.id ?? exhibitor.companyId}
+                          </span>
                         </Link>
                       </td>
                       <td className='px-4 py-3 text-slate-700'>

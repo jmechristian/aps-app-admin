@@ -83,7 +83,12 @@ export default async function SponsorsPage({ params }: PageProps) {
                             href={`/aps/${eventId}/sponsors/${sponsor.id}`}
                             className='hover:underline'
                           >
-                            {sponsor.company?.name ?? sponsor.companyId ?? 'Unknown company'}
+                            <span className='block'>
+                              {sponsor.company?.name ?? sponsor.companyId ?? 'Unknown company'}
+                            </span>
+                            <span className='mt-0.5 block font-mono text-xs font-normal text-slate-500'>
+                              {sponsor.company?.id ?? sponsor.companyId}
+                            </span>
                           </Link>
                         </div>
                       </td>

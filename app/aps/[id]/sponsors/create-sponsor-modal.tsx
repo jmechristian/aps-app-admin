@@ -5,17 +5,10 @@ import { useRouter } from 'next/navigation';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import CompanyPicker, { type CompanyPickerItem } from '../company-picker';
 import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
+import { ensureExhibitorProfileForBoothSponsor } from '@/app/actions/exhibitors';
 import { ensureAmplifyConfigured, graphqlClient } from '@/src/amplify-client';
-import {
-  createApsAppExhibitorProfile,
-  createApsSponsor,
-  createAPSCompany,
-  updateApsAppExhibitorProfile,
-} from '@/src/graphql/mutations';
-import {
-  apsAppExhibitorProfilesByCompanyId,
-  apsSponsorsByCompanyId,
-} from '@/src/graphql/queries';
+import { createApsSponsor, createAPSCompany } from '@/src/graphql/mutations';
+import { apsSponsorsByEventId } from '@/src/graphql/queries';
 import { CompanyType, SponsorType } from '@/src/API';
 
 type CreateSponsorModalProps = {
@@ -42,7 +35,7 @@ export default function CreateSponsorModal({
   const [newCompanyType, setNewCompanyType] = useState<CompanyType>(
     CompanyType.SPONSOR
   );
-  const [alsoExhibitor, setAlsoExhibitor] = useState(false);
+  const [sponsorType, setSponsorType] = useState<SponsorType>(SponsorType.NONE);
 
   const selectedCompanyName = useMemo(
     () => companyOptions.find((c) => c.id === companyId)?.name ?? null,
@@ -132,14 +125,18 @@ export default function CreateSponsorModal({
       });
 
       const existingSponsors = await graphqlClient.graphql({
-        query: apsSponsorsByCompanyId,
-        variables: { companyId, limit: 1 },
+        query: apsSponsorsByEventId,
+        variables: {
+          eventId,
+          filter: { companyId: { eq: companyId } },
+          limit: 10,
+        },
         authMode: 'userPool',
       });
       const sponsorItems =
-        (existingSponsors as any).data?.apsSponsorsByCompanyId?.items ?? [];
+        (existingSponsors as any).data?.apsSponsorsByEventId?.items ?? [];
       if (sponsorItems.length) {
-        throw new Error('This company already has a sponsor.');
+        throw new Error('This company already has a sponsor for this event.');
       }
 
       const res = await graphqlClient.graphql({
@@ -148,7 +145,7 @@ export default function CreateSponsorModal({
           input: {
             eventId,
             companyId,
-            ...(alsoExhibitor ? { type: SponsorType.BOOTH } : {}),
+            type: sponsorType,
           },
         },
         authMode: 'userPool',
@@ -157,35 +154,17 @@ export default function CreateSponsorModal({
       const id = (res as any).data?.createApsSponsor?.id as string | undefined;
       if (!id) throw new Error('Failed to create sponsor');
 
-      if (alsoExhibitor) {
-        const existingExhibitors = await graphqlClient.graphql({
-          query: apsAppExhibitorProfilesByCompanyId,
-          variables: { companyId, limit: 1 },
-          authMode: 'userPool',
+      if (sponsorType === SponsorType.BOOTH) {
+        await ensureExhibitorProfileForBoothSponsor({
+          eventId,
+          companyId,
+          sponsorId: id,
         });
-        const exhibitorItems =
-          (existingExhibitors as any).data?.apsAppExhibitorProfilesByCompanyId
-            ?.items ?? [];
-        const existing = exhibitorItems?.[0] ?? null;
-
-        if (existing?.id) {
-          await graphqlClient.graphql({
-            query: updateApsAppExhibitorProfile,
-            variables: { input: { id: existing.id, sponsorId: id } },
-            authMode: 'userPool',
-          });
-        } else {
-          await graphqlClient.graphql({
-            query: createApsAppExhibitorProfile,
-            variables: { input: { eventId, companyId, sponsorId: id } },
-            authMode: 'userPool',
-          });
-        }
       }
 
       onClose();
       setCompanyId('');
-      setAlsoExhibitor(false);
+      setSponsorType(SponsorType.NONE);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create sponsor');
@@ -246,15 +225,20 @@ export default function CreateSponsorModal({
                   Selected: <span className='font-semibold'>{selectedCompanyName}</span>
                 </p>
               )}
-              <label className='mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700'>
-                <input
-                  type='checkbox'
-                  checked={alsoExhibitor}
-                  onChange={(e) => setAlsoExhibitor(e.target.checked)}
+              <label className='mt-4 block text-sm font-semibold text-slate-700'>
+                Sponsor type
+                <select
+                  value={sponsorType}
+                  onChange={(e) => setSponsorType(e.target.value as SponsorType)}
                   disabled={submitting}
-                  className='h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900'
-                />
-                Also an Exhibitor?
+                  className='mt-2 w-full max-w-md rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                >
+                  <option value={SponsorType.NONE}>None</option>
+                  <option value={SponsorType.TABLE}>Table</option>
+                  <option value={SponsorType.BOOTH}>
+                    Booth (creates or links exhibitor profile for this event)
+                  </option>
+                </select>
               </label>
               <button
                 type='button'

@@ -1,16 +1,21 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
 
-const EXHIBITORS_BY_COMPANY = /* GraphQL */ `
-  query ApsAppExhibitorProfilesByCompanyId(
-    $companyId: ID!
+const EXHIBITORS_BY_EVENT = /* GraphQL */ `
+  query ApsAppExhibitorProfilesByEventId(
+    $eventId: ID!
+    $sortDirection: ModelSortDirection
+    $filter: ModelApsAppExhibitorProfileFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    apsAppExhibitorProfilesByCompanyId(
-      companyId: $companyId
+    apsAppExhibitorProfilesByEventId(
+      eventId: $eventId
+      sortDirection: $sortDirection
+      filter: $filter
       limit: $limit
       nextToken: $nextToken
     ) {
@@ -46,23 +51,98 @@ const UPDATE_EXHIBITOR_PROFILE = /* GraphQL */ `
       eventId
       companyId
       boothNumber
+      sponsorId
     }
   }
 `;
+
+async function findExhibitorProfileForEventAndCompany(
+  eventId: string,
+  companyId: string
+): Promise<{ id: string; sponsorId?: string | null } | null> {
+  let nextToken: string | null | undefined = null;
+
+  type ExhibitorByEventPage = {
+    apsAppExhibitorProfilesByEventId?: {
+      items?: Array<{
+        id?: string | null;
+        companyId?: string | null;
+        sponsorId?: string | null;
+      } | null> | null;
+      nextToken?: string | null;
+    } | null;
+  };
+
+  do {
+    const page: ExhibitorByEventPage = await requestGraphQL<ExhibitorByEventPage>(
+      EXHIBITORS_BY_EVENT,
+      {
+        eventId,
+        filter: { companyId: { eq: companyId } },
+        limit: 50,
+        nextToken: nextToken || undefined,
+      }
+    );
+
+    const items = page.apsAppExhibitorProfilesByEventId?.items ?? [];
+    for (const row of items) {
+      if (row?.id && row.companyId === companyId) {
+        return { id: row.id, sponsorId: row.sponsorId };
+      }
+    }
+    nextToken = page.apsAppExhibitorProfilesByEventId?.nextToken ?? null;
+  } while (nextToken);
+
+  return null;
+}
+
+/** When a new BOOTH sponsor is created: link or create exhibitor profile for this event + company. */
+export async function ensureExhibitorProfileForBoothSponsor(input: {
+  eventId: string;
+  companyId: string;
+  sponsorId: string;
+}) {
+  await ensureCompanyAttachedToEvent({
+    eventId: input.eventId,
+    companyId: input.companyId,
+  });
+
+  const existing = await findExhibitorProfileForEventAndCompany(
+    input.eventId,
+    input.companyId
+  );
+
+  if (existing) {
+    await requestGraphQL(UPDATE_EXHIBITOR_PROFILE, {
+      input: { id: existing.id, sponsorId: input.sponsorId },
+    });
+  } else {
+    await requestGraphQL(CREATE_EXHIBITOR_PROFILE, {
+      input: {
+        eventId: input.eventId,
+        companyId: input.companyId,
+        sponsorId: input.sponsorId,
+      },
+    });
+  }
+
+  revalidatePath(`/aps/${input.eventId}/exhibitors`);
+  revalidatePath(`/aps/${input.eventId}/sponsors`);
+}
 
 export async function createExhibitorProfile(input: {
   eventId: string;
   companyId: string;
   boothNumber?: string | null;
 }) {
-  const existing = await requestGraphQL<{
-    apsAppExhibitorProfilesByCompanyId?: {
-      items?: Array<{ id: string; eventId?: string | null }> | null;
-    } | null;
-  }>(EXHIBITORS_BY_COMPANY, { companyId: input.companyId, limit: 1 });
-
-  if (existing.apsAppExhibitorProfilesByCompanyId?.items?.length) {
-    throw new Error('This company already has an exhibitor profile.');
+  const duplicate = await findExhibitorProfileForEventAndCompany(
+    input.eventId,
+    input.companyId
+  );
+  if (duplicate) {
+    throw new Error(
+      'This company already has an exhibitor profile for this event.'
+    );
   }
 
   await ensureCompanyAttachedToEvent({
@@ -71,7 +151,11 @@ export async function createExhibitorProfile(input: {
   });
 
   const data = await requestGraphQL<{
-    createApsAppExhibitorProfile?: { id: string; eventId: string; companyId: string } | null;
+    createApsAppExhibitorProfile?: {
+      id: string;
+      eventId: string;
+      companyId: string;
+    } | null;
   }>(CREATE_EXHIBITOR_PROFILE, {
     input: {
       eventId: input.eventId,
@@ -111,6 +195,7 @@ export async function updateExhibitorBoothNumber(formData: FormData) {
   if (!data.updateApsAppExhibitorProfile?.id) {
     throw new Error('Failed to update booth number');
   }
+
+  revalidatePath(`/aps/${eventId}/exhibitors`);
+  revalidatePath(`/aps/${eventId}/exhibitors/${id}`);
 }
-
-
