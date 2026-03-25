@@ -1,9 +1,9 @@
 import CategoryPageShell from '../category-page-shell';
 import {
   fetchApprovedRegistrantsByCompanyForEvent,
-  fetchCompaniesWithRegistrantsByEventId,
   fetchExhibitorProfilesByEventId,
 } from '@/app/actions/event-content';
+import { fetchCompaniesByEventId } from '@/app/actions/companies';
 import Link from 'next/link';
 import CreateExhibitorButton from './create-exhibitor-button';
 
@@ -15,7 +15,7 @@ export default async function ExhibitorsPage({ params }: PageProps) {
   const { id: eventId } = await params;
   const [exhibitors, companies, approvedByCompany] = await Promise.all([
     fetchExhibitorProfilesByEventId(eventId),
-    fetchCompaniesWithRegistrantsByEventId(eventId),
+    fetchCompaniesByEventId(eventId),
     fetchApprovedRegistrantsByCompanyForEvent(eventId),
   ]);
 
