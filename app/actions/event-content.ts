@@ -816,8 +816,14 @@ export type SponsorDetail = SponsorListItem & {
     id: string;
     name: string;
     email?: string | null;
+    type?: string | null;
     website?: string | null;
     phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+    country?: string | null;
     description?: string | null;
     logo?: string | null;
   } | null;
@@ -835,8 +841,14 @@ export async function fetchSponsorById(sponsorId: string) {
           id
           name
           email
+          type
           website
           phone
+          address
+          city
+          state
+          zip
+          country
           description
           logo
         }

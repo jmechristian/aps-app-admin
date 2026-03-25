@@ -697,6 +697,7 @@ export async function updateCompany(formData: FormData) {
   const id = formData.get("id")?.toString();
   const eventId = formData.get("eventId")?.toString();
   const exhibitorId = formData.get("exhibitorId")?.toString();
+  const sponsorId = formData.get("sponsorId")?.toString();
   const name = formData.get("name")?.toString().trim() || "";
   const email = formData.get("email")?.toString().trim() || "";
   const type = parseCompanyType(formData.get("type")?.toString() || "");
@@ -728,6 +729,10 @@ export async function updateCompany(formData: FormData) {
     if (exhibitorId) {
       revalidatePath(`/aps/${eventId}/exhibitors/${exhibitorId}`);
       revalidatePath(`/aps/${eventId}/exhibitors`);
+    }
+    if (sponsorId) {
+      revalidatePath(`/aps/${eventId}/sponsors/${sponsorId}`);
+      revalidatePath(`/aps/${eventId}/sponsors`);
     }
   }
   if (id) {

@@ -4,9 +4,12 @@ import {
   fetchRegistrantListsForCompanyInEvent,
   fetchSponsorById,
 } from '@/app/actions/event-content';
-import { fetchCompanyContacts } from '@/app/actions/companies';
+import {
+  fetchCompanyContacts,
+  updateCompany,
+} from '@/app/actions/companies';
 import SponsorTypeSelect from '../sponsor-type-select';
-import StorageImage from '@/app/components/storage-image';
+import CompanyLogoField from '../../companies/[companyId]/company-logo-field';
 
 type PageProps = {
   params: Promise<{ id: string; sponsorId: string }>;
@@ -16,6 +19,7 @@ export default async function SponsorDetailPage({ params }: PageProps) {
   const { id: eventId, sponsorId } = await params;
   const sponsor = await fetchSponsorById(sponsorId);
   if (!sponsor) notFound();
+  if (!sponsor.company?.id) notFound();
 
   const contacts = sponsor.company?.id
     ? await fetchCompanyContacts(sponsor.company.id)
@@ -36,12 +40,11 @@ export default async function SponsorDetailPage({ params }: PageProps) {
               Sponsor
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>
-              {sponsor.company?.name ?? sponsor.companyId}
+              {sponsor.company.name}
             </h1>
             <p className='text-slate-600'>{sponsor.type ?? 'No sponsor type set'}</p>
             <p className='font-mono text-xs text-slate-600'>
-              Sponsor ID: {sponsor.id} · Company ID:{' '}
-              {sponsor.company?.id ?? sponsor.companyId}
+              Sponsor ID: {sponsor.id} · Company ID: {sponsor.company.id}
             </p>
           </div>
           <div className='flex flex-wrap gap-3'>
@@ -63,98 +66,171 @@ export default async function SponsorDetailPage({ params }: PageProps) {
         <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
           <div className='grid gap-6 lg:grid-cols-[1.2fr_0.8fr]'>
             <div className='space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-6'>
-              <div>
-                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                  Company
-                </p>
-                <p className='mt-1 text-lg font-semibold text-slate-900'>
-                  {sponsor.company?.name ?? sponsor.companyId}
-                </p>
-                <p className='mt-1 font-mono text-xs text-slate-600'>
-                  Company ID: {sponsor.company?.id ?? sponsor.companyId}
-                </p>
-                <p className='mt-1 text-sm text-slate-600'>
-                  {sponsor.company?.email ?? '—'}
-                </p>
+              <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
+                <div>
+                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                    Company
+                  </p>
+                  <p className='mt-1 font-mono text-xs text-slate-600'>
+                    Company ID: {sponsor.company.id}
+                  </p>
+                </div>
+                <Link
+                  href={`/aps/${eventId}/companies/${sponsor.company.id}`}
+                  className='shrink-0 text-sm font-semibold text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline'
+                >
+                  Manage contacts →
+                </Link>
               </div>
-              {sponsor.company?.logo ? (
-                <div className='flex items-center gap-4'>
-                  <div className='h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-white'>
-                    <StorageImage
-                      srcOrKey={sponsor.company.logo}
-                      alt={`${sponsor.company?.name ?? 'Company'} logo`}
-                      className='h-full w-full object-contain'
-                      accessLevel='guest'
+
+              <form action={updateCompany} className='grid gap-4'>
+                <input type='hidden' name='id' value={sponsor.company.id} />
+                <input type='hidden' name='eventId' value={eventId} />
+                <input type='hidden' name='sponsorId' value={sponsorId} />
+
+                <div className='grid gap-4 md:grid-cols-2'>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Company name <span className='text-red-500'>*</span>
+                    <input
+                      name='name'
+                      defaultValue={sponsor.company.name}
+                      required
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Email <span className='text-red-500'>*</span>
+                    <input
+                      name='email'
+                      type='text'
+                      defaultValue={sponsor.company.email || '@'}
+                      placeholder='@example.com'
+                      required
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Company type
+                    <select
+                      name='type'
+                      defaultValue={sponsor.company.type ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    >
+                      <option value=''>None</option>
+                      <option value='SPONSOR'>SPONSOR</option>
+                      <option value='OEMTIER1'>OEM/Tier 1</option>
+                      <option value='SOLUTIONPROVIDER'>Solution Provider</option>
+                    </select>
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Website
+                    <input
+                      name='website'
+                      defaultValue={sponsor.company.website ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Phone
+                    <input
+                      name='phone'
+                      defaultValue={sponsor.company.phone ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Address
+                    <input
+                      name='address'
+                      defaultValue={sponsor.company.address ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    City
+                    <input
+                      name='city'
+                      defaultValue={sponsor.company.city ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    State
+                    <input
+                      name='state'
+                      defaultValue={sponsor.company.state ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Zip
+                    <input
+                      name='zip'
+                      defaultValue={sponsor.company.zip ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <label className='text-sm font-medium text-slate-700'>
+                    Country
+                    <input
+                      name='country'
+                      defaultValue={sponsor.company.country ?? ''}
+                      className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                    />
+                  </label>
+                  <div className='md:col-span-2'>
+                    <CompanyLogoField
+                      companyId={sponsor.company.id}
+                      initialValue={sponsor.company.logo}
                     />
                   </div>
-                  <div>
-                    <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                      Logo
-                    </p>
-                    <p className='mt-1 text-sm text-slate-600'>Display only</p>
-                  </div>
                 </div>
-              ) : null}
-              {sponsor.company?.description ? (
-                <div>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Description
-                  </p>
-                  <p className='mt-1 text-slate-900'>{sponsor.company.description}</p>
+
+                <label className='text-sm font-medium text-slate-700'>
+                  Description
+                  <textarea
+                    name='description'
+                    defaultValue={sponsor.company.description ?? ''}
+                    rows={4}
+                    className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+                  />
+                </label>
+
+                <div className='flex justify-end'>
+                  <button
+                    type='submit'
+                    className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
+                  >
+                    Save company
+                  </button>
                 </div>
-              ) : null}
-              <div className='grid gap-3 sm:grid-cols-2'>
-                <div>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Phone
-                  </p>
-                  <p className='mt-1 text-slate-900'>{sponsor.company?.phone ?? '—'}</p>
-                </div>
-                <div>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Website
-                  </p>
-                  <p className='mt-1 text-slate-900'>
-                    {sponsor.company?.website ? (
-                      <a
-                        href={sponsor.company.website}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='hover:underline'
+              </form>
+
+              <div className='border-t border-slate-200 pt-4'>
+                <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                  Contacts
+                </p>
+                {contacts.length ? (
+                  <div className='mt-2 space-y-2'>
+                    {contacts.map((contact) => (
+                      <div
+                        key={contact.id}
+                        className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800'
                       >
-                        Visit
-                      </a>
-                    ) : (
-                      '—'
-                    )}
-                  </p>
-                </div>
-                <div className='sm:col-span-2'>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Contacts
-                  </p>
-                  {contacts.length ? (
-                    <div className='mt-2 space-y-2'>
-                      {contacts.map((contact) => (
-                        <div
-                          key={contact.id}
-                          className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800'
-                        >
-                          <div className='font-semibold'>
-                            {contact.name || contact.email}
-                          </div>
-                          <div className='text-slate-600'>
-                            {[contact.title, contact.email, contact.phone]
-                              .filter(Boolean)
-                              .join(' · ') || '—'}
-                          </div>
+                        <div className='font-semibold'>
+                          {contact.name || contact.email}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className='mt-1 text-slate-900'>—</p>
-                  )}
-                </div>
+                        <div className='text-slate-600'>
+                          {[contact.title, contact.email, contact.phone]
+                            .filter(Boolean)
+                            .join(' · ') || '—'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className='mt-2 text-sm text-slate-700'>—</p>
+                )}
               </div>
             </div>
 
