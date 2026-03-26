@@ -31,6 +31,10 @@ export default function RegistrantsTable({
   const [emailingId, setEmailingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const totalPages = Math.max(
+    1,
+    Math.ceil(allRegistrants.length / (pageSize && pageSize > 0 ? pageSize : 50))
+  );
 
   const filteredRegistrants = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -286,6 +290,8 @@ export default function RegistrantsTable({
           <p className='text-xs text-slate-500'>
             Page size: {registrants.length}
             {typeof pageSize === 'number' ? ` / ${pageSize}` : ''}
+            {' • '}
+            Total pages: {totalPages}
           </p>
           <div className='flex items-center gap-2'>
             {!isFirstPage ? (
