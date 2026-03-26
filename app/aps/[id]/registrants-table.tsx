@@ -11,6 +11,7 @@ import {
 
 type RegistrantsTableProps = {
   registrants: Registrant[];
+  allRegistrants: Registrant[];
   eventId: string;
   nextToken?: string | null;
   isFirstPage?: boolean;
@@ -19,6 +20,7 @@ type RegistrantsTableProps = {
 
 export default function RegistrantsTable({
   registrants,
+  allRegistrants,
   eventId,
   nextToken = null,
   isFirstPage = true,
@@ -36,7 +38,7 @@ export default function RegistrantsTable({
     }
 
     const query = searchQuery.toLowerCase();
-    return registrants.filter((registrant) => {
+    return allRegistrants.filter((registrant) => {
       const name = `${registrant.firstName || ''} ${registrant.lastName || ''}`.toLowerCase();
       const email = registrant.email.toLowerCase();
       const company = registrant.company?.name.toLowerCase() || '';
@@ -53,7 +55,7 @@ export default function RegistrantsTable({
         status.includes(query)
       );
     });
-  }, [registrants, searchQuery]);
+  }, [allRegistrants, registrants, searchQuery]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -141,7 +143,7 @@ export default function RegistrantsTable({
           <p className='mt-1 text-sm text-slate-600'>
             Showing {filteredRegistrants.length} registrant
             {filteredRegistrants.length === 1 ? '' : 's'}
-            {searchQuery.trim() ? ' (filtered on this page)' : ''}
+            {searchQuery.trim() ? ' (filtered across all registrants)' : ''}
           </p>
         </div>
         <div className='w-64'>
@@ -279,7 +281,7 @@ export default function RegistrantsTable({
         </div>
       )}
 
-      {registrants.length > 0 ? (
+      {registrants.length > 0 && !searchQuery.trim() ? (
         <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <p className='text-xs text-slate-500'>
             Page size: {registrants.length}

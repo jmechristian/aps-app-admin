@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
 import RegistrantsTable from './registrants-table';
-import { fetchRegistrantsByApsIdPage } from '@/app/actions/registrants';
+import {
+  fetchRegistrantsByApsId,
+  fetchRegistrantsByApsIdPage,
+} from '@/app/actions/registrants';
 import { updateAps } from '@/app/actions/aps';
 
 type APS = {
@@ -55,9 +58,10 @@ export default async function ApsDetail({
     ? sp?.nextToken?.[0]
     : sp?.nextToken;
 
-  const [aps, registrantsPage] = await Promise.all([
+  const [aps, registrantsPage, allRegistrants] = await Promise.all([
     fetchAps(id),
     fetchRegistrantsByApsIdPage(id, { limit: 50, nextToken: incomingNextToken ?? null }),
+    fetchRegistrantsByApsId(id),
   ]);
 
   if (!aps) {
@@ -69,6 +73,7 @@ export default async function ApsDetail({
       aps={aps}
       eventId={id}
       registrants={registrantsPage.items}
+      allRegistrants={allRegistrants}
       nextToken={registrantsPage.nextToken ?? null}
       isFirstPage={!incomingNextToken}
     />
@@ -80,12 +85,14 @@ function ApsDetailClient({
   aps,
   eventId,
   registrants,
+  allRegistrants,
   nextToken,
   isFirstPage,
 }: {
   aps: APS;
   eventId: string;
   registrants: Awaited<ReturnType<typeof fetchRegistrantsByApsIdPage>>['items'];
+  allRegistrants: Awaited<ReturnType<typeof fetchRegistrantsByApsId>>;
   nextToken: string | null;
   isFirstPage: boolean;
 }) {
@@ -301,6 +308,7 @@ function ApsDetailClient({
         <section>
           <RegistrantsTable
             registrants={registrants}
+            allRegistrants={allRegistrants}
             eventId={eventId}
             nextToken={nextToken}
             isFirstPage={isFirstPage}
