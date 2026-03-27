@@ -113,16 +113,6 @@ export default async function ApsThinkificPage({
           </Link>
         </header>
 
-        <ThinkificRegistrantsTable
-          registrants={registrantsPage.items}
-          allRegistrants={allRegistrants}
-          summariesByRegistrantId={summariesByRegistrantId}
-          eventId={eventId}
-          nextToken={registrantsPage.nextToken ?? null}
-          isFirstPage={!incomingNextToken}
-          pageSize={50}
-        />
-
         <section className='grid gap-4 md:grid-cols-2'>
           <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
             <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
@@ -148,6 +138,16 @@ export default async function ApsThinkificPage({
             </p>
           </div>
         </section>
+
+        <ThinkificRegistrantsTable
+          registrants={registrantsPage.items}
+          allRegistrants={allRegistrants}
+          summariesByRegistrantId={summariesByRegistrantId}
+          eventId={eventId}
+          nextToken={registrantsPage.nextToken ?? null}
+          isFirstPage={!incomingNextToken}
+          pageSize={50}
+        />
       </main>
     </div>
   );
