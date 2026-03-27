@@ -4,8 +4,10 @@ import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
+  approveRegistrant,
   deleteRegistrantCascade,
   sendWelcomeEmail,
+  updateRegistrantAttendeeType,
   type Registrant,
 } from '@/app/actions/registrants';
 
@@ -26,9 +28,26 @@ export default function RegistrantsTable({
   isFirstPage = true,
   pageSize = 50,
 }: RegistrantsTableProps) {
+  type SortField = 'name' | 'createdAt';
+
+  const ATTENDEE_TYPE_OPTIONS = [
+    'OEM',
+    'TIER1',
+    'SOLUTIONPROVIDER',
+    'SPONSOR',
+    'SPEAKER',
+    'STAFF',
+    'EXHIBITOR',
+  ] as const;
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [savingTypeId, setSavingTypeId] = useState<string | null>(null);
+  const [selectedTypes, setSelectedTypes] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const totalPages = Math.max(
@@ -60,6 +79,44 @@ export default function RegistrantsTable({
       );
     });
   }, [allRegistrants, registrants, searchQuery]);
+
+  const sortedRegistrants = useMemo(() => {
+    const items = [...filteredRegistrants];
+    items.sort((a, b) => {
+      if (sortField === 'name') {
+        const nameA = `${a.firstName || ''} ${a.lastName || ''}`
+          .trim()
+          .toLowerCase();
+        const nameB = `${b.firstName || ''} ${b.lastName || ''}`
+          .trim()
+          .toLowerCase();
+        const compare = nameA.localeCompare(nameB, undefined, {
+          sensitivity: 'base',
+        });
+        return sortDirection === 'asc' ? compare : -compare;
+      }
+
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      const compare = dateA - dateB;
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return items;
+  }, [filteredRegistrants, sortDirection, sortField]);
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    setSortField(field);
+    setSortDirection(field === 'name' ? 'asc' : 'desc');
+  };
+
+  const getSortIndicator = (field: SortField) => {
+    if (sortField !== field) return '↕';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -139,6 +196,69 @@ export default function RegistrantsTable({
     });
   };
 
+  const handleApprove = (registrantId: string) => {
+    setApprovingId(registrantId);
+    startTransition(async () => {
+      const result = await approveRegistrant({
+        registrantId,
+        eventId,
+      });
+      if (!result.ok) {
+        window.alert(result.message || 'Failed to approve registrant.');
+      } else {
+        window.alert(result.message || 'Registrant approved.');
+      }
+      setApprovingId(null);
+      router.refresh();
+    });
+  };
+
+  const handleAttendeeTypeSelect = (registrantId: string, attendeeType: string) => {
+    setSelectedTypes((prev) => ({
+      ...prev,
+      [registrantId]: attendeeType,
+    }));
+  };
+
+  const handleSaveAttendeeType = (
+    registrantId: string,
+    currentAttendeeType: string,
+  ) => {
+    const nextAttendeeType = selectedTypes[registrantId] ?? currentAttendeeType;
+    if (nextAttendeeType === currentAttendeeType) {
+      return;
+    }
+
+    setSavingTypeId(registrantId);
+    startTransition(async () => {
+      const result = await updateRegistrantAttendeeType({
+        registrantId,
+        eventId,
+        attendeeType: nextAttendeeType as
+          | 'OEM'
+          | 'TIER1'
+          | 'SOLUTIONPROVIDER'
+          | 'SPONSOR'
+          | 'SPEAKER'
+          | 'STAFF'
+          | 'EXHIBITOR',
+      });
+
+      if (!result.ok) {
+        window.alert(result.message || 'Failed to update registrant type.');
+      } else {
+        setSelectedTypes((prev) => {
+          const next = { ...prev };
+          delete next[registrantId];
+          return next;
+        });
+      }
+
+      setSavingTypeId(null);
+      router.refresh();
+    });
+  };
+
   return (
     <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg'>
       <div className='mb-4 flex items-center justify-between'>
@@ -172,75 +292,129 @@ export default function RegistrantsTable({
           <table className='w-full'>
             <thead>
               <tr className='border-b border-slate-200'>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Name
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  <button
+                    type='button'
+                    onClick={() => toggleSort('name')}
+                    className='inline-flex items-center gap-1 hover:text-slate-900'
+                  >
+                    Name
+                    <span className='text-[10px]'>{getSortIndicator('name')}</span>
+                  </button>
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Email
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  <button
+                    type='button'
+                    onClick={() => toggleSort('createdAt')}
+                    className='inline-flex items-center gap-1 hover:text-slate-900'
+                  >
+                    Created
+                    <span className='text-[10px]'>{getSortIndicator('createdAt')}</span>
+                  </button>
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Company / Title
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Type
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Status
                 </th>
-                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Reg Email Sent
                 </th>
-                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Welcome Email Sent
                 </th>
-                <th className='px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Welcome Email
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className='divide-y divide-slate-100'>
-              {filteredRegistrants.map((registrant) => {
+              {sortedRegistrants.map((registrant) => {
                 const name = `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() || 'N/A';
+                const selectedType =
+                  selectedTypes[registrant.id] ?? registrant.attendeeType;
+                const hasTypeChanged = selectedType !== registrant.attendeeType;
                 return (
                   <tr
                     key={registrant.id}
                     className='transition hover:bg-slate-50'
                   >
-                    <td className='px-4 py-3'>
-                      <Link
-                        href={`/aps/${eventId}/registrants/${registrant.id}`}
-                        className='font-medium text-slate-900 hover:text-slate-700 hover:underline'
-                      >
-                        {name}
-                      </Link>
+                    <td className='px-2 py-3'>
+                      <div className='flex flex-col gap-0.5'>
+                        <Link
+                          href={`/aps/${eventId}/registrants/${registrant.id}`}
+                          className='font-medium text-slate-900 hover:text-slate-700 hover:underline'
+                        >
+                          {name}
+                        </Link>
+                        <span className='text-xs text-slate-500'>{registrant.email}</span>
+                      </div>
                     </td>
-                    <td className='px-4 py-3 text-sm text-slate-600'>{registrant.email}</td>
-                    <td className='px-4 py-3 text-sm'>
+                    <td className='px-2 py-3 text-sm text-slate-600'>
+                      {new Date(registrant.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className='px-2 py-3 text-sm'>
                       <div className='flex flex-col gap-0.5'>
                         <span className='text-slate-700'>{registrant.company?.name || '—'}</span>
                         <span className='text-xs text-slate-500'>{registrant.jobTitle || '—'}</span>
                       </div>
                     </td>
-                    <td className='px-4 py-3 text-sm text-slate-600'>
-                      {getAttendeeTypeLabel(registrant.attendeeType)}
+                    <td className='px-2 py-3 text-sm text-slate-600'>
+                      <div className='flex min-w-[150px] flex-col gap-2'>
+                        <select
+                          value={selectedType}
+                          onChange={(e) =>
+                            handleAttendeeTypeSelect(registrant.id, e.target.value)
+                          }
+                          className='rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 focus:border-slate-900 focus:outline-none'
+                        >
+                          {ATTENDEE_TYPE_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                              {getAttendeeTypeLabel(option)}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type='button'
+                          onClick={() =>
+                            handleSaveAttendeeType(
+                              registrant.id,
+                              registrant.attendeeType,
+                            )
+                          }
+                          disabled={
+                            !hasTypeChanged ||
+                            (isPending && savingTypeId === registrant.id)
+                          }
+                          className='inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
+                        >
+                          {isPending && savingTypeId === registrant.id
+                            ? 'Saving...'
+                            : 'Save type'}
+                        </button>
+                      </div>
                     </td>
-                    <td className='px-4 py-3'>
+                    <td className='px-2 py-3'>
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(registrant.status)}`}
                       >
                         {registrant.status}
                       </span>
                     </td>
-                    <td className='px-4 py-3 text-center'>
+                    <td className='px-2 py-3 text-center'>
                       {getBooleanIndicator(registrant.registrationEmailSent)}
                     </td>
-                    <td className='px-4 py-3 text-center'>
+                    <td className='px-2 py-3 text-center'>
                       {getBooleanIndicator(registrant.welcomeEmailSent)}
                     </td>
-                    <td className='px-4 py-3 text-center'>
+                    <td className='px-2 py-3 text-center'>
                       <button
                         type='button'
                         onClick={() => handleWelcomeEmailClick(registrant.id)}
@@ -267,15 +441,32 @@ export default function RegistrantsTable({
                         </svg>
                       </button>
                     </td>
-                    <td className='px-4 py-3'>
-                      <button
-                        type='button'
-                        onClick={() => handleDelete(registrant.id, name)}
-                        disabled={isPending && deletingId === registrant.id}
-                        className='inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60'
-                      >
-                        {isPending && deletingId === registrant.id ? 'Deleting...' : 'Delete'}
-                      </button>
+                    <td className='px-2 py-3'>
+                      <div className='flex flex-wrap items-center gap-2'>
+                        <button
+                          type='button'
+                          onClick={() => handleApprove(registrant.id)}
+                          disabled={
+                            registrant.status === 'APPROVED' ||
+                            (isPending && approvingId === registrant.id)
+                          }
+                          className='inline-flex w-24 items-center justify-center rounded-lg border border-green-700 bg-green-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60'
+                        >
+                          {isPending && approvingId === registrant.id
+                            ? 'Approving...'
+                            : registrant.status === 'APPROVED'
+                              ? 'Approved'
+                              : 'Approve'}
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => handleDelete(registrant.id, name)}
+                          disabled={isPending && deletingId === registrant.id}
+                          className='inline-flex w-24 items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60'
+                        >
+                          {isPending && deletingId === registrant.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

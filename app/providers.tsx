@@ -130,9 +130,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <Link className="hover:text-slate-900" href="/announcements">
                 Announcements
               </Link>
-              <Link className="hover:text-slate-900" href="/dm-test">
-                DM Test
-              </Link>
             </nav>
           </div>
           <button

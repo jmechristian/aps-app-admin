@@ -2178,6 +2178,46 @@ export async function updateRegistrantEmailSync(
   }
 }
 
+export async function updateRegistrantAttendeeType(params: {
+  registrantId: string;
+  eventId: string;
+  attendeeType:
+    | 'OEM'
+    | 'TIER1'
+    | 'SOLUTIONPROVIDER'
+    | 'SPONSOR'
+    | 'SPEAKER'
+    | 'STAFF'
+    | 'EXHIBITOR';
+  jwt?: string | null;
+}): Promise<ActionState> {
+  try {
+    const authOpts = params.jwt
+      ? { authMode: 'userPools' as const, jwt: params.jwt }
+      : undefined;
+
+    await requestGraphQL(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: params.registrantId,
+          attendeeType: params.attendeeType,
+        },
+      },
+      authOpts,
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+    revalidatePath(`/aps/${params.eventId}/speakers`);
+
+    return { ok: true, message: 'Registrant type updated.' };
+  } catch (error) {
+    console.error('Failed to update registrant attendee type:', error);
+    return { ok: false, message: 'Failed to update registrant type.' };
+  }
+}
+
 export async function updateRegistrantCompanyAssignment(
   _prevState: ActionState,
   formData: FormData,

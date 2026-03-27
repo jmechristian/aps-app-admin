@@ -884,7 +884,6 @@ type ApsContactRequest
         identityClaim: "sub"
         provider: userPools
       }
-      { allow: groups, groups: ["Admin"], provider: userPools }
     ]
   ) {
   id: ID!
@@ -922,7 +921,6 @@ type ApsDmThread
         identityClaim: "sub"
         provider: userPools
       }
-      { allow: groups, groups: ["Admin"], provider: userPools }
     ]
   ) {
   id: ID!
@@ -955,7 +953,6 @@ type ApsDmParticipantState
         identityClaim: "sub"
         provider: userPools
       }
-      { allow: groups, groups: ["Admin"], provider: userPools }
     ]
   ) {
   id: ID!
@@ -984,7 +981,6 @@ type ApsDmMessage
         identityClaim: "sub"
         provider: userPools
       }
-      { allow: groups, groups: ["Admin"], provider: userPools }
     ]
   ) {
   id: ID!
