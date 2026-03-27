@@ -40,6 +40,7 @@ export type ThinkificRegistrantSummary = {
 const THINKIFIC_BASE_URL = 'https://api.thinkific.com/api/public/v1/enrollments';
 const THINKIFIC_USERS_URL = 'https://api.thinkific.com/api/public/v1/users';
 const APC_TOTAL_COURSES = 10;
+const APC_FINAL_ASSESSMENT_COURSE_ID = 591574;
 
 function getThinkificCredentials() {
   const apiKey =
@@ -217,6 +218,14 @@ export async function getThinkificRegistrantSummaryByEmail(
     const apcEnrollments = enrollments.filter((enrollment) =>
       enrollment.course_name.toUpperCase().includes('APC'),
     );
+    const completedFinalAssessment = apcEnrollments.some(
+      (enrollment) =>
+        enrollment.course_id === APC_FINAL_ASSESSMENT_COURSE_ID &&
+        Math.min(
+          100,
+          Math.max(0, normalizePercentageToPercent(enrollment.percentage_completed)),
+        ) >= 100,
+    );
     const bestProgressByApcCourse = new Map<number, number>();
     for (const enrollment of apcEnrollments) {
       const courseProgress = Math.min(
@@ -248,7 +257,7 @@ export async function getThinkificRegistrantSummaryByEmail(
       thinkificUserId,
       enrollmentCount: enrollments.length,
       apcEnrollmentCount: apcEnrollments.length,
-      apcProgramProgress,
+      apcProgramProgress: completedFinalAssessment ? 100 : apcProgramProgress,
     };
   } catch (error) {
     return {

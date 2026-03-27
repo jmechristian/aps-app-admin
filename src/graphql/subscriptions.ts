@@ -200,6 +200,8 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -365,6 +367,8 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -530,6 +534,8 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -595,6 +601,8 @@ export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -674,6 +682,8 @@ export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -753,6 +763,8 @@ export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -832,6 +844,8 @@ export const onCreateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnC
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -906,6 +920,8 @@ export const onUpdateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnU
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -980,6 +996,8 @@ export const onDeleteApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnD
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1054,6 +1072,8 @@ export const onCreateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnC
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1128,6 +1148,8 @@ export const onUpdateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnU
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1202,6 +1224,8 @@ export const onDeleteApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnD
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1276,6 +1300,8 @@ export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnC
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1353,6 +1379,8 @@ export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnU
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1430,6 +1458,8 @@ export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnD
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1507,6 +1537,8 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1534,6 +1566,8 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1596,6 +1630,8 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1623,6 +1659,8 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1685,6 +1723,8 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -1712,6 +1752,8 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3352,6 +3394,8 @@ export const onCreateApsAppUser = /* GraphQL */ `subscription OnCreateApsAppUser
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3479,6 +3523,8 @@ export const onUpdateApsAppUser = /* GraphQL */ `subscription OnUpdateApsAppUser
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3606,6 +3652,8 @@ export const onDeleteApsAppUser = /* GraphQL */ `subscription OnDeleteApsAppUser
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3656,6 +3704,8 @@ export const onCreateApsAppUserContact = /* GraphQL */ `subscription OnCreateAps
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3708,6 +3758,8 @@ export const onUpdateApsAppUserContact = /* GraphQL */ `subscription OnUpdateAps
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3760,6 +3812,8 @@ export const onDeleteApsAppUserContact = /* GraphQL */ `subscription OnDeleteAps
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3812,6 +3866,8 @@ export const onCreateApsAppUserLead = /* GraphQL */ `subscription OnCreateApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3864,6 +3920,8 @@ export const onUpdateApsAppUserLead = /* GraphQL */ `subscription OnUpdateApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3916,6 +3974,8 @@ export const onDeleteApsAppUserLead = /* GraphQL */ `subscription OnDeleteApsApp
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3976,6 +4036,8 @@ export const onCreateApsAppUserProfile = /* GraphQL */ `subscription OnCreateAps
       __typename
     }
     resume
+    thinkificId
+    apcProgress
     contacts {
       nextToken
       __typename
@@ -4077,6 +4139,8 @@ export const onUpdateApsAppUserProfile = /* GraphQL */ `subscription OnUpdateAps
       __typename
     }
     resume
+    thinkificId
+    apcProgress
     contacts {
       nextToken
       __typename
@@ -4178,6 +4242,8 @@ export const onDeleteApsAppUserProfile = /* GraphQL */ `subscription OnDeleteAps
       __typename
     }
     resume
+    thinkificId
+    apcProgress
     contacts {
       nextToken
       __typename
@@ -4262,6 +4328,8 @@ export const onCreateProfileAffiliate = /* GraphQL */ `subscription OnCreateProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4308,6 +4376,8 @@ export const onUpdateProfileAffiliate = /* GraphQL */ `subscription OnUpdateProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4354,6 +4424,8 @@ export const onDeleteProfileAffiliate = /* GraphQL */ `subscription OnDeleteProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4400,6 +4472,8 @@ export const onCreateProfileEducation = /* GraphQL */ `subscription OnCreateProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4445,6 +4519,8 @@ export const onUpdateProfileEducation = /* GraphQL */ `subscription OnUpdateProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4490,6 +4566,8 @@ export const onDeleteProfileEducation = /* GraphQL */ `subscription OnDeleteProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4535,6 +4613,8 @@ export const onCreateProfileInterest = /* GraphQL */ `subscription OnCreateProfi
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4578,6 +4658,8 @@ export const onUpdateProfileInterest = /* GraphQL */ `subscription OnUpdateProfi
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4621,6 +4703,8 @@ export const onDeleteProfileInterest = /* GraphQL */ `subscription OnDeleteProfi
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -5068,6 +5152,8 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -5137,6 +5223,8 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -5206,6 +5294,8 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt

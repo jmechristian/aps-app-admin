@@ -330,6 +330,8 @@ type ApsAppUserProfile
   education: [ProfileEducation] @hasMany(indexName: "byUser")
   interests: [ProfileInterest] @hasMany(indexName: "byUser")
   resume: String
+  thinkificId: Int
+  apcProgress: Float
 
   # Reverse relationships required for @belongsTo in Contact/Lead
   contacts: [ApsAppUserContact] @hasMany(indexName: "byContact", fields: ["id"])

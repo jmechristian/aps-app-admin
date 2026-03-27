@@ -184,6 +184,8 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -275,6 +277,8 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -381,6 +385,8 @@ export const getApsAppUserFavoriteSpeaker = /* GraphQL */ `query GetApsAppUserFa
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -482,6 +488,8 @@ export const getApsAppUserFavoriteSponsor = /* GraphQL */ `query GetApsAppUserFa
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -583,6 +591,8 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -687,6 +697,8 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -714,6 +726,8 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3395,6 +3409,8 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3495,6 +3511,8 @@ export const getApsAppUserContact = /* GraphQL */ `query GetApsAppUserContact($i
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3637,6 +3655,8 @@ export const getApsAppUserLead = /* GraphQL */ `query GetApsAppUserLead($id: ID!
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3783,6 +3803,8 @@ export const getApsAppUserProfile = /* GraphQL */ `query GetApsAppUserProfile($i
       __typename
     }
     resume
+    thinkificId
+    apcProgress
     contacts {
       nextToken
       __typename
@@ -3871,6 +3893,8 @@ export const listApsAppUserProfiles = /* GraphQL */ `query ListApsAppUserProfile
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3919,6 +3943,8 @@ export const apsAppUserProfilesByUserId = /* GraphQL */ `query ApsAppUserProfile
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -3967,6 +3993,8 @@ export const apsAppUserProfilesBySpeakerId = /* GraphQL */ `query ApsAppUserProf
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4005,6 +4033,8 @@ export const getProfileAffiliate = /* GraphQL */ `query GetProfileAffiliate($id:
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4109,6 +4139,8 @@ export const getProfileEducation = /* GraphQL */ `query GetProfileEducation($id:
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4210,6 +4242,8 @@ export const getProfileInterest = /* GraphQL */ `query GetProfileInterest($id: I
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
@@ -4688,6 +4722,8 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
       website
       location
       resume
+      thinkificId
+      apcProgress
       speakerId
       createdAt
       updatedAt
