@@ -3,12 +3,19 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Registrant } from '@/app/actions/registrants';
-import type { ThinkificRegistrantSummary } from '@/app/actions/thinkific';
+
+type ThinkificRegistrantSnapshot = {
+  isThinkificUser: boolean;
+  thinkificUserId: number | null;
+  enrollmentCount: number | null;
+  apcEnrollmentCount: number | null;
+  apcProgramProgress: number;
+};
 
 type ThinkificRegistrantsTableProps = {
   registrants: Registrant[];
   allRegistrants: Registrant[];
-  summariesByRegistrantId: Record<string, ThinkificRegistrantSummary>;
+  summariesByRegistrantId: Record<string, ThinkificRegistrantSnapshot>;
   eventId: string;
   nextToken?: string | null;
   isFirstPage?: boolean;
@@ -139,8 +146,8 @@ export default function ThinkificRegistrantsTable({
                 const summary = summariesByRegistrantId[registrant.id] ?? {
                   isThinkificUser: false,
                   thinkificUserId: null,
-                  enrollmentCount: 0,
-                  apcEnrollmentCount: 0,
+                  enrollmentCount: null,
+                  apcEnrollmentCount: null,
                   apcProgramProgress: 0,
                 };
                 return (
@@ -175,10 +182,10 @@ export default function ThinkificRegistrantsTable({
                       {summary.thinkificUserId ?? 'No ID found'}
                     </td>
                     <td className='px-3 py-3 text-sm text-slate-700'>
-                      {summary.enrollmentCount}
+                      {summary.enrollmentCount ?? '—'}
                     </td>
                     <td className='px-3 py-3 text-sm text-slate-700'>
-                      {summary.apcEnrollmentCount}
+                      {summary.apcEnrollmentCount ?? '—'}
                     </td>
                     <td className='px-3 py-3 text-sm text-slate-700'>
                       {formatProgress(summary.apcProgramProgress)}

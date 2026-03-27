@@ -37,6 +37,12 @@ export type ThinkificRegistrantSummary = {
   error?: string;
 };
 
+export type ThinkificEnrollmentCounts = {
+  enrollmentCount: number;
+  apcEnrollmentCount: number;
+  error?: string;
+};
+
 const THINKIFIC_BASE_URL = 'https://api.thinkific.com/api/public/v1/enrollments';
 const THINKIFIC_USERS_URL = 'https://api.thinkific.com/api/public/v1/users';
 const APC_TOTAL_COURSES = 10;
@@ -292,6 +298,55 @@ export async function getThinkificRegistrantSummariesByEmails(
       cursor += 1;
       const email = uniqueEmails[index];
       results[email] = await getThinkificRegistrantSummaryByEmail(email);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, uniqueEmails.length) }, () =>
+      worker(),
+    ),
+  );
+
+  return results;
+}
+
+export async function getThinkificEnrollmentCountsByEmails(
+  emails: string[],
+): Promise<Record<string, ThinkificEnrollmentCounts>> {
+  const uniqueEmails = Array.from(
+    new Set(
+      emails
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
+
+  const results: Record<string, ThinkificEnrollmentCounts> = {};
+  const concurrency = 5;
+  let cursor = 0;
+
+  const worker = async () => {
+    while (cursor < uniqueEmails.length) {
+      const index = cursor;
+      cursor += 1;
+      const email = uniqueEmails[index];
+      try {
+        const enrollments = await getThinkificEnrollmentsByEmail(email);
+        const apcEnrollmentCount = enrollments.filter((enrollment) =>
+          enrollment.course_name.toUpperCase().includes('APC'),
+        ).length;
+        results[email] = {
+          enrollmentCount: enrollments.length,
+          apcEnrollmentCount,
+        };
+      } catch (error) {
+        results[email] = {
+          enrollmentCount: 0,
+          apcEnrollmentCount: 0,
+          error:
+            error instanceof Error ? error.message : 'Thinkific enrollment lookup failed.',
+        };
+      }
     }
   };
 

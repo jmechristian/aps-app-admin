@@ -31,6 +31,7 @@ import { render } from '@react-email/render';
 import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
 import { revalidatePath } from 'next/cache';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { getThinkificRegistrantSummaryByEmail } from '@/app/actions/thinkific';
 
 type CognitoAttr = { Name?: string; Value?: string };
 
@@ -538,6 +539,14 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
         status
         registrationEmailSent
         welcomeEmailSent
+        appUser {
+          id
+          profile {
+            id
+            thinkificId
+            apcProgress
+          }
+        }
         createdAt
         updatedAt
       }
@@ -565,6 +574,14 @@ const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
         status
         registrationEmailSent
         welcomeEmailSent
+        appUser {
+          id
+          profile {
+            id
+            thinkificId
+            apcProgress
+          }
+        }
         createdAt
         updatedAt
       }
@@ -927,6 +944,14 @@ export type Registrant = {
   status: string;
   registrationEmailSent?: boolean | null;
   welcomeEmailSent?: boolean | null;
+  appUser?: {
+    id: string;
+    profile?: {
+      id: string;
+      thinkificId?: number | null;
+      apcProgress?: number | null;
+    } | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -1783,7 +1808,7 @@ async function deleteIds(
 async function ensureRegistrantIdentityArtifacts(params: {
   registrant: RegistrantDetail;
   jwt?: string;
-}): Promise<{ tempPassword: string | null }> {
+}): Promise<{ tempPassword: string | null; profileId: string | null }> {
   const { registrant, jwt } = params;
   const authOpts = jwt ? { authMode: 'userPools' as const, jwt } : undefined;
 
@@ -1954,7 +1979,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
     }
   }
 
-  return { tempPassword };
+  return { tempPassword, profileId };
 }
 
 export async function updateRegistrant(
@@ -2264,10 +2289,43 @@ export async function approveRegistrant(params: {
       : undefined;
     const approvedAt = new Date().toISOString();
 
-    const { tempPassword } = await ensureRegistrantIdentityArtifacts({
+    const { tempPassword, profileId } = await ensureRegistrantIdentityArtifacts({
       registrant,
       jwt: params.jwt ?? undefined,
     });
+
+    if (profileId) {
+      try {
+        const thinkificSummary = await getThinkificRegistrantSummaryByEmail(
+          registrant.email,
+        );
+
+        if (thinkificSummary.error) {
+          console.error(
+            `Skipping Thinkific profile sync for registrant ${params.registrantId}: ${thinkificSummary.error}`,
+          );
+        } else {
+          await requestGraphQL(
+            UPDATE_APP_USER_PROFILE,
+            {
+              input: {
+                id: profileId,
+                thinkificId: thinkificSummary.thinkificUserId,
+                apcProgress: Number(
+                  thinkificSummary.apcProgramProgress.toFixed(1),
+                ),
+              },
+            },
+            authOpts,
+          );
+        }
+      } catch (error) {
+        console.error(
+          `Failed to sync Thinkific data for registrant ${params.registrantId}:`,
+          error,
+        );
+      }
+    }
 
     await requestGraphQL(
       UPDATE_REGISTRANT,

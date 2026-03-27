@@ -5,7 +5,7 @@ import {
   fetchRegistrantsByApsId,
   fetchRegistrantsByApsIdPage,
 } from '@/app/actions/registrants';
-import { getThinkificRegistrantSummariesByEmails } from '@/app/actions/thinkific';
+import { getThinkificEnrollmentCountsByEmails } from '@/app/actions/thinkific';
 import ThinkificRegistrantsTable from './thinkific-registrants-table';
 
 type APS = {
@@ -25,6 +25,10 @@ const GET_APS = /* GraphQL */ `
 async function fetchAps(id: string): Promise<APS | null> {
   const data = await requestGraphQL<{ getAPS?: APS | null }>(GET_APS, { id });
   return data.getAPS ?? null;
+}
+
+function formatPercent(value: number) {
+  return `${value.toFixed(1)}%`;
 }
 
 export default async function ApsThinkificPage({
@@ -53,22 +57,38 @@ export default async function ApsThinkificPage({
     notFound();
   }
 
-  const summariesByEmail = await getThinkificRegistrantSummariesByEmails(
+  const enrollmentCountsByEmail = await getThinkificEnrollmentCountsByEmails(
     allRegistrants.map((registrant) => registrant.email),
   );
 
   const summariesByRegistrantId = Object.fromEntries(
     allRegistrants.map((registrant) => [
       registrant.id,
-      summariesByEmail[registrant.email.toLowerCase()] ?? {
-        isThinkificUser: false,
-        thinkificUserId: null,
-        enrollmentCount: 0,
-        apcEnrollmentCount: 0,
-        apcProgramProgress: 0,
+      {
+        isThinkificUser: Boolean(registrant.appUser?.profile?.thinkificId),
+        thinkificUserId: registrant.appUser?.profile?.thinkificId ?? null,
+        enrollmentCount:
+          enrollmentCountsByEmail[registrant.email.toLowerCase()]?.enrollmentCount ??
+          0,
+        apcEnrollmentCount:
+          enrollmentCountsByEmail[registrant.email.toLowerCase()]
+            ?.apcEnrollmentCount ?? 0,
+        apcProgramProgress: registrant.appUser?.profile?.apcProgress ?? 0,
       },
     ]),
   );
+
+  const totalRegistrants = allRegistrants.length;
+  const thinkificUserCount = allRegistrants.filter((registrant) =>
+    Boolean(registrant.appUser?.profile?.thinkificId),
+  ).length;
+  const apcCompleteCount = allRegistrants.filter(
+    (registrant) => (registrant.appUser?.profile?.apcProgress ?? 0) >= 100,
+  ).length;
+  const thinkificUserPercent =
+    totalRegistrants > 0 ? (thinkificUserCount / totalRegistrants) * 100 : 0;
+  const apcCompletePercent =
+    totalRegistrants > 0 ? (apcCompleteCount / totalRegistrants) * 100 : 0;
 
   return (
     <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
@@ -102,6 +122,32 @@ export default async function ApsThinkificPage({
           isFirstPage={!incomingNextToken}
           pageSize={50}
         />
+
+        <section className='grid gap-4 md:grid-cols-2'>
+          <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+            <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+              Registrants With Thinkific ID
+            </p>
+            <p className='mt-2 text-3xl font-bold text-slate-900'>
+              {thinkificUserCount}
+            </p>
+            <p className='mt-1 text-sm text-slate-600'>
+              {formatPercent(thinkificUserPercent)} of {totalRegistrants} registrants
+            </p>
+          </div>
+
+          <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+            <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+              Registrants At 100% APC Progress
+            </p>
+            <p className='mt-2 text-3xl font-bold text-slate-900'>
+              {apcCompleteCount}
+            </p>
+            <p className='mt-1 text-sm text-slate-600'>
+              {formatPercent(apcCompletePercent)} of {totalRegistrants} registrants
+            </p>
+          </div>
+        </section>
       </main>
     </div>
   );
