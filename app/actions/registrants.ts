@@ -536,6 +536,7 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
         }
         jobTitle
         attendeeType
+        certification
         status
         registrationEmailSent
         welcomeEmailSent
@@ -571,6 +572,7 @@ const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
         }
         jobTitle
         attendeeType
+        certification
         status
         registrationEmailSent
         welcomeEmailSent
@@ -941,6 +943,7 @@ export type Registrant = {
   } | null;
   jobTitle?: string | null;
   attendeeType: string;
+  certification?: string | null;
   status: string;
   registrationEmailSent?: boolean | null;
   welcomeEmailSent?: boolean | null;
