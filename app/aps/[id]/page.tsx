@@ -5,7 +5,6 @@ import CreateRegistrantButton from './create-registrant-button';
 import RegistrantsTable from './registrants-table';
 import {
   fetchRegistrantsByApsId,
-  fetchRegistrantsByApsIdPage,
 } from '@/app/actions/registrants';
 import { updateAps } from '@/app/actions/aps';
 
@@ -49,20 +48,35 @@ export default async function ApsDetail({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ nextToken?: string | string[] }>;
+  searchParams?: Promise<{ page?: string | string[] }>;
 }) {
   const { id } = await params;
 
   const sp = searchParams ? await searchParams : undefined;
-  const incomingNextToken = Array.isArray(sp?.nextToken)
-    ? sp?.nextToken?.[0]
-    : sp?.nextToken;
+  const incomingPage = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
+  const parsedPage = Number.parseInt(incomingPage ?? '1', 10);
+  const pageSize = 50;
 
-  const [aps, registrantsPage, allRegistrants] = await Promise.all([
+  const [aps, allRegistrants] = await Promise.all([
     fetchAps(id),
-    fetchRegistrantsByApsIdPage(id, { limit: 50, nextToken: incomingNextToken ?? null }),
     fetchRegistrantsByApsId(id),
   ]);
+
+  const orderedRegistrants = [...allRegistrants].sort((a, b) => {
+    const pendingRankA = a.status === 'PENDING' ? 0 : 1;
+    const pendingRankB = b.status === 'PENDING' ? 0 : 1;
+    if (pendingRankA !== pendingRankB) {
+      return pendingRankA - pendingRankB;
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const totalPages = Math.max(1, Math.ceil(orderedRegistrants.length / pageSize));
+  const currentPage = Number.isFinite(parsedPage)
+    ? Math.min(Math.max(parsedPage, 1), totalPages)
+    : 1;
+  const start = (currentPage - 1) * pageSize;
+  const pageRegistrants = orderedRegistrants.slice(start, start + pageSize);
 
   if (!aps) {
     notFound();
@@ -72,10 +86,11 @@ export default async function ApsDetail({
     <ApsDetailClient
       aps={aps}
       eventId={id}
-      registrants={registrantsPage.items}
+      registrants={pageRegistrants}
       allRegistrants={allRegistrants}
-      nextToken={registrantsPage.nextToken ?? null}
-      isFirstPage={!incomingNextToken}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={pageSize}
     />
   );
 }
@@ -86,15 +101,17 @@ function ApsDetailClient({
   eventId,
   registrants,
   allRegistrants,
-  nextToken,
-  isFirstPage,
+  currentPage,
+  totalPages,
+  pageSize,
 }: {
   aps: APS;
   eventId: string;
-  registrants: Awaited<ReturnType<typeof fetchRegistrantsByApsIdPage>>['items'];
+  registrants: Awaited<ReturnType<typeof fetchRegistrantsByApsId>>;
   allRegistrants: Awaited<ReturnType<typeof fetchRegistrantsByApsId>>;
-  nextToken: string | null;
-  isFirstPage: boolean;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
 }) {
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
@@ -316,9 +333,9 @@ function ApsDetailClient({
             registrants={registrants}
             allRegistrants={allRegistrants}
             eventId={eventId}
-            nextToken={nextToken}
-            isFirstPage={isFirstPage}
-            pageSize={50}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
           />
         </section>
       </main>

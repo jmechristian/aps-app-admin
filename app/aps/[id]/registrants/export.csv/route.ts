@@ -39,16 +39,21 @@ export async function GET(
       .map((request) => [request.registrantId, request] as const)
   );
 
-  const getTour1LunchPreference = (registrantId: string): string => {
+  const getTour1TransportationPreference = (registrantId: string): string => {
     const request = approvedTour1ByRegistrant.get(registrantId);
     if (!request?.preferences) return '';
 
     try {
       const parsed = JSON.parse(request.preferences) as
-        | { lunch?: unknown; preference?: { lunch?: unknown } }
+        | {
+            transportation_preference?: unknown;
+            preference?: { transportation_preference?: unknown };
+          }
         | null;
-      const lunchValue = parsed?.lunch ?? parsed?.preference?.lunch;
-      return typeof lunchValue === 'string' ? lunchValue : '';
+      const transportationValue =
+        parsed?.transportation_preference ??
+        parsed?.preference?.transportation_preference;
+      return typeof transportationValue === 'string' ? transportationValue : '';
     } catch {
       return '';
     }
@@ -65,7 +70,7 @@ export async function GET(
     'Count',
     'Job Title',
     'Approved Registration Tour 1',
-    'Lunch Preference Tour 1',
+    'Transportation Preference Tour 1',
     'Approved Registration Tour 2',
     'Transportaiton Preference',
     'Approved Registration Tour 3',
@@ -86,7 +91,7 @@ export async function GET(
         '',
         escapeCsv(row.jobTitle ?? ''),
         approvedTour1ByRegistrant.has(row.id) ? 'Yes' : '',
-        escapeCsv(getTour1LunchPreference(row.id)),
+        escapeCsv(getTour1TransportationPreference(row.id)),
         approvedTour2ByRegistrant.has(row.id) ? 'Yes' : '',
         '',
         '',

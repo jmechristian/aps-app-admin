@@ -15,8 +15,8 @@ type RegistrantsTableProps = {
   registrants: Registrant[];
   allRegistrants: Registrant[];
   eventId: string;
-  nextToken?: string | null;
-  isFirstPage?: boolean;
+  currentPage?: number;
+  totalPages?: number;
   pageSize?: number;
 };
 
@@ -24,8 +24,8 @@ export default function RegistrantsTable({
   registrants,
   allRegistrants,
   eventId,
-  nextToken = null,
-  isFirstPage = true,
+  currentPage = 1,
+  totalPages,
   pageSize = 50,
 }: RegistrantsTableProps) {
   type SortField = 'name' | 'createdAt';
@@ -50,10 +50,11 @@ export default function RegistrantsTable({
   const [selectedTypes, setSelectedTypes] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const totalPages = Math.max(
+  const computedTotalPages = Math.max(
     1,
     Math.ceil(allRegistrants.length / (pageSize && pageSize > 0 ? pageSize : 50))
   );
+  const effectiveTotalPages = totalPages ?? computedTotalPages;
 
   const filteredRegistrants = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -83,6 +84,12 @@ export default function RegistrantsTable({
   const sortedRegistrants = useMemo(() => {
     const items = [...filteredRegistrants];
     items.sort((a, b) => {
+      const pendingRankA = a.status === 'PENDING' ? 0 : 1;
+      const pendingRankB = b.status === 'PENDING' ? 0 : 1;
+      if (pendingRankA !== pendingRankB) {
+        return pendingRankA - pendingRankB;
+      }
+
       if (sortField === 'name') {
         const nameA = `${a.firstName || ''} ${a.lastName || ''}`
           .trim()
@@ -482,10 +489,10 @@ export default function RegistrantsTable({
             Page size: {registrants.length}
             {typeof pageSize === 'number' ? ` / ${pageSize}` : ''}
             {' • '}
-            Total pages: {totalPages}
+            Total pages: {effectiveTotalPages}
           </p>
           <div className='flex items-center gap-2'>
-            {!isFirstPage ? (
+            {currentPage > 1 ? (
               <Link
                 href={`/aps/${eventId}`}
                 className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
@@ -494,9 +501,22 @@ export default function RegistrantsTable({
               </Link>
             ) : null}
 
-            {nextToken ? (
+            {currentPage > 1 ? (
               <Link
-                href={`/aps/${eventId}?nextToken=${encodeURIComponent(nextToken)}`}
+                href={
+                  currentPage - 1 === 1
+                    ? `/aps/${eventId}`
+                    : `/aps/${eventId}?page=${currentPage - 1}`
+                }
+                className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+              >
+                ← Prev
+              </Link>
+            ) : null}
+
+            {currentPage < effectiveTotalPages ? (
+              <Link
+                href={`/aps/${eventId}?page=${currentPage + 1}`}
                 className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
               >
                 Next {pageSize ?? 50} →
