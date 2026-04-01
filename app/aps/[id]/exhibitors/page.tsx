@@ -6,6 +6,7 @@ import {
 import { fetchCompaniesByEventId } from '@/app/actions/companies';
 import Link from 'next/link';
 import CreateExhibitorButton from './create-exhibitor-button';
+import DeleteExhibitorButton from './delete-exhibitor-button';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -51,6 +52,7 @@ export default async function ExhibitorsPage({ params }: PageProps) {
                   <th className='px-4 py-3'>Booth</th>
                   <th className='px-4 py-3'>Approved Registrants</th>
                   <th className='px-4 py-3'>Exhibitor ID</th>
+                  <th className='px-4 py-3'>Actions</th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-slate-200'>
@@ -110,6 +112,13 @@ export default async function ExhibitorsPage({ params }: PageProps) {
                       </td>
                       <td className='px-4 py-3 font-mono text-xs text-slate-700'>
                         {exhibitor.id}
+                      </td>
+                      <td className='px-4 py-3'>
+                        <DeleteExhibitorButton
+                          exhibitorId={exhibitor.id}
+                          eventId={eventId}
+                          companyName={exhibitor.company?.name}
+                        />
                       </td>
                     </tr>
                   );

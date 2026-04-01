@@ -8,6 +8,7 @@ import { fetchCompaniesByEventId } from '@/app/actions/registrants';
 import CreateSponsorButton from './create-sponsor-button';
 import SponsorTypeSelect from './sponsor-type-select';
 import StorageImage from '@/app/components/storage-image';
+import DeleteSponsorButton from './delete-sponsor-button';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -53,6 +54,7 @@ export default async function SponsorsPage({ params }: PageProps) {
                   <th className='px-4 py-3'>Type</th>
                   <th className='px-4 py-3'>Approved Registrants</th>
                   <th className='px-4 py-3'>Sponsor ID</th>
+                  <th className='px-4 py-3'>Actions</th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-slate-200'>
@@ -134,6 +136,13 @@ export default async function SponsorsPage({ params }: PageProps) {
                         >
                           {sponsor.id}
                         </Link>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <DeleteSponsorButton
+                          sponsorId={sponsor.id}
+                          eventId={eventId}
+                          companyName={sponsor.company?.name}
+                        />
                       </td>
                     </tr>
                   );

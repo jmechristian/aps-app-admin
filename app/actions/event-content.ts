@@ -864,4 +864,42 @@ export async function fetchSponsorById(sponsorId: string) {
   return response.getApsSponsor ?? null;
 }
 
+const DELETE_SPONSOR = /* GraphQL */ `
+  mutation DeleteApsSponsor($input: DeleteApsSponsorInput!) {
+    deleteApsSponsor(input: $input) {
+      id
+    }
+  }
+`;
+
+const DELETE_EXHIBITOR_PROFILE = /* GraphQL */ `
+  mutation DeleteApsAppExhibitorProfile(
+    $input: DeleteApsAppExhibitorProfileInput!
+  ) {
+    deleteApsAppExhibitorProfile(input: $input) {
+      id
+    }
+  }
+`;
+
+export async function deleteSponsor(input: {
+  sponsorId: string;
+  eventId: string;
+}) {
+  await requestGraphQL(DELETE_SPONSOR, { input: { id: input.sponsorId } });
+  revalidatePath(`/aps/${input.eventId}/sponsors`);
+  revalidatePath(`/aps/${input.eventId}/sponsors/${input.sponsorId}`);
+}
+
+export async function deleteExhibitorProfile(input: {
+  exhibitorId: string;
+  eventId: string;
+}) {
+  await requestGraphQL(DELETE_EXHIBITOR_PROFILE, {
+    input: { id: input.exhibitorId },
+  });
+  revalidatePath(`/aps/${input.eventId}/exhibitors`);
+  revalidatePath(`/aps/${input.eventId}/exhibitors/${input.exhibitorId}`);
+}
+
 
