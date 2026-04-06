@@ -17,8 +17,8 @@ type ThinkificRegistrantsTableProps = {
   allRegistrants: Registrant[];
   summariesByRegistrantId: Record<string, ThinkificRegistrantSnapshot>;
   eventId: string;
-  nextToken?: string | null;
-  isFirstPage?: boolean;
+  currentPage?: number;
+  totalPages?: number;
   pageSize?: number;
 };
 
@@ -31,15 +31,16 @@ export default function ThinkificRegistrantsTable({
   allRegistrants,
   summariesByRegistrantId,
   eventId,
-  nextToken = null,
-  isFirstPage = true,
+  currentPage = 1,
+  totalPages,
   pageSize = 50,
 }: ThinkificRegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const totalPages = Math.max(
+  const computedTotalPages = Math.max(
     1,
     Math.ceil(allRegistrants.length / (pageSize && pageSize > 0 ? pageSize : 50)),
   );
+  const effectiveTotalPages = totalPages ?? computedTotalPages;
 
   const filteredRegistrants = useMemo(() => {
     const sortByApcProgressDesc = (a: Registrant, b: Registrant) => {
@@ -58,7 +59,7 @@ export default function ThinkificRegistrantsTable({
     };
 
     if (!searchQuery.trim()) {
-      return [...registrants].sort(sortByApcProgressDesc);
+      return registrants;
     }
 
     const query = searchQuery.toLowerCase();
@@ -204,10 +205,10 @@ export default function ThinkificRegistrantsTable({
             Page size: {registrants.length}
             {typeof pageSize === 'number' ? ` / ${pageSize}` : ''}
             {' • '}
-            Total pages: {totalPages}
+            Total pages: {effectiveTotalPages}
           </p>
           <div className='flex items-center gap-2'>
-            {!isFirstPage ? (
+            {currentPage > 1 ? (
               <Link
                 href={`/aps/${eventId}/thinkific`}
                 className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
@@ -216,9 +217,22 @@ export default function ThinkificRegistrantsTable({
               </Link>
             ) : null}
 
-            {nextToken ? (
+            {currentPage > 1 ? (
               <Link
-                href={`/aps/${eventId}/thinkific?nextToken=${encodeURIComponent(nextToken)}`}
+                href={
+                  currentPage - 1 === 1
+                    ? `/aps/${eventId}/thinkific`
+                    : `/aps/${eventId}/thinkific?page=${currentPage - 1}`
+                }
+                className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+              >
+                ← Prev
+              </Link>
+            ) : null}
+
+            {currentPage < effectiveTotalPages ? (
+              <Link
+                href={`/aps/${eventId}/thinkific?page=${currentPage + 1}`}
                 className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
               >
                 Next {pageSize ?? 50} →

@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import {
   fetchRegistrantsByApsId,
-  fetchRegistrantsByApsIdPage,
 } from '@/app/actions/registrants';
 import { getThinkificEnrollmentCountsByEmails } from '@/app/actions/thinkific';
 import ThinkificRegistrantsTable from './thinkific-registrants-table';
@@ -36,20 +35,16 @@ export default async function ApsThinkificPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ nextToken?: string | string[] }>;
+  searchParams?: Promise<{ page?: string | string[] }>;
 }) {
   const { id: eventId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const incomingNextToken = Array.isArray(sp?.nextToken)
-    ? sp?.nextToken?.[0]
-    : sp?.nextToken;
+  const incomingPage = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
+  const parsedPage = Number.parseInt(incomingPage ?? '1', 10);
+  const pageSize = 50;
 
-  const [aps, registrantsPage, allRegistrants] = await Promise.all([
+  const [aps, allRegistrants] = await Promise.all([
     fetchAps(eventId),
-    fetchRegistrantsByApsIdPage(eventId, {
-      limit: 50,
-      nextToken: incomingNextToken ?? null,
-    }),
     fetchRegistrantsByApsId(eventId),
   ]);
 
@@ -77,6 +72,23 @@ export default async function ApsThinkificPage({
       },
     ]),
   );
+
+  const orderedRegistrants = [...allRegistrants].sort((a, b) => {
+    const progressA = summariesByRegistrantId[a.id]?.apcProgramProgress ?? 0;
+    const progressB = summariesByRegistrantId[b.id]?.apcProgramProgress ?? 0;
+    if (progressB !== progressA) return progressB - progressA;
+
+    const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+    const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim();
+    return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+  });
+
+  const totalPages = Math.max(1, Math.ceil(orderedRegistrants.length / pageSize));
+  const currentPage = Number.isFinite(parsedPage)
+    ? Math.min(Math.max(parsedPage, 1), totalPages)
+    : 1;
+  const start = (currentPage - 1) * pageSize;
+  const pageRegistrants = orderedRegistrants.slice(start, start + pageSize);
 
   const totalRegistrants = allRegistrants.length;
   const thinkificUserCount = allRegistrants.filter((registrant) =>
@@ -140,13 +152,13 @@ export default async function ApsThinkificPage({
         </section>
 
         <ThinkificRegistrantsTable
-          registrants={registrantsPage.items}
+          registrants={pageRegistrants}
           allRegistrants={allRegistrants}
           summariesByRegistrantId={summariesByRegistrantId}
           eventId={eventId}
-          nextToken={registrantsPage.nextToken ?? null}
-          isFirstPage={!incomingNextToken}
-          pageSize={50}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
         />
       </main>
     </div>
