@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "create-test-registrants": "tsx scripts/create-test-registrants.ts",
-    "backfill-thinkific-apc-progress": "tsx scripts/backfill-thinkific-apc-progress.ts"
+    "create-test-registrants": "tsx scripts/create-test-registrants.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.947.0",
