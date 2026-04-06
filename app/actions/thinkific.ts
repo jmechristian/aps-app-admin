@@ -46,7 +46,9 @@ export type ThinkificEnrollmentCounts = {
 const THINKIFIC_BASE_URL = 'https://api.thinkific.com/api/public/v1/enrollments';
 const THINKIFIC_USERS_URL = 'https://api.thinkific.com/api/public/v1/users';
 const APC_TOTAL_COURSES = 10;
-const APC_FINAL_ASSESSMENT_COURSE_ID = 591574;
+const APC_PRIORITY_PROGRESS_COURSE_ID = 699298;
+const APC_COMPLETION_COURSE_IDS = new Set([591574]);
+const APC_COMPLETION_COURSE_NAME_PATTERNS = ['APC FINAL ASSESSMENT'];
 
 function getThinkificCredentials() {
   const apiKey =
@@ -69,6 +71,16 @@ function normalizePercentageToPercent(value: string): number {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return 0;
   return numeric <= 1 ? numeric * 100 : numeric;
+}
+
+function isApcCompletionEnrollment(enrollment: ThinkificEnrollment): boolean {
+  const normalizedCourseName = enrollment.course_name.toUpperCase();
+  const matchesCourseId = APC_COMPLETION_COURSE_IDS.has(enrollment.course_id);
+  const matchesCourseNamePattern = APC_COMPLETION_COURSE_NAME_PATTERNS.some((pattern) =>
+    normalizedCourseName.includes(pattern),
+  );
+
+  return matchesCourseId || matchesCourseNamePattern;
 }
 
 async function readErrorBody(res: Response): Promise<string> {
@@ -221,12 +233,24 @@ export async function getThinkificRegistrantSummaryByEmail(
 
   try {
     const enrollments = await getThinkificEnrollmentsByEmail(email);
+    const priorityProgressEnrollment = enrollments.find(
+      (enrollment) => enrollment.course_id === APC_PRIORITY_PROGRESS_COURSE_ID,
+    );
+    const priorityProgressPercent = priorityProgressEnrollment
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            normalizePercentageToPercent(priorityProgressEnrollment.percentage_completed),
+          ),
+        )
+      : null;
     const apcEnrollments = enrollments.filter((enrollment) =>
       enrollment.course_name.toUpperCase().includes('APC'),
     );
     const completedFinalAssessment = apcEnrollments.some(
       (enrollment) =>
-        enrollment.course_id === APC_FINAL_ASSESSMENT_COURSE_ID &&
+        isApcCompletionEnrollment(enrollment) &&
         Math.min(
           100,
           Math.max(0, normalizePercentageToPercent(enrollment.percentage_completed)),
@@ -263,7 +287,8 @@ export async function getThinkificRegistrantSummaryByEmail(
       thinkificUserId,
       enrollmentCount: enrollments.length,
       apcEnrollmentCount: apcEnrollments.length,
-      apcProgramProgress: completedFinalAssessment ? 100 : apcProgramProgress,
+      apcProgramProgress:
+        priorityProgressPercent ?? (completedFinalAssessment ? 100 : apcProgramProgress),
     };
   } catch (error) {
     return {

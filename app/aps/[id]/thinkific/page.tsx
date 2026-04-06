@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import {
   fetchRegistrantsByApsId,
 } from '@/app/actions/registrants';
-import { getThinkificEnrollmentCountsByEmails } from '@/app/actions/thinkific';
+import { getThinkificRegistrantSummariesByEmails } from '@/app/actions/thinkific';
 import ThinkificRegistrantsTable from './thinkific-registrants-table';
 
 type APS = {
@@ -17,6 +18,16 @@ const GET_APS = /* GraphQL */ `
     getAPS(id: $id) {
       id
       year
+    }
+  }
+`;
+
+const UPDATE_APP_USER_PROFILE = /* GraphQL */ `
+  mutation UpdateApsAppUserProfileFromThinkificPanel(
+    $input: UpdateApsAppUserProfileInput!
+  ) {
+    updateApsAppUserProfile(input: $input) {
+      id
     }
   }
 `;
@@ -35,13 +46,79 @@ export default async function ApsThinkificPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ page?: string | string[] }>;
+  searchParams?: Promise<{
+    page?: string | string[];
+    sync?: string | string[];
+    updated?: string | string[];
+    unchanged?: string | string[];
+    skipped?: string | string[];
+    errors?: string | string[];
+  }>;
 }) {
   const { id: eventId } = await params;
   const sp = searchParams ? await searchParams : undefined;
   const incomingPage = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
+  const syncFlag = Array.isArray(sp?.sync) ? sp.sync[0] : sp?.sync;
+  const syncUpdated = Array.isArray(sp?.updated) ? sp.updated[0] : sp?.updated;
+  const syncUnchanged = Array.isArray(sp?.unchanged) ? sp.unchanged[0] : sp?.unchanged;
+  const syncSkipped = Array.isArray(sp?.skipped) ? sp.skipped[0] : sp?.skipped;
+  const syncErrors = Array.isArray(sp?.errors) ? sp.errors[0] : sp?.errors;
   const parsedPage = Number.parseInt(incomingPage ?? '1', 10);
   const pageSize = 50;
+
+  async function syncThinkificProfilesAction() {
+    'use server';
+
+    const registrants = await fetchRegistrantsByApsId(eventId);
+    const summariesByEmail = await getThinkificRegistrantSummariesByEmails(
+      registrants.map((registrant) => registrant.email),
+    );
+
+    let updated = 0;
+    let unchanged = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for (const registrant of registrants) {
+      const profileId = registrant.appUser?.profile?.id;
+      if (!profileId) {
+        skipped += 1;
+        continue;
+      }
+
+      const summary = summariesByEmail[registrant.email.toLowerCase()];
+      if (!summary || summary.error) {
+        errors += 1;
+        continue;
+      }
+
+      const nextThinkificId = summary.thinkificUserId ?? null;
+      const nextApcProgress = Number(summary.apcProgramProgress.toFixed(1));
+      const currentThinkificId = registrant.appUser?.profile?.thinkificId ?? null;
+      const currentApcProgress = registrant.appUser?.profile?.apcProgress ?? null;
+      const changed =
+        currentThinkificId !== nextThinkificId || currentApcProgress !== nextApcProgress;
+
+      if (!changed) {
+        unchanged += 1;
+        continue;
+      }
+
+      await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+        input: {
+          id: profileId,
+          thinkificId: nextThinkificId,
+          apcProgress: nextApcProgress,
+        },
+      });
+      updated += 1;
+    }
+
+    revalidatePath(`/aps/${eventId}/thinkific`);
+    redirect(
+      `/aps/${eventId}/thinkific?sync=1&updated=${updated}&unchanged=${unchanged}&skipped=${skipped}&errors=${errors}`,
+    );
+  }
 
   const [aps, allRegistrants] = await Promise.all([
     fetchAps(eventId),
@@ -52,7 +129,7 @@ export default async function ApsThinkificPage({
     notFound();
   }
 
-  const enrollmentCountsByEmail = await getThinkificEnrollmentCountsByEmails(
+  const thinkificSummariesByEmail = await getThinkificRegistrantSummariesByEmails(
     allRegistrants.map((registrant) => registrant.email),
   );
 
@@ -60,15 +137,23 @@ export default async function ApsThinkificPage({
     allRegistrants.map((registrant) => [
       registrant.id,
       {
-        isThinkificUser: Boolean(registrant.appUser?.profile?.thinkificId),
-        thinkificUserId: registrant.appUser?.profile?.thinkificId ?? null,
+        isThinkificUser: Boolean(
+          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.thinkificUserId ??
+            registrant.appUser?.profile?.thinkificId,
+        ),
+        thinkificUserId:
+          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.thinkificUserId ??
+          registrant.appUser?.profile?.thinkificId ??
+          null,
         enrollmentCount:
-          enrollmentCountsByEmail[registrant.email.toLowerCase()]?.enrollmentCount ??
+          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.enrollmentCount ??
           0,
         apcEnrollmentCount:
-          enrollmentCountsByEmail[registrant.email.toLowerCase()]
+          thinkificSummariesByEmail[registrant.email.toLowerCase()]
             ?.apcEnrollmentCount ?? 0,
-        apcProgramProgress: registrant.appUser?.profile?.apcProgress ?? 0,
+        apcProgramProgress:
+          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.apcProgramProgress ??
+          0,
       },
     ]),
   );
@@ -92,11 +177,12 @@ export default async function ApsThinkificPage({
 
   const totalRegistrants = allRegistrants.length;
   const thinkificUserCount = allRegistrants.filter((registrant) =>
-    Boolean(registrant.appUser?.profile?.thinkificId),
+    Boolean(summariesByRegistrantId[registrant.id]?.isThinkificUser),
   ).length;
-  const apcCompleteCount = allRegistrants.filter(
-    (registrant) => (registrant.appUser?.profile?.apcProgress ?? 0) >= 100,
-  ).length;
+  const apcCompleteCount = allRegistrants.filter((registrant) => {
+    const progress = summariesByRegistrantId[registrant.id]?.apcProgramProgress ?? 0;
+    return progress >= 100;
+  }).length;
   const thinkificUserPercent =
     totalRegistrants > 0 ? (thinkificUserCount / totalRegistrants) * 100 : 0;
   const apcCompletePercent =
@@ -117,12 +203,22 @@ export default async function ApsThinkificPage({
               View Thinkific user, enrollment, and APC progress data for registrants.
             </p>
           </div>
-          <Link
-            href={`/aps/${eventId}`}
-            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-          >
-            ← Back to event
-          </Link>
+          <div className='flex items-center gap-2'>
+            <form action={syncThinkificProfilesAction}>
+              <button
+                type='submit'
+                className='inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-100 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700'
+              >
+                Sync AppUserProfiles
+              </button>
+            </form>
+            <Link
+              href={`/aps/${eventId}`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              ← Back to event
+            </Link>
+          </div>
         </header>
 
         <section className='grid gap-4 md:grid-cols-2'>
@@ -150,6 +246,13 @@ export default async function ApsThinkificPage({
             </p>
           </div>
         </section>
+
+        {syncFlag === '1' ? (
+          <section className='rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700'>
+            Sync finished. Updated {syncUpdated ?? '0'}, unchanged {syncUnchanged ?? '0'},
+            skipped {syncSkipped ?? '0'}, errors {syncErrors ?? '0'}.
+          </section>
+        ) : null}
 
         <ThinkificRegistrantsTable
           registrants={pageRegistrants}

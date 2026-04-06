@@ -270,7 +270,12 @@ export default function RegistrantsTable({
     <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg'>
       <div className='mb-4 flex items-center justify-between'>
         <div>
-          <h2 className='text-xl font-bold text-slate-900'>Registrants</h2>
+          <h2 className='flex items-center gap-2 text-xl font-bold text-slate-900'>
+            Registrants
+            <span className='rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-slate-700'>
+              {allRegistrants.length}
+            </span>
+          </h2>
           <p className='mt-1 text-sm text-slate-600'>
             Showing {filteredRegistrants.length} registrant
             {filteredRegistrants.length === 1 ? '' : 's'}
