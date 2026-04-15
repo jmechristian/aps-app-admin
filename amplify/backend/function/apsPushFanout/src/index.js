@@ -19,6 +19,7 @@ const {
   PutCommand,
   QueryCommand,
   ScanCommand,
+  UpdateCommand,
 } = require('@aws-sdk/lib-dynamodb');
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -33,12 +34,187 @@ const APP_USER_TABLE_NAME = process.env.APP_USER_TABLE_NAME;
 const APP_USER_CONTACT_TABLE_NAME = process.env.APP_USER_CONTACT_TABLE_NAME;
 const APP_USER_PROFILE_TABLE_NAME = process.env.APP_USER_PROFILE_TABLE_NAME;
 const APP_USER_PROFILE_GSI_NAME = process.env.APP_USER_PROFILE_GSI_NAME || 'byUser';
+const CONTACT_REQUEST_TABLE_NAME = process.env.CONTACT_REQUEST_TABLE_NAME;
+const DM_THREAD_TABLE_NAME = process.env.DM_THREAD_TABLE_NAME;
+const DM_MESSAGE_TABLE_NAME = process.env.DM_MESSAGE_TABLE_NAME;
+const DM_PARTICIPANT_STATE_TABLE_NAME = process.env.DM_PARTICIPANT_STATE_TABLE_NAME;
 
 const APPSYNC_ENDPOINT = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIENDPOINTOUTPUT;
 const APPSYNC_API_KEY = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIKEYOUTPUT;
 
 function safeSlice(str, n) {
   return String(str ?? '').slice(0, n);
+}
+
+function uniqueStrings(values) {
+  if (!Array.isArray(values)) return [];
+  return Array.from(new Set(values.filter((x) => typeof x === 'string' && x.trim())));
+}
+
+function sortPair(a, b) {
+  return a < b ? [a, b] : [b, a];
+}
+
+function requestKeyFor(eventId, a, b) {
+  return `e:${eventId}|u:${a}|u:${b}`;
+}
+
+function dmParticipantStateKey(eventId, threadId, userId) {
+  return `e:${eventId}|t:${threadId}|u:${userId}`;
+}
+
+function getIdentitySub(event) {
+  return (
+    event?.identity?.sub ||
+    event?.identity?.claims?.sub ||
+    event?.identity?.username ||
+    null
+  );
+}
+
+function normalizeForModeration(text) {
+  const leetMap = {
+    '@': 'a',
+    '0': 'o',
+    '1': 'i',
+    '3': 'e',
+    '4': 'a',
+    '5': 's',
+    '7': 't',
+    '$': 's',
+    '!': 'i',
+  };
+  const replaced = String(text || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .split('')
+    .map((ch) => leetMap[ch] || ch)
+    .join('')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Collapse very long repeated characters to reduce simple obfuscation.
+  return replaced.replace(/(.)\1{2,}/g, '$1$1');
+}
+
+function includesTerm(normalized, term) {
+  if (!term) return false;
+  const t = normalizeForModeration(term);
+  if (!t) return false;
+  if (t.includes(' ')) return normalized.includes(t);
+  const regex = new RegExp(`(^|\\s)${t}(\\s|$)`, 'i');
+  return regex.test(normalized);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const PROFANITY_TERMS = [
+  'fuck',
+  'fucking',
+  'shit',
+  'bitch',
+  'asshole',
+  'motherfucker',
+  'dick',
+  'cunt',
+  'bastard',
+  'piss off',
+];
+
+const THREAT_TERMS = [
+  'kill yourself',
+  'i will kill you',
+  'i am going to kill you',
+  'you should die',
+  'i will hurt you',
+  'kys',
+];
+
+const HATE_TERMS = [
+  'go back to your country',
+  'you people are disgusting',
+];
+
+function scoreModeration(rawText) {
+  const raw = String(rawText || '');
+  const normalized = normalizeForModeration(raw);
+  if (!normalized) {
+    return {
+      normalized,
+      scores: {
+        profanity: 0,
+        threat: 0,
+        identity_hate: 0,
+        toxicity: 0,
+      },
+      decision: 'ALLOW',
+      reasons: [],
+      maskedText: raw,
+    };
+  }
+
+  const profanityHits = PROFANITY_TERMS.filter((term) =>
+    includesTerm(normalized, term)
+  );
+  const threatHits = THREAT_TERMS.filter((term) => includesTerm(normalized, term));
+  const hateHits = HATE_TERMS.filter((term) => includesTerm(normalized, term));
+
+  const letters = raw.replace(/[^a-z]/gi, '');
+  const upperLetters = letters.replace(/[^A-Z]/g, '');
+  const capsRatio = letters.length ? upperLetters.length / letters.length : 0;
+  const exclamationBursts = (raw.match(/!{2,}/g) || []).length;
+  const directInsult = /\b(you are|you're|ur)\b.{0,20}\b(stupid|idiot|moron|trash|loser)\b/i.test(
+    raw
+  );
+
+  const profanity = Math.min(1, profanityHits.length * 0.35);
+  const threat = Math.min(1, threatHits.length * 0.7);
+  const identityHate = Math.min(1, hateHits.length * 0.7);
+  let toxicity = Math.max(profanity * 0.65, threat * 0.9, identityHate * 0.9);
+  if (capsRatio > 0.7 && raw.length >= 16) toxicity = Math.min(1, toxicity + 0.08);
+  if (exclamationBursts >= 2) toxicity = Math.min(1, toxicity + 0.06);
+  if (directInsult) toxicity = Math.min(1, toxicity + 0.2);
+
+  const reasons = [];
+  if (profanityHits.length) reasons.push(`profanity:${profanityHits.join(',')}`);
+  if (threatHits.length) reasons.push(`threat:${threatHits.join(',')}`);
+  if (hateHits.length) reasons.push(`hate:${hateHits.join(',')}`);
+  if (directInsult) reasons.push('direct-insult');
+
+  let decision = 'ALLOW';
+  if (threat >= 0.6 || identityHate >= 0.55) {
+    decision = 'BLOCK';
+  } else if (toxicity >= 0.78) {
+    decision = 'BLOCK';
+  } else if (profanity >= 0.7 && toxicity < 0.6) {
+    decision = 'MASK';
+  }
+
+  let maskedText = raw;
+  if (decision === 'MASK') {
+    for (const term of profanityHits) {
+      const escaped = escapeRegExp(term);
+      const rx = new RegExp(escaped, 'gi');
+      maskedText = maskedText.replace(rx, '***');
+    }
+  }
+
+  return {
+    normalized,
+    scores: {
+      profanity: Number(profanity.toFixed(3)),
+      threat: Number(threat.toFixed(3)),
+      identity_hate: Number(identityHate.toFixed(3)),
+      toxicity: Number(toxicity.toFixed(3)),
+    },
+    decision,
+    reasons,
+    maskedText,
+  };
 }
 
 function requireEnv(name) {
@@ -226,7 +402,268 @@ async function putContact({ userSub, otherProfileId }) {
   }
 }
 
-exports.handler = async (event) => {
+async function getThread(threadId) {
+  requireEnv('DM_THREAD_TABLE_NAME');
+  const out = await ddb.send(
+    new GetCommand({
+      TableName: DM_THREAD_TABLE_NAME,
+      Key: { id: threadId },
+    })
+  );
+  return out?.Item || null;
+}
+
+async function getContactRequest(eventId, userAId, userBId) {
+  requireEnv('CONTACT_REQUEST_TABLE_NAME');
+  const [a, b] = sortPair(userAId, userBId);
+  const requestKey = requestKeyFor(eventId, a, b);
+
+  const byId = await ddb.send(
+    new GetCommand({
+      TableName: CONTACT_REQUEST_TABLE_NAME,
+      Key: { id: requestKey },
+    })
+  );
+  if (byId?.Item?.id) return byId.Item;
+
+  const byKey = await ddb.send(
+    new QueryCommand({
+      TableName: CONTACT_REQUEST_TABLE_NAME,
+      IndexName: 'byRequestKey',
+      KeyConditionExpression: '#requestKey = :requestKey',
+      ExpressionAttributeNames: { '#requestKey': 'requestKey' },
+      ExpressionAttributeValues: { ':requestKey': requestKey },
+      Limit: 1,
+    })
+  );
+  return (byKey.Items || [])[0] || null;
+}
+
+async function upsertParticipantState({
+  eventId,
+  threadId,
+  userId,
+  lastReadAt,
+  unreadDelta,
+  resetUnread,
+  now,
+}) {
+  requireEnv('DM_PARTICIPANT_STATE_TABLE_NAME');
+  const existing = await ddb.send(
+    new QueryCommand({
+      TableName: DM_PARTICIPANT_STATE_TABLE_NAME,
+      IndexName: 'byThread',
+      KeyConditionExpression: '#threadId = :threadId AND #userId = :userId',
+      ExpressionAttributeNames: {
+        '#threadId': 'threadId',
+        '#userId': 'userId',
+      },
+      ExpressionAttributeValues: {
+        ':threadId': threadId,
+        ':userId': userId,
+      },
+      Limit: 1,
+    })
+  );
+  const state = (existing.Items || [])[0] || null;
+
+  if (state?.id) {
+    if (resetUnread) {
+      await ddb.send(
+        new UpdateCommand({
+          TableName: DM_PARTICIPANT_STATE_TABLE_NAME,
+          Key: { id: state.id },
+          UpdateExpression:
+            'SET #lastReadAt = :lastReadAt, #unreadCount = :unreadCount, #lastMessageAt = :lastMessageAt, #updatedAt = :updatedAt',
+          ExpressionAttributeNames: {
+            '#lastReadAt': 'lastReadAt',
+            '#unreadCount': 'unreadCount',
+            '#lastMessageAt': 'lastMessageAt',
+            '#updatedAt': 'updatedAt',
+          },
+          ExpressionAttributeValues: {
+            ':lastReadAt': lastReadAt || now,
+            ':unreadCount': 0,
+            ':lastMessageAt': now,
+            ':updatedAt': now,
+          },
+        })
+      );
+      return;
+    }
+
+    await ddb.send(
+      new UpdateCommand({
+        TableName: DM_PARTICIPANT_STATE_TABLE_NAME,
+        Key: { id: state.id },
+        UpdateExpression:
+          'SET #lastMessageAt = :lastMessageAt, #updatedAt = :updatedAt, #unreadCount = if_not_exists(#unreadCount, :zero) + :delta',
+        ExpressionAttributeNames: {
+          '#lastMessageAt': 'lastMessageAt',
+          '#updatedAt': 'updatedAt',
+          '#unreadCount': 'unreadCount',
+        },
+        ExpressionAttributeValues: {
+          ':lastMessageAt': now,
+          ':updatedAt': now,
+          ':zero': 0,
+          ':delta': Math.max(0, unreadDelta || 0),
+        },
+      })
+    );
+    return;
+  }
+
+  await ddb.send(
+    new PutCommand({
+      TableName: DM_PARTICIPANT_STATE_TABLE_NAME,
+      Item: {
+        id: dmParticipantStateKey(eventId, threadId, userId),
+        eventId,
+        threadId,
+        userId,
+        lastReadAt: resetUnread ? lastReadAt || now : undefined,
+        unreadCount: resetUnread ? 0 : Math.max(0, unreadDelta || 0),
+        lastMessageAt: now,
+        createdAt: now,
+        updatedAt: now,
+      },
+    })
+  );
+}
+
+async function handleSendModeratedDmMessage(event) {
+  requireEnv('CONTACT_REQUEST_TABLE_NAME');
+  requireEnv('DM_THREAD_TABLE_NAME');
+  requireEnv('DM_MESSAGE_TABLE_NAME');
+  requireEnv('DM_PARTICIPANT_STATE_TABLE_NAME');
+
+  const input = event?.arguments?.input || {};
+  const threadId = String(input.threadId || '').trim();
+  const body = String(input.body || '').trim();
+  const senderUserId = getIdentitySub(event);
+
+  if (!senderUserId) throw new Error('Unauthorized');
+  if (!threadId) throw new Error('threadId is required');
+  if (!body) throw new Error('Message body is required');
+  if (body.length > 2000) throw new Error('Message is too long');
+
+  const thread = await getThread(threadId);
+  if (!thread?.id || !thread?.eventId || !thread?.userAId || !thread?.userBId) {
+    throw new Error('Conversation not found');
+  }
+
+  const owners = uniqueStrings(thread.owners);
+  if (
+    owners.length !== 2 ||
+    !owners.includes(String(thread.userAId)) ||
+    !owners.includes(String(thread.userBId))
+  ) {
+    throw new Error('Invalid conversation participants');
+  }
+  if (!owners.includes(senderUserId)) {
+    throw new Error('You are not allowed in this conversation');
+  }
+
+  const recipientUserId =
+    String(thread.userAId) === senderUserId
+      ? String(thread.userBId)
+      : String(thread.userAId);
+  if (!recipientUserId || recipientUserId === senderUserId) {
+    throw new Error('Invalid conversation pairing');
+  }
+
+  const request = await getContactRequest(
+    String(thread.eventId),
+    String(thread.userAId),
+    String(thread.userBId)
+  );
+  if (!request?.id || request.status !== 'ACCEPTED') {
+    throw new Error('Contact request must be accepted before messaging');
+  }
+
+  const moderation = scoreModeration(body);
+  if (moderation.decision === 'BLOCK') {
+    console.log('dm-moderation:block', {
+      threadId: safeSlice(threadId, 64),
+      senderTail: senderUserId.slice(-8),
+      scores: moderation.scores,
+      reasons: moderation.reasons,
+    });
+    throw new Error('Message violates community guidelines. Please edit and try again.');
+  }
+
+  const now = new Date().toISOString();
+  const messageItem = {
+    id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+    eventId: String(thread.eventId),
+    threadId,
+    senderUserId,
+    owners: [String(thread.userAId), String(thread.userBId)],
+    type: 'text',
+    body: moderation.decision === 'MASK' ? moderation.maskedText : body,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await ddb.send(
+    new PutCommand({
+      TableName: DM_MESSAGE_TABLE_NAME,
+      Item: messageItem,
+      ConditionExpression: 'attribute_not_exists(#id)',
+      ExpressionAttributeNames: { '#id': 'id' },
+    })
+  );
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: DM_THREAD_TABLE_NAME,
+      Key: { id: threadId },
+      UpdateExpression:
+        'SET #lastMessageAt = :lastMessageAt, #lastMessagePreview = :lastMessagePreview, #updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#lastMessageAt': 'lastMessageAt',
+        '#lastMessagePreview': 'lastMessagePreview',
+        '#updatedAt': 'updatedAt',
+      },
+      ExpressionAttributeValues: {
+        ':lastMessageAt': now,
+        ':lastMessagePreview': safeSlice(messageItem.body, 240),
+        ':updatedAt': now,
+      },
+    })
+  );
+
+  await upsertParticipantState({
+    eventId: String(thread.eventId),
+    threadId,
+    userId: senderUserId,
+    lastReadAt: now,
+    unreadDelta: 0,
+    resetUnread: true,
+    now,
+  });
+  await upsertParticipantState({
+    eventId: String(thread.eventId),
+    threadId,
+    userId: recipientUserId,
+    lastReadAt: null,
+    unreadDelta: 1,
+    resetUnread: false,
+    now,
+  });
+
+  console.log('dm-moderation:allow', {
+    threadId: safeSlice(threadId, 64),
+    senderTail: senderUserId.slice(-8),
+    decision: moderation.decision,
+    scores: moderation.scores,
+  });
+
+  return messageItem;
+}
+
+async function handleStreamFanout(event) {
   // event.Records = DynamoDB Stream records
   const records = event?.Records || [];
   console.log('apsPushFanout invoked', { recordCount: records.length });
@@ -409,4 +846,15 @@ exports.handler = async (event) => {
   await sendExpoPush(expoMessages);
 
   return { ok: true, sent: expoMessages.length };
+}
+
+exports.handler = async (event) => {
+  const isStream = Array.isArray(event?.Records);
+  if (isStream) return handleStreamFanout(event);
+
+  if (event?.typeName === 'Mutation' && event?.fieldName === 'sendModeratedDmMessage') {
+    return handleSendModeratedDmMessage(event);
+  }
+
+  throw new Error('Unsupported invocation');
 };

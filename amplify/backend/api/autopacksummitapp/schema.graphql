@@ -29,6 +29,17 @@ enum SponsorType {
   NONE
 }
 
+input SendModeratedDmMessageInput {
+  threadId: ID!
+  body: String!
+}
+
+type Mutation {
+  sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+}
+
 # Main Event Type
 type APS
   @model
@@ -359,7 +370,7 @@ type ProfileAffiliate
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -376,7 +387,7 @@ type ProfileEducation
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -392,7 +403,7 @@ type ProfileInterest
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -407,7 +418,7 @@ type ApsAppUserPhoto
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {

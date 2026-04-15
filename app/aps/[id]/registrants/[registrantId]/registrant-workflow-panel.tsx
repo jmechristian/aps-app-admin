@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import {
   approveRegistrant,
+  regenerateRegistrantTempPassword,
   unapproveRegistrant,
 } from '@/app/actions/registrants';
 import {
@@ -143,6 +144,37 @@ export default function RegistrantWorkflowPanel({
     }
   }
 
+  async function handleRegenerateTempPassword() {
+    setBusy('regenerate-temp-password');
+    setMessage(null);
+    setError(null);
+    try {
+      const jwt = await getJwt();
+      const result = await regenerateRegistrantTempPassword({
+        registrantId,
+        eventId,
+        jwt,
+      });
+      if (!result.ok) {
+        setError(result.message || 'Failed to regenerate temporary password.');
+        return;
+      }
+      if (result.tempPassword) {
+        setTempPassword(result.tempPassword);
+      }
+      setMessage(result.message);
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to regenerate temporary password.'
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function handleRemoveAddOn(requestId: string, addOnId: string) {
     setBusy(`remove-addon-${requestId}`);
     setMessage(null);
@@ -202,11 +234,24 @@ export default function RegistrantWorkflowPanel({
           </div>
         </div>
 
-        {tempPassword ? (
-          <div className='mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4'>
+        <div className='mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
             <p className='text-xs font-semibold text-emerald-800'>
               Temporary password
             </p>
+            <button
+              type='button'
+              onClick={handleRegenerateTempPassword}
+              disabled={busy !== null}
+              className='rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50'
+            >
+              {busy === 'regenerate-temp-password'
+                ? 'Issuing...'
+                : 'Reissue temporary password'}
+            </button>
+          </div>
+
+          {tempPassword ? (
             <div className='mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <code className='rounded-lg bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-900'>
                 {tempPassword}
@@ -223,8 +268,12 @@ export default function RegistrantWorkflowPanel({
                     : 'Copy password'}
               </button>
             </div>
-          </div>
-        ) : null}
+          ) : (
+            <p className='mt-2 text-xs text-emerald-700'>
+              No temporary password is stored yet. Use reissue to generate one.
+            </p>
+          )}
+        </div>
 
         {message ? <p className='mt-4 text-sm text-emerald-700'>{message}</p> : null}
         {error ? <p className='mt-4 text-sm text-rose-700'>{error}</p> : null}

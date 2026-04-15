@@ -24,6 +24,7 @@ import {
   AdminCreateUserCommand,
   AdminDeleteUserCommand,
   AdminGetUserCommand,
+  AdminSetUserPasswordCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
@@ -34,6 +35,12 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { getThinkificRegistrantSummaryByEmail } from '@/app/actions/thinkific';
 
 type CognitoAttr = { Name?: string; Value?: string };
+
+function generateTempPassword() {
+  return `Aps!${Math.random().toString(36).slice(2)}${Math.random()
+    .toString(36)
+    .slice(2)}9Z`;
+}
 
 function buildSesClient(): SESClient {
   const region =
@@ -178,11 +185,7 @@ async function ensureCognitoUserForRegistrantEmail(email: string): Promise<{
   const username = email.trim().toLowerCase();
   const suppressInvite = true;
 
-  const tempPassword = suppressInvite
-    ? `Aps!${Math.random().toString(36).slice(2)}${Math.random()
-        .toString(36)
-        .slice(2)}9Z`
-    : undefined;
+  const tempPassword = suppressInvite ? generateTempPassword() : undefined;
 
   try {
     const created = await client.send(
@@ -260,6 +263,38 @@ async function deleteCognitoUserByEmail(email: string) {
     if (errName === 'UserNotFoundException') return;
     throw e;
   }
+}
+
+async function resetCognitoTempPasswordByEmail(email: string): Promise<string> {
+  const region =
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    process.env.NEXT_PUBLIC_AWS_REGION;
+
+  const userPoolId =
+    process.env.AWS_USER_POOLS_ID || process.env.NEXT_PUBLIC_AWS_USER_POOLS_ID;
+  if (!userPoolId) {
+    throw new Error('Missing Cognito user pool id (AWS_USER_POOLS_ID)');
+  }
+
+  if (!region) {
+    throw new Error('Missing AWS region (AWS_REGION)');
+  }
+
+  const client = new CognitoIdentityProviderClient({ region });
+  const username = email.trim().toLowerCase();
+  const tempPassword = generateTempPassword();
+
+  await client.send(
+    new AdminSetUserPasswordCommand({
+      UserPoolId: userPoolId,
+      Username: username,
+      Password: tempPassword,
+      Permanent: false,
+    }),
+  );
+
+  return tempPassword;
 }
 
 function getTempPasswordKey(): Buffer {
@@ -2492,6 +2527,68 @@ export async function fetchLatestTempCredentialByRegistrantId(
       error,
     );
     return null;
+  }
+}
+
+export async function regenerateRegistrantTempPassword(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<{ ok: boolean; message: string; tempPassword: string | null }> {
+  try {
+    const registrant = await fetchRegistrantById(params.registrantId);
+    if (!registrant) {
+      return {
+        ok: false,
+        message: 'Registrant not found.',
+        tempPassword: null,
+      };
+    }
+
+    let tempPassword: string | null = null;
+
+    try {
+      tempPassword = await resetCognitoTempPasswordByEmail(registrant.email);
+    } catch (error) {
+      const errName =
+        typeof error === 'object' && error && 'name' in error
+          ? String((error as { name?: unknown }).name)
+          : null;
+
+      if (errName !== 'UserNotFoundException') {
+        throw error;
+      }
+
+      const ensured = await ensureCognitoUserForRegistrantEmail(registrant.email);
+      tempPassword =
+        ensured.tempPassword ??
+        (await resetCognitoTempPasswordByEmail(registrant.email));
+    }
+
+    await storeTempPassword({
+      apsID: registrant.apsID,
+      registrantId: registrant.id,
+      email: registrant.email,
+      tempPassword,
+      jwt: params.jwt ?? undefined,
+    });
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+
+    return {
+      ok: true,
+      message:
+        'A new temporary password was issued. User must set a new password at next sign-in.',
+      tempPassword,
+    };
+  } catch (error) {
+    console.error('Failed to regenerate registrant temp password:', error);
+    return {
+      ok: false,
+      message: 'Failed to regenerate temporary password.',
+      tempPassword: null,
+    };
   }
 }
 

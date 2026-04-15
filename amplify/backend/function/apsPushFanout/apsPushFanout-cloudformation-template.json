@@ -158,7 +158,67 @@
                 ]
               ]
             },
-            "APP_USER_PROFILE_GSI_NAME": "byUser"
+            "APP_USER_PROFILE_GSI_NAME": "byUser",
+            "CONTACT_REQUEST_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsContactRequest-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            },
+            "DM_THREAD_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsDmThread-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            },
+            "DM_MESSAGE_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsDmMessage-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            },
+            "DM_PARTICIPANT_STATE_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsDmParticipantState-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
           }
         },
         "Role": {
@@ -434,7 +494,15 @@
                 "arn:aws:dynamodb:*:*:table/ApsAppUserProfile-*",
                 "arn:aws:dynamodb:*:*:table/ApsAppUserProfile-*/index/*",
                 "arn:aws:dynamodb:*:*:table/ApsPushToken-*",
-                "arn:aws:dynamodb:*:*:table/ApsPushToken-*/index/*"
+                "arn:aws:dynamodb:*:*:table/ApsPushToken-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsContactRequest-*",
+                "arn:aws:dynamodb:*:*:table/ApsContactRequest-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsDmThread-*",
+                "arn:aws:dynamodb:*:*:table/ApsDmThread-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsDmMessage-*",
+                "arn:aws:dynamodb:*:*:table/ApsDmMessage-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*",
+                "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*"
               ],
               "Effect": "Allow"
             }
