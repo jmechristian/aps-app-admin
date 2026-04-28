@@ -8,7 +8,10 @@ import {
   fetchCompanyContacts,
   updateCompany,
 } from '@/app/actions/companies';
-import { updateExhibitorBoothNumber } from '@/app/actions/exhibitors';
+import {
+  generateExhibitorPassportQr,
+  updateExhibitorBoothNumber,
+} from '@/app/actions/exhibitors';
 import CompanyLogoField from '../../companies/[companyId]/company-logo-field';
 
 type PageProps = {
@@ -285,6 +288,73 @@ export default async function ExhibitorDetailPage({ params }: PageProps) {
                   </Link>
                 </div>
               ) : null}
+
+              <div className='rounded-2xl border border-slate-200 bg-white p-6'>
+                <div className='flex items-start justify-between gap-3'>
+                  <div>
+                    <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
+                      Passport QR
+                    </p>
+                    <p className='mt-1 text-sm text-slate-700'>
+                      Used by attendees to collect this exhibitor&apos;s passport
+                      stamp.
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      exhibitor.qrCode && exhibitor.passportQrPayload
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
+                    {exhibitor.qrCode && exhibitor.passportQrPayload
+                      ? 'Ready'
+                      : 'Missing'}
+                  </span>
+                </div>
+
+                {exhibitor.qrCode ? (
+                  <div className='mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4'>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={exhibitor.qrCode}
+                      alt={`${exhibitor.company.name} passport QR code`}
+                      width={220}
+                      height={220}
+                      className='mx-auto rounded-lg'
+                    />
+                    <a
+                      href={exhibitor.qrCode}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='mt-3 block text-center text-xs font-semibold text-slate-700 underline-offset-2 hover:underline'
+                    >
+                      Open QR image
+                    </a>
+                  </div>
+                ) : null}
+
+                <form action={generateExhibitorPassportQr} className='mt-4 flex gap-2'>
+                  <input type='hidden' name='exhibitorId' value={exhibitor.id} />
+                  <input type='hidden' name='eventId' value={eventId} />
+                  <button
+                    type='submit'
+                    className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
+                  >
+                    {exhibitor.qrCode && exhibitor.passportQrPayload
+                      ? 'Repair QR'
+                      : 'Generate QR'}
+                  </button>
+                  <button
+                    type='submit'
+                    name='force'
+                    value='true'
+                    className='rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50'
+                  >
+                    Regenerate
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 

@@ -12,6 +12,22 @@
     {
       "cloudFormationParameterName": "pushTokenTableName",
       "environmentVariableName": "PUSH_TOKEN_TABLE_NAME"
+    },
+    {
+      "cloudFormationParameterName": "thinkificApiKey",
+      "environmentVariableName": "THINKIFIC_API_KEY"
+    },
+    {
+      "cloudFormationParameterName": "thinkificSubdomain",
+      "environmentVariableName": "THINKIFIC_SUBDOMAIN"
+    },
+    {
+      "cloudFormationParameterName": "thinkificEnrollmentsUrl",
+      "environmentVariableName": "THINKIFIC_ENROLLMENTS_URL"
+    },
+    {
+      "cloudFormationParameterName": "apcTotalCourses",
+      "environmentVariableName": "APC_TOTAL_COURSES"
     }
   ],
   "permissions": {

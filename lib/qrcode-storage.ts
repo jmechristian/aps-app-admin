@@ -133,7 +133,7 @@ async function generateQRCodeBuffer(text: string): Promise<Buffer> {
  * Upload QR code to S3 and return the public URL
  */
 export async function generateAndUploadQRCodeFromText(
-  registrantId: string,
+  id: string,
   text: string
 ): Promise<string> {
   try {
@@ -144,7 +144,7 @@ export async function generateAndUploadQRCodeFromText(
     const qrCodeBuffer = await generateQRCodeBuffer(text);
 
     // Upload to S3
-    const key = `qrcodes/${registrantId}.png`;
+    const key = `qrcodes/${id}.png`;
 
     // Try to upload with public-read ACL first
     let command = new PutObjectCommand({
@@ -211,4 +211,14 @@ export async function generateAndUploadQRCode(
 ): Promise<string> {
   const vCard = generateVCard(data);
   return generateAndUploadQRCodeFromText(registrantId, vCard);
+}
+
+export async function generateAndUploadExhibitorPassportQRCode(
+  exhibitorId: string,
+  payload: string
+): Promise<string> {
+  return generateAndUploadQRCodeFromText(
+    `exhibitor-passport/${exhibitorId}`,
+    payload
+  );
 }

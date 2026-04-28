@@ -96,6 +96,8 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -129,6 +131,7 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -251,6 +254,118 @@ export const listApsAppUserNotes = /* GraphQL */ `query ListApsAppUserNotes(
   APITypes.ListApsAppUserNotesQueryVariables,
   APITypes.ListApsAppUserNotesQuery
 >;
+export const getApsAppUserPassportStamp = /* GraphQL */ `query GetApsAppUserPassportStamp($id: ID!) {
+  getApsAppUserPassportStamp(id: $id) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      thinkificId
+      apcProgress
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      qrCode
+      passportQrPayload
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    stampKey
+    scannedAt
+    createdAt
+    updatedAt
+    aPSPassportStampsId
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApsAppUserPassportStampQueryVariables,
+  APITypes.GetApsAppUserPassportStampQuery
+>;
+export const listApsAppUserPassportStamps = /* GraphQL */ `query ListApsAppUserPassportStamps(
+  $filter: ModelApsAppUserPassportStampFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApsAppUserPassportStamps(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      userProfileId
+      exhibitorId
+      eventId
+      stampKey
+      scannedAt
+      createdAt
+      updatedAt
+      aPSPassportStampsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApsAppUserPassportStampsQueryVariables,
+  APITypes.ListApsAppUserPassportStampsQuery
+>;
 export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUserFavoriteExhibitor($id: ID!) {
   getApsAppUserFavoriteExhibitor(id: $id) {
     id
@@ -293,6 +408,8 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -1446,6 +1563,152 @@ export const apsAppUserNotesByCompanyId = /* GraphQL */ `query ApsAppUserNotesBy
 ` as GeneratedQuery<
   APITypes.ApsAppUserNotesByCompanyIdQueryVariables,
   APITypes.ApsAppUserNotesByCompanyIdQuery
+>;
+export const apsAppUserPassportStampsByUserProfileIdAndCreatedAt = /* GraphQL */ `query ApsAppUserPassportStampsByUserProfileIdAndCreatedAt(
+  $userProfileId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppUserPassportStampFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppUserPassportStampsByUserProfileIdAndCreatedAt(
+    userProfileId: $userProfileId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      userProfileId
+      exhibitorId
+      eventId
+      stampKey
+      scannedAt
+      createdAt
+      updatedAt
+      aPSPassportStampsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppUserPassportStampsByUserProfileIdAndCreatedAtQueryVariables,
+  APITypes.ApsAppUserPassportStampsByUserProfileIdAndCreatedAtQuery
+>;
+export const apsAppUserPassportStampsByExhibitorIdAndCreatedAt = /* GraphQL */ `query ApsAppUserPassportStampsByExhibitorIdAndCreatedAt(
+  $exhibitorId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppUserPassportStampFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppUserPassportStampsByExhibitorIdAndCreatedAt(
+    exhibitorId: $exhibitorId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      userProfileId
+      exhibitorId
+      eventId
+      stampKey
+      scannedAt
+      createdAt
+      updatedAt
+      aPSPassportStampsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppUserPassportStampsByExhibitorIdAndCreatedAtQueryVariables,
+  APITypes.ApsAppUserPassportStampsByExhibitorIdAndCreatedAtQuery
+>;
+export const apsAppUserPassportStampsByEventIdAndCreatedAt = /* GraphQL */ `query ApsAppUserPassportStampsByEventIdAndCreatedAt(
+  $eventId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppUserPassportStampFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppUserPassportStampsByEventIdAndCreatedAt(
+    eventId: $eventId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      userProfileId
+      exhibitorId
+      eventId
+      stampKey
+      scannedAt
+      createdAt
+      updatedAt
+      aPSPassportStampsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppUserPassportStampsByEventIdAndCreatedAtQueryVariables,
+  APITypes.ApsAppUserPassportStampsByEventIdAndCreatedAtQuery
+>;
+export const apsAppUserPassportStampsByStampKey = /* GraphQL */ `query ApsAppUserPassportStampsByStampKey(
+  $stampKey: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppUserPassportStampFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppUserPassportStampsByStampKey(
+    stampKey: $stampKey
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      userProfileId
+      exhibitorId
+      eventId
+      stampKey
+      scannedAt
+      createdAt
+      updatedAt
+      aPSPassportStampsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppUserPassportStampsByStampKeyQueryVariables,
+  APITypes.ApsAppUserPassportStampsByStampKeyQuery
 >;
 export const apsAppUserFavoriteExhibitorsByUserProfileIdAndCreatedAt = /* GraphQL */ `query ApsAppUserFavoriteExhibitorsByUserProfileIdAndCreatedAt(
   $userProfileId: ID!
@@ -2604,6 +2867,10 @@ export const getAPS = /* GraphQL */ `query GetAPS($id: ID!) {
       nextToken
       __typename
     }
+    passportStamps {
+      nextToken
+      __typename
+    }
     addOns {
       nextToken
       __typename
@@ -2919,6 +3186,7 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
     billingAddressCity
     billingAddressState
     billingAddressZip
+    billingAddressCountry
     sameAsAttendee
     speakerTopic
     learningObjectives
@@ -3020,6 +3288,7 @@ export const listApsRegistrants = /* GraphQL */ `query ListApsRegistrants(
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3099,6 +3368,7 @@ export const apsRegistrantsByApsID = /* GraphQL */ `query ApsRegistrantsByApsID(
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3178,6 +3448,7 @@ export const apsRegistrantsByEmail = /* GraphQL */ `query ApsRegistrantsByEmail(
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3257,6 +3528,7 @@ export const apsRegistrantsByCompanyId = /* GraphQL */ `query ApsRegistrantsByCo
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3326,6 +3598,7 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3834,6 +4107,10 @@ export const getApsAppUserProfile = /* GraphQL */ `query GetApsAppUserProfile($i
       __typename
     }
     favoritedByProfiles {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -4906,6 +5183,8 @@ export const getApsSponsor = /* GraphQL */ `query GetApsSponsor($id: ID!) {
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5069,6 +5348,8 @@ export const getAPSCompany = /* GraphQL */ `query GetAPSCompany($id: ID!) {
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5301,6 +5582,8 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
     video
     videoCaption
     boothNumber
+    qrCode
+    passportQrPayload
     visits
     views
     likes
@@ -5309,6 +5592,10 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
       __typename
     }
     favoriteByUsers {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -5340,6 +5627,8 @@ export const listApsAppExhibitorProfiles = /* GraphQL */ `query ListApsAppExhibi
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5378,6 +5667,8 @@ export const apsAppExhibitorProfilesByCompanyId = /* GraphQL */ `query ApsAppExh
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5416,6 +5707,8 @@ export const apsAppExhibitorProfilesBySponsorId = /* GraphQL */ `query ApsAppExh
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5454,6 +5747,8 @@ export const apsAppExhibitorProfilesByEventId = /* GraphQL */ `query ApsAppExhib
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5470,6 +5765,46 @@ export const apsAppExhibitorProfilesByEventId = /* GraphQL */ `query ApsAppExhib
   APITypes.ApsAppExhibitorProfilesByEventIdQueryVariables,
   APITypes.ApsAppExhibitorProfilesByEventIdQuery
 >;
+export const apsAppExhibitorProfilesByPassportQrPayload = /* GraphQL */ `query ApsAppExhibitorProfilesByPassportQrPayload(
+  $passportQrPayload: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppExhibitorProfileFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppExhibitorProfilesByPassportQrPayload(
+    passportQrPayload: $passportQrPayload
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      qrCode
+      passportQrPayload
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppExhibitorProfilesByPassportQrPayloadQueryVariables,
+  APITypes.ApsAppExhibitorProfilesByPassportQrPayloadQuery
+>;
 export const getApsAppExhibitorPromotion = /* GraphQL */ `query GetApsAppExhibitorPromotion($id: ID!) {
   getApsAppExhibitorPromotion(id: $id) {
     id
@@ -5482,6 +5817,8 @@ export const getApsAppExhibitorPromotion = /* GraphQL */ `query GetApsAppExhibit
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5630,6 +5967,8 @@ export const getApsAppExhibitorDeal = /* GraphQL */ `query GetApsAppExhibitorDea
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5830,6 +6169,8 @@ export const getApsAppExhibitorPhoto = /* GraphQL */ `query GetApsAppExhibitorPh
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5982,6 +6323,8 @@ export const getApsAppExhibitorHandout = /* GraphQL */ `query GetApsAppExhibitor
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6261,6 +6604,7 @@ export const getRegistrantAddOnRequest = /* GraphQL */ `query GetRegistrantAddOn
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -6496,6 +6840,7 @@ export const getApsSeatingChartRegistrant = /* GraphQL */ `query GetApsSeatingCh
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives

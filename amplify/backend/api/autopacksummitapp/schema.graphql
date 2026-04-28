@@ -34,8 +34,25 @@ input SendModeratedDmMessageInput {
   body: String!
 }
 
+input SyncThinkificProgressInput {
+  email: String
+}
+
+type ThinkificProgressSyncResult {
+  thinkificUserId: Int
+  apcProgramProgress: Float
+  updated: Boolean!
+  syncedAt: AWSDateTime!
+  message: String
+}
+
 type Mutation {
   sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  syncMyThinkificProgress(
+    input: SyncThinkificProgressInput
+  ): ThinkificProgressSyncResult
     @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
 }
@@ -77,6 +94,7 @@ type APS
   favoriteSponsors: [ApsAppUserFavoriteSponsor] @hasMany(indexName: "byEvent")
   favoriteSessions: [ApsAppUserFavoriteSession] @hasMany(indexName: "byEvent")
   favoriteContacts: [ApsAppUserFavoriteContact] @hasMany(indexName: "byEvent")
+  passportStamps: [ApsAppUserPassportStamp] @hasMany(indexName: "byEvent")
   addOns: [ApsAddOn] @hasMany(indexName: "byEvent")
 }
 
@@ -164,6 +182,7 @@ type ApsRegistrant
   billingAddressCity: String
   billingAddressState: String
   billingAddressZip: String
+  billingAddressCountry: String
   sameAsAttendee: Boolean
   speakerTopic: String
   learningObjectives: String
@@ -359,6 +378,8 @@ type ApsAppUserProfile
     @hasMany(indexName: "byUserProfile", fields: ["id"])
   favoritedByProfiles: [ApsAppUserFavoriteContact]
     @hasMany(indexName: "byContactProfile", fields: ["id"])
+  passportStamps: [ApsAppUserPassportStamp]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
 
   # Notes about this profile (contact notes)
   notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
@@ -370,7 +391,11 @@ type ProfileAffiliate
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -387,7 +412,11 @@ type ProfileEducation
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -403,7 +432,11 @@ type ProfileInterest
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read, create, update, delete] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -594,12 +627,40 @@ type ApsAppExhibitorProfile
   video: String
   videoCaption: String
   boothNumber: String
+  qrCode: String
+  passportQrPayload: String @index(name: "byPassportQrPayload")
   visits: Int
   views: Int
   likes: Int
   notes: [ApsAppUserNote] @hasMany(indexName: "byExhibitor", fields: ["id"])
   favoriteByUsers: [ApsAppUserFavoriteExhibitor]
     @hasMany(indexName: "byExhibitor", fields: ["id"])
+  passportStamps: [ApsAppUserPassportStamp]
+    @hasMany(indexName: "byExhibitor", fields: ["id"])
+}
+
+# Passport Challenge Stamps
+type ApsAppUserPassportStamp
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  exhibitorId: ID! @index(name: "byExhibitor", sortKeyFields: ["createdAt"])
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  stampKey: String! @index(name: "byStampKey")
+  scannedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # Favorites: Exhibitors
@@ -723,7 +784,11 @@ type ApsAppExhibitorPromotion
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -741,7 +806,11 @@ type ApsAppExhibitorDeal
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -761,7 +830,11 @@ type ApsAppExhibitorPhoto
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -780,7 +853,11 @@ type ApsAppExhibitorHandout
   @model
   @auth(
     rules: [
-      { allow: public, provider: apiKey, operations: [read] }
+      {
+        allow: public
+        provider: apiKey
+        operations: [read, create, update, delete]
+      }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {

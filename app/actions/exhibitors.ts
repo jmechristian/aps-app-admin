@@ -1,8 +1,10 @@
 'use server';
 
+import { createHmac, randomBytes } from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import { ensureCompanyAttachedToEvent } from '@/app/actions/companies';
+import { generateAndUploadExhibitorPassportQRCode } from '@/lib/qrcode-storage';
 
 const EXHIBITORS_BY_EVENT = /* GraphQL */ `
   query ApsAppExhibitorProfilesByEventId(
@@ -24,6 +26,8 @@ const EXHIBITORS_BY_EVENT = /* GraphQL */ `
         companyId
         eventId
         sponsorId
+        qrCode
+        passportQrPayload
       }
       nextToken
     }
@@ -38,6 +42,8 @@ const CREATE_EXHIBITOR_PROFILE = /* GraphQL */ `
       id
       eventId
       companyId
+      qrCode
+      passportQrPayload
     }
   }
 `;
@@ -52,14 +58,129 @@ const UPDATE_EXHIBITOR_PROFILE = /* GraphQL */ `
       companyId
       boothNumber
       sponsorId
+      qrCode
+      passportQrPayload
     }
   }
 `;
 
+const GET_EXHIBITOR_PASSPORT_QR = /* GraphQL */ `
+  query GetApsAppExhibitorProfilePassportQr($id: ID!) {
+    getApsAppExhibitorProfile(id: $id) {
+      id
+      eventId
+      qrCode
+      passportQrPayload
+    }
+  }
+`;
+
+type ExhibitorPassportQrFields = {
+  id: string;
+  eventId: string;
+  qrCode?: string | null;
+  passportQrPayload?: string | null;
+};
+
+function getPassportQrSecret() {
+  return (
+    process.env.APS_PASSPORT_QR_SECRET ||
+    process.env.AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    null
+  );
+}
+
+function createPassportQrPayload(eventId: string, exhibitorId: string) {
+  const nonce = randomBytes(24).toString('base64url');
+  const secret = getPassportQrSecret();
+  const signature = secret
+    ? createHmac('sha256', secret)
+        .update(`${eventId}:${exhibitorId}:${nonce}`)
+        .digest('base64url')
+    : randomBytes(32).toString('base64url');
+
+  return `aps-passport:v1:${eventId}:${exhibitorId}:${nonce}:${signature}`;
+}
+
+async function fetchExhibitorPassportQrFields(
+  exhibitorId: string
+): Promise<ExhibitorPassportQrFields | null> {
+  const data = await requestGraphQL<{
+    getApsAppExhibitorProfile?: ExhibitorPassportQrFields | null;
+  }>(GET_EXHIBITOR_PASSPORT_QR, { id: exhibitorId });
+
+  return data.getApsAppExhibitorProfile ?? null;
+}
+
+export async function ensureExhibitorPassportQr(input: {
+  exhibitorId: string;
+  eventId?: string | null;
+  force?: boolean;
+}) {
+  const existing = await fetchExhibitorPassportQrFields(input.exhibitorId);
+  if (!existing?.id) {
+    throw new Error('Exhibitor profile not found.');
+  }
+
+  const eventId = input.eventId ?? existing.eventId;
+  if (!eventId) {
+    throw new Error('Missing event id for exhibitor QR generation.');
+  }
+
+  if (!input.force && existing.qrCode && existing.passportQrPayload) {
+    return existing;
+  }
+
+  const passportQrPayload = createPassportQrPayload(eventId, existing.id);
+  const qrCode = await generateAndUploadExhibitorPassportQRCode(
+    existing.id,
+    passportQrPayload
+  );
+
+  const data = await requestGraphQL<{
+    updateApsAppExhibitorProfile?: ExhibitorPassportQrFields | null;
+  }>(UPDATE_EXHIBITOR_PROFILE, {
+    input: {
+      id: existing.id,
+      qrCode,
+      passportQrPayload,
+    },
+  });
+
+  if (!data.updateApsAppExhibitorProfile?.id) {
+    throw new Error('Failed to update exhibitor QR code.');
+  }
+
+  revalidatePath(`/aps/${eventId}/exhibitors`);
+  revalidatePath(`/aps/${eventId}/exhibitors/${existing.id}`);
+
+  return data.updateApsAppExhibitorProfile;
+}
+
+export async function generateExhibitorPassportQr(formData: FormData) {
+  const exhibitorId = formData.get('exhibitorId')?.toString();
+  const eventId = formData.get('eventId')?.toString();
+  const force = formData.get('force') === 'true';
+
+  if (!exhibitorId) throw new Error('Missing exhibitor id');
+
+  await ensureExhibitorPassportQr({
+    exhibitorId,
+    eventId,
+    force,
+  });
+}
+
 async function findExhibitorProfileForEventAndCompany(
   eventId: string,
   companyId: string
-): Promise<{ id: string; sponsorId?: string | null } | null> {
+): Promise<{
+  id: string;
+  sponsorId?: string | null;
+  qrCode?: string | null;
+  passportQrPayload?: string | null;
+} | null> {
   let nextToken: string | null | undefined = null;
 
   type ExhibitorByEventPage = {
@@ -68,6 +189,8 @@ async function findExhibitorProfileForEventAndCompany(
         id?: string | null;
         companyId?: string | null;
         sponsorId?: string | null;
+        qrCode?: string | null;
+        passportQrPayload?: string | null;
       } | null> | null;
       nextToken?: string | null;
     } | null;
@@ -87,7 +210,12 @@ async function findExhibitorProfileForEventAndCompany(
     const items = page.apsAppExhibitorProfilesByEventId?.items ?? [];
     for (const row of items) {
       if (row?.id && row.companyId === companyId) {
-        return { id: row.id, sponsorId: row.sponsorId };
+        return {
+          id: row.id,
+          sponsorId: row.sponsorId,
+          qrCode: row.qrCode,
+          passportQrPayload: row.passportQrPayload,
+        };
       }
     }
     nextToken = page.apsAppExhibitorProfilesByEventId?.nextToken ?? null;
@@ -116,14 +244,26 @@ export async function ensureExhibitorProfileForBoothSponsor(input: {
     await requestGraphQL(UPDATE_EXHIBITOR_PROFILE, {
       input: { id: existing.id, sponsorId: input.sponsorId },
     });
+    await ensureExhibitorPassportQr({
+      exhibitorId: existing.id,
+      eventId: input.eventId,
+    });
   } else {
-    await requestGraphQL(CREATE_EXHIBITOR_PROFILE, {
+    const created = await requestGraphQL<{
+      createApsAppExhibitorProfile?: { id: string } | null;
+    }>(CREATE_EXHIBITOR_PROFILE, {
       input: {
         eventId: input.eventId,
         companyId: input.companyId,
         sponsorId: input.sponsorId,
       },
     });
+    if (created.createApsAppExhibitorProfile?.id) {
+      await ensureExhibitorPassportQr({
+        exhibitorId: created.createApsAppExhibitorProfile.id,
+        eventId: input.eventId,
+      });
+    }
   }
 
   revalidatePath(`/aps/${input.eventId}/exhibitors`);
@@ -167,6 +307,16 @@ export async function createExhibitorProfile(input: {
   if (!data.createApsAppExhibitorProfile?.id) {
     throw new Error('Failed to create exhibitor profile');
   }
+
+  await ensureExhibitorPassportQr({
+    exhibitorId: data.createApsAppExhibitorProfile.id,
+    eventId: input.eventId,
+  });
+
+  revalidatePath(`/aps/${input.eventId}/exhibitors`);
+  revalidatePath(
+    `/aps/${input.eventId}/exhibitors/${data.createApsAppExhibitorProfile.id}`
+  );
 
   return data.createApsAppExhibitorProfile;
 }

@@ -40,6 +40,23 @@
     "pushTokenTableName": {
       "Type": "String",
       "Default": "ApsPushToken-lkbfurpd5bhvtewpiqr5xhye6u-dev"
+    },
+    "thinkificApiKey": {
+      "Type": "String",
+      "NoEcho": true,
+      "Default": ""
+    },
+    "thinkificSubdomain": {
+      "Type": "String",
+      "Default": ""
+    },
+    "thinkificEnrollmentsUrl": {
+      "Type": "String",
+      "Default": "https://api.thinkific.com/api/public/v1/enrollments"
+    },
+    "apcTotalCourses": {
+      "Type": "String",
+      "Default": "10"
     }
   },
   "Conditions": {
@@ -112,6 +129,18 @@
             },
             "PUSH_TOKEN_TABLE_NAME": {
               "Ref": "pushTokenTableName"
+            },
+            "THINKIFIC_API_KEY": {
+              "Ref": "thinkificApiKey"
+            },
+            "THINKIFIC_SUBDOMAIN": {
+              "Ref": "thinkificSubdomain"
+            },
+            "THINKIFIC_ENROLLMENTS_URL": {
+              "Ref": "thinkificEnrollmentsUrl"
+            },
+            "APC_TOTAL_COURSES": {
+              "Ref": "apcTotalCourses"
             },
             "APP_USER_TABLE_NAME": {
               "Fn::Join": [

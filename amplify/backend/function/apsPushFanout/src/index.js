@@ -41,9 +41,29 @@ const DM_PARTICIPANT_STATE_TABLE_NAME = process.env.DM_PARTICIPANT_STATE_TABLE_N
 
 const APPSYNC_ENDPOINT = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIENDPOINTOUTPUT;
 const APPSYNC_API_KEY = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIKEYOUTPUT;
+const THINKIFIC_ENROLLMENTS_URL =
+  process.env.THINKIFIC_ENROLLMENTS_URL ||
+  'https://api.thinkific.com/api/public/v1/enrollments';
+const THINKIFIC_API_KEY = process.env.THINKIFIC_API_KEY || '';
+const THINKIFIC_SUBDOMAIN = process.env.THINKIFIC_SUBDOMAIN || '';
+const APC_TOTAL_COURSES = Number(process.env.APC_TOTAL_COURSES || '10') || 10;
+
+const APC_PRIORITY_PROGRESS_COURSE_ID = 699298;
+const APC_COMPLETION_COURSE_IDS = new Set([591574]);
+const APC_COMPLETION_COURSE_NAME_PATTERNS = ['APC FINAL ASSESSMENT'];
 
 function safeSlice(str, n) {
   return String(str ?? '').slice(0, n);
+}
+
+function normalizePercentageToPercent(value) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return 0;
+  return numeric <= 1 ? numeric * 100 : numeric;
+}
+
+function clampProgress(value) {
+  return Math.min(100, Math.max(0, normalizePercentageToPercent(value)));
 }
 
 function uniqueStrings(values) {
@@ -276,21 +296,263 @@ const GET_PROFILE_ID_BY_USERID = /* GraphQL */ `
   }
 `;
 
+const GET_CURRENT_APP_USER = /* GraphQL */ `
+  query GetCurrentAppUser($id: ID!) {
+    getApsAppUser(id: $id) {
+      id
+      registrant {
+        id
+        email
+      }
+      profile {
+        id
+        email
+        thinkificId
+        apcProgress
+      }
+    }
+  }
+`;
+
+const UPDATE_PROFILE_PROGRESS = /* GraphQL */ `
+  mutation UpdateProfileProgress($input: UpdateApsAppUserProfileInput!) {
+    updateApsAppUserProfile(input: $input) {
+      id
+      thinkificId
+      apcProgress
+      updatedAt
+    }
+  }
+`;
+
+function isApcCompletionEnrollment(enrollment) {
+  const normalizedCourseName = String(enrollment?.course_name || '').toUpperCase();
+  const matchesCourseId = APC_COMPLETION_COURSE_IDS.has(Number(enrollment?.course_id));
+  const matchesCourseNamePattern = APC_COMPLETION_COURSE_NAME_PATTERNS.some((pattern) =>
+    normalizedCourseName.includes(pattern)
+  );
+  return matchesCourseId || matchesCourseNamePattern;
+}
+
+async function readErrorBody(res) {
+  try {
+    const text = await res.text();
+    return text || res.statusText || 'Unknown error';
+  } catch {
+    return res.statusText || 'Unknown error';
+  }
+}
+
+async function fetchThinkificWithAuth(url, mode = 'auto') {
+  const primaryHeaders = {
+    'X-Auth-API-Key': THINKIFIC_API_KEY,
+    'X-Auth-Subdomain': THINKIFIC_SUBDOMAIN,
+  };
+  const fallbackHeaders = {
+    Authorization: `Bearer ${THINKIFIC_API_KEY}`,
+    'X-Auth-Subdomain': THINKIFIC_SUBDOMAIN,
+  };
+
+  if (mode === 'header') {
+    const res = await fetch(url, { headers: primaryHeaders });
+    return { res, mode: 'header' };
+  }
+  if (mode === 'bearer') {
+    const res = await fetch(url, { headers: fallbackHeaders });
+    return { res, mode: 'bearer' };
+  }
+
+  const firstTry = await fetch(url, { headers: primaryHeaders });
+  if (firstTry.status !== 401) return { res: firstTry, mode: 'header' };
+
+  const secondTry = await fetch(url, { headers: fallbackHeaders });
+  return { res: secondTry, mode: 'bearer' };
+}
+
+async function getThinkificEnrollmentsByEmail(email) {
+  if (!email) return [];
+  if (!THINKIFIC_API_KEY || !THINKIFIC_SUBDOMAIN) {
+    throw new Error('Thinkific credentials are missing in environment variables');
+  }
+
+  const buildUrl = (page) => {
+    const url = new URL(THINKIFIC_ENROLLMENTS_URL);
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('limit', '500');
+    url.searchParams.set('query[email]', email);
+    return url.toString();
+  };
+
+  const { res, mode } = await fetchThinkificWithAuth(buildUrl(1), 'auto');
+  if (!res.ok) {
+    const detail = await readErrorBody(res);
+    throw new Error(`Thinkific enrollments fetch failed (${res.status}): ${detail}`);
+  }
+
+  const firstPageData = await res.json();
+  const allItems = [...(firstPageData.items || [])];
+  let nextPage = firstPageData?.meta?.pagination?.next_page || null;
+  while (nextPage) {
+    const { res: pageRes } = await fetchThinkificWithAuth(buildUrl(nextPage), mode);
+    if (!pageRes.ok) {
+      const detail = await readErrorBody(pageRes);
+      throw new Error(`Thinkific enrollments page fetch failed (${pageRes.status}): ${detail}`);
+    }
+    const pageData = await pageRes.json();
+    allItems.push(...(pageData.items || []));
+    nextPage = pageData?.meta?.pagination?.next_page || null;
+  }
+  return allItems;
+}
+
+async function getThinkificRegistrantSummaryByEmail(email) {
+  if (!email) return { thinkificUserId: null, apcProgramProgress: 0 };
+  const enrollments = await getThinkificEnrollmentsByEmail(email);
+
+  const priorityProgressEnrollment = enrollments.find(
+    (enrollment) => Number(enrollment?.course_id) === APC_PRIORITY_PROGRESS_COURSE_ID
+  );
+  const priorityProgressPercent = priorityProgressEnrollment
+    ? clampProgress(priorityProgressEnrollment.percentage_completed)
+    : null;
+
+  const apcEnrollments = enrollments.filter((enrollment) =>
+    String(enrollment?.course_name || '')
+      .toUpperCase()
+      .includes('APC')
+  );
+  const completedFinalAssessment = apcEnrollments.some(
+    (enrollment) =>
+      isApcCompletionEnrollment(enrollment) &&
+      clampProgress(enrollment.percentage_completed) >= 100
+  );
+
+  const bestProgressByApcCourse = new Map();
+  for (const enrollment of apcEnrollments) {
+    const courseId = Number(enrollment?.course_id);
+    if (!Number.isFinite(courseId)) continue;
+    const courseProgress = clampProgress(enrollment.percentage_completed);
+    const existing = bestProgressByApcCourse.get(courseId) || 0;
+    if (courseProgress > existing) bestProgressByApcCourse.set(courseId, courseProgress);
+  }
+
+  const apcProgressTotal = Array.from(bestProgressByApcCourse.values()).reduce(
+    (sum, value) => sum + value,
+    0
+  );
+  const apcProgramProgress = Math.min(100, apcProgressTotal / APC_TOTAL_COURSES);
+  const thinkificUserId =
+    enrollments.find((enrollment) => Number.isFinite(Number(enrollment?.user_id)))?.user_id ??
+    null;
+
+  return {
+    thinkificUserId,
+    apcProgramProgress:
+      priorityProgressPercent != null
+        ? priorityProgressPercent
+        : completedFinalAssessment
+          ? 100
+          : apcProgramProgress,
+  };
+}
+
+async function handleSyncMyThinkificProgress(event) {
+  const userSub = getIdentitySub(event);
+  if (!userSub) throw new Error('Unauthorized');
+
+  const now = new Date().toISOString();
+  const inputEmail = String(event?.arguments?.input?.email || '')
+    .trim()
+    .toLowerCase();
+  const appUserData = await appsyncRequest(GET_CURRENT_APP_USER, { id: userSub });
+  const appUser = appUserData?.getApsAppUser;
+  const profile = appUser?.profile;
+
+  if (!profile?.id) {
+    return {
+      thinkificUserId: null,
+      apcProgramProgress: 0,
+      updated: false,
+      syncedAt: now,
+      message: 'Profile not found for current user',
+    };
+  }
+
+  const registrantEmail = String(appUser?.registrant?.email || '')
+    .trim()
+    .toLowerCase();
+  const profileEmail = String(profile?.email || '')
+    .trim()
+    .toLowerCase();
+  const email = inputEmail || registrantEmail || profileEmail;
+  if (!email) {
+    return {
+      thinkificUserId: profile.thinkificId ?? null,
+      apcProgramProgress: profile.apcProgress ?? 0,
+      updated: false,
+      syncedAt: now,
+      message: 'No email available to sync Thinkific progress',
+    };
+  }
+
+  const summary = await getThinkificRegistrantSummaryByEmail(email);
+  const nextThinkificId =
+    summary.thinkificUserId == null ? null : Number(summary.thinkificUserId);
+  const nextApcProgress = Number(summary.apcProgramProgress.toFixed(1));
+  const currentThinkificId = profile.thinkificId ?? null;
+  const currentApcProgress = profile.apcProgress ?? null;
+  const changed =
+    currentThinkificId !== nextThinkificId || currentApcProgress !== nextApcProgress;
+
+  if (changed) {
+    await appsyncRequest(UPDATE_PROFILE_PROGRESS, {
+      input: {
+        id: profile.id,
+        thinkificId: nextThinkificId,
+        apcProgress: nextApcProgress,
+      },
+    });
+  }
+
+  return {
+    thinkificUserId: nextThinkificId,
+    apcProgramProgress: nextApcProgress,
+    updated: changed,
+    syncedAt: now,
+    message: changed ? 'Profile progress synced' : 'Profile progress unchanged',
+  };
+}
+
 async function sendExpoPush(messages) {
   if (!messages.length) return;
 
-  const headers = { 'content-type': 'application/json' };
-  if (EXPO_ACCESS_TOKEN) headers.Authorization = `Bearer ${EXPO_ACCESS_TOKEN}`;
+  const authHeaders = { 'content-type': 'application/json' };
+  if (EXPO_ACCESS_TOKEN) authHeaders.Authorization = `Bearer ${EXPO_ACCESS_TOKEN}`;
+  const noAuthHeaders = { 'content-type': 'application/json' };
 
   // Expo recommends <= 100 messages per request.
   const chunkSize = 100;
   for (let i = 0; i < messages.length; i += chunkSize) {
     const chunk = messages.slice(i, i + chunkSize);
-    const res = await fetch(EXPO_PUSH_URL, {
+    let res = await fetch(EXPO_PUSH_URL, {
       method: 'POST',
-      headers,
+      headers: authHeaders,
       body: JSON.stringify(chunk),
     });
+
+    // Account migration safety: if a stale Expo access token is configured, retry without auth.
+    if ((res.status === 401 || res.status === 403) && EXPO_ACCESS_TOKEN) {
+      const errText = await res.text().catch(() => '');
+      console.log('expo-push auth failed, retrying without access token', {
+        status: res.status,
+        body: safeSlice(errText, 280),
+      });
+      res = await fetch(EXPO_PUSH_URL, {
+        method: 'POST',
+        headers: noAuthHeaders,
+        body: JSON.stringify(chunk),
+      });
+    }
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
@@ -312,10 +574,14 @@ async function listTokensByUser(userId) {
       KeyConditionExpression: '#userId = :userId',
       ExpressionAttributeNames: { '#userId': 'userId' },
       ExpressionAttributeValues: { ':userId': userId },
+      // Keep delivery path lean: most recent token records first.
+      // Older tokens are commonly stale after reinstalls/device switches.
+      ScanIndexForward: false,
+      Limit: 5,
     })
   );
 
-  return (out.Items || []).map((x) => x?.token).filter(Boolean);
+  return Array.from(new Set((out.Items || []).map((x) => x?.token).filter(Boolean)));
 }
 
 async function listAllTokens() {
@@ -660,6 +926,34 @@ async function handleSendModeratedDmMessage(event) {
     scores: moderation.scores,
   });
 
+  // Fast-path DM push (near-instant): send immediately from mutation path
+  // instead of waiting for DynamoDB stream fanout latency.
+  try {
+    const recipientTokens = await listTokensByUser(recipientUserId);
+    const dmPushMessages = recipientTokens.map((token) => ({
+      to: token,
+      title: 'New message',
+      body: safeSlice(messageItem.body, 120) || 'You have a new message',
+      priority: 'high',
+      badge: 1,
+      data: {
+        type: 'dm',
+        eventId: String(thread.eventId),
+        threadId,
+        senderUserId,
+      },
+    }));
+    await sendExpoPush(dmPushMessages);
+  } catch (pushError) {
+    // Best-effort: never fail message send due to push issues.
+    console.log('dm push send failed (non-blocking)', {
+      threadId: safeSlice(threadId, 64),
+      senderTail: senderUserId.slice(-8),
+      recipientTail: recipientUserId.slice(-8),
+      error: pushError?.message || String(pushError),
+    });
+  }
+
   return messageItem;
 }
 
@@ -681,27 +975,8 @@ async function handleStreamFanout(event) {
     const announcementTitle = getString(img.title);
     const deepLink = getString(img.deepLink);
 
-    // Heuristic: DM messages have threadId + senderUserId
-    if (r.eventName === 'INSERT' && threadId && getString(img.senderUserId)) {
-      const owners = getStringList(img.owners);
-      const senderUserId = getString(img.senderUserId);
-      const recipients = owners.filter((x) => x && x !== senderUserId);
-
-      for (const recipientUserId of recipients) {
-        const tokens = await listTokensByUser(recipientUserId);
-        for (const token of tokens) {
-          expoMessages.push({
-            to: token,
-            title: 'New message',
-            body:
-              safeSlice(getString(img.body), 120) || 'You have a new message',
-            data: { type: 'dm', eventId: eventId || null, threadId },
-          });
-        }
-      }
-
-      continue;
-    }
+    // DM pushes are sent inline in handleSendModeratedDmMessage for lower latency.
+    // Keep stream fanout for requests + announcements only.
 
     // Contact requests: have status + owners + requestedByUserId.
     // We push to the *other* owner(s) when the request is created in PENDING.
@@ -741,6 +1016,7 @@ async function handleStreamFanout(event) {
             to: token,
             title: 'New request',
             body: 'You have a new contact request',
+            badge: 1,
             data: { type: 'request', eventId, requestId },
           });
         }
@@ -822,6 +1098,7 @@ async function handleStreamFanout(event) {
           to: token,
           title: 'Request accepted',
           body: 'Your contact request was accepted',
+          badge: 1,
           data: { type: 'requestAccepted', eventId: eventId || null, otherUserId: acceptedBy },
         });
       }
@@ -836,6 +1113,7 @@ async function handleStreamFanout(event) {
           to: token,
           title: announcementTitle || 'New announcement',
           body: safeSlice(announcementBody, 180),
+          badge: 1,
           data: { type: 'announcement', deepLink: deepLink || null },
         });
       }
@@ -851,6 +1129,10 @@ async function handleStreamFanout(event) {
 exports.handler = async (event) => {
   const isStream = Array.isArray(event?.Records);
   if (isStream) return handleStreamFanout(event);
+
+  if (event?.typeName === 'Mutation' && event?.fieldName === 'syncMyThinkificProgress') {
+    return handleSyncMyThinkificProgress(event);
+  }
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'sendModeratedDmMessage') {
     return handleSendModeratedDmMessage(event);

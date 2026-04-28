@@ -76,6 +76,14 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_apsPushFanout_apcTotalCourses": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
     "AMPLIFY_function_apsPushFanout_deploymentBucketName": {
       "usedBy": [
         {
@@ -109,6 +117,30 @@
       ]
     },
     "AMPLIFY_function_apsPushFanout_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_thinkificApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_thinkificEnrollmentsUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_thinkificSubdomain": {
       "usedBy": [
         {
           "category": "function",

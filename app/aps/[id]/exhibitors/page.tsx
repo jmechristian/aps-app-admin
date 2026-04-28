@@ -50,6 +50,7 @@ export default async function ExhibitorsPage({ params }: PageProps) {
                 <tr>
                   <th className='px-4 py-3'>Company</th>
                   <th className='px-4 py-3'>Booth</th>
+                  <th className='px-4 py-3'>Passport QR</th>
                   <th className='px-4 py-3'>Approved Registrants</th>
                   <th className='px-4 py-3'>Exhibitor ID</th>
                   <th className='px-4 py-3'>Actions</th>
@@ -81,6 +82,19 @@ export default async function ExhibitorsPage({ params }: PageProps) {
                       </td>
                       <td className='px-4 py-3 text-slate-700'>
                         {exhibitor.boothNumber || '—'}
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            exhibitor.qrCode && exhibitor.passportQrPayload
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {exhibitor.qrCode && exhibitor.passportQrPayload
+                            ? 'Ready'
+                            : 'Missing'}
+                        </span>
                       </td>
                       <td className='px-4 py-3 text-slate-700'>
                         {approved.length === 0 ? (

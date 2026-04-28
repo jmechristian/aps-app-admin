@@ -7,7 +7,8 @@ type CategoryKey =
   | 'speakers'
   | 'agenda'
   | 'companies'
-  | 'add-ons';
+  | 'add-ons'
+  | 'passport';
 
 const CATEGORY_LABELS: Record<CategoryKey, string> = {
   companies: 'Companies',
@@ -16,6 +17,7 @@ const CATEGORY_LABELS: Record<CategoryKey, string> = {
   speakers: 'Speakers',
   agenda: 'Agenda',
   'add-ons': 'Add-Ons',
+  passport: 'Passport',
 };
 
 function CategoryNavLink({
@@ -104,6 +106,11 @@ export default function CategoryPageShell({
           <CategoryNavLink
             eventId={eventId}
             category='add-ons'
+            activeCategory={activeCategory}
+          />
+          <CategoryNavLink
+            eventId={eventId}
+            category='passport'
             activeCategory={activeCategory}
           />
         </nav>

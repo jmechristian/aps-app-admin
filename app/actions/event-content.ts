@@ -42,6 +42,8 @@ export type ExhibitorProfileListItem = {
   eventId: string;
   companyId: string;
   boothNumber?: string | null;
+  qrCode?: string | null;
+  passportQrPayload?: string | null;
   company?: { id: string; name: string } | null;
 };
 
@@ -66,6 +68,8 @@ export async function fetchExhibitorProfilesByEventId(eventId: string) {
           eventId
           companyId
           boothNumber
+          qrCode
+          passportQrPayload
         }
         nextToken
       }
@@ -148,6 +152,8 @@ export async function fetchExhibitorProfileById(exhibitorId: string) {
         companyId
         sponsorId
         boothNumber
+        qrCode
+        passportQrPayload
         video
         videoCaption
         company {

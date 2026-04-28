@@ -112,6 +112,8 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -145,6 +147,7 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -279,6 +282,8 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -312,6 +317,7 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -446,6 +452,8 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -479,6 +487,7 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -572,6 +581,258 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
   APITypes.OnDeleteApsAppUserNoteSubscriptionVariables,
   APITypes.OnDeleteApsAppUserNoteSubscription
 >;
+export const onCreateApsAppUserPassportStamp = /* GraphQL */ `subscription OnCreateApsAppUserPassportStamp(
+  $filter: ModelSubscriptionApsAppUserPassportStampFilterInput
+  $owner: String
+) {
+  onCreateApsAppUserPassportStamp(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      thinkificId
+      apcProgress
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      qrCode
+      passportQrPayload
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    stampKey
+    scannedAt
+    createdAt
+    updatedAt
+    aPSPassportStampsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppUserPassportStampSubscriptionVariables,
+  APITypes.OnCreateApsAppUserPassportStampSubscription
+>;
+export const onUpdateApsAppUserPassportStamp = /* GraphQL */ `subscription OnUpdateApsAppUserPassportStamp(
+  $filter: ModelSubscriptionApsAppUserPassportStampFilterInput
+  $owner: String
+) {
+  onUpdateApsAppUserPassportStamp(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      thinkificId
+      apcProgress
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      qrCode
+      passportQrPayload
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    stampKey
+    scannedAt
+    createdAt
+    updatedAt
+    aPSPassportStampsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppUserPassportStampSubscriptionVariables,
+  APITypes.OnUpdateApsAppUserPassportStampSubscription
+>;
+export const onDeleteApsAppUserPassportStamp = /* GraphQL */ `subscription OnDeleteApsAppUserPassportStamp(
+  $filter: ModelSubscriptionApsAppUserPassportStampFilterInput
+  $owner: String
+) {
+  onDeleteApsAppUserPassportStamp(filter: $filter, owner: $owner) {
+    id
+    owner
+    userProfileId
+    userProfile {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      thinkificId
+      apcProgress
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    exhibitorId
+    exhibitor {
+      id
+      companyId
+      sponsorId
+      eventId
+      video
+      videoCaption
+      boothNumber
+      qrCode
+      passportQrPayload
+      visits
+      views
+      likes
+      createdAt
+      updatedAt
+      aPSExhibitorsId
+      __typename
+    }
+    eventId
+    event {
+      id
+      year
+      startDate
+      endDate
+      location
+      address
+      city
+      state
+      zip
+      website
+      createdAt
+      updatedAt
+      aPSAgendaId
+      __typename
+    }
+    stampKey
+    scannedAt
+    createdAt
+    updatedAt
+    aPSPassportStampsId
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppUserPassportStampSubscriptionVariables,
+  APITypes.OnDeleteApsAppUserPassportStampSubscription
+>;
 export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription OnCreateApsAppUserFavoriteExhibitor(
   $filter: ModelSubscriptionApsAppUserFavoriteExhibitorFilterInput
   $owner: String
@@ -617,6 +878,8 @@ export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -698,6 +961,8 @@ export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -779,6 +1044,8 @@ export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -2416,6 +2683,10 @@ export const onCreateAPS = /* GraphQL */ `subscription OnCreateAPS($filter: Mode
       nextToken
       __typename
     }
+    passportStamps {
+      nextToken
+      __typename
+    }
     addOns {
       nextToken
       __typename
@@ -2513,6 +2784,10 @@ export const onUpdateAPS = /* GraphQL */ `subscription OnUpdateAPS($filter: Mode
       nextToken
       __typename
     }
+    passportStamps {
+      nextToken
+      __typename
+    }
     addOns {
       nextToken
       __typename
@@ -2607,6 +2882,10 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
       __typename
     }
     favoriteContacts {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -2942,6 +3221,7 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
     billingAddressCity
     billingAddressState
     billingAddressZip
+    billingAddressCountry
     sameAsAttendee
     speakerTopic
     learningObjectives
@@ -3076,6 +3356,7 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
     billingAddressCity
     billingAddressState
     billingAddressZip
+    billingAddressCountry
     sameAsAttendee
     speakerTopic
     learningObjectives
@@ -3210,6 +3491,7 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
     billingAddressCity
     billingAddressState
     billingAddressZip
+    billingAddressCountry
     sameAsAttendee
     speakerTopic
     learningObjectives
@@ -3311,6 +3593,7 @@ export const onCreateApsAppUser = /* GraphQL */ `subscription OnCreateApsAppUser
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3440,6 +3723,7 @@ export const onUpdateApsAppUser = /* GraphQL */ `subscription OnUpdateApsAppUser
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -3569,6 +3853,7 @@ export const onDeleteApsAppUser = /* GraphQL */ `subscription OnDeleteApsAppUser
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -4070,6 +4355,10 @@ export const onCreateApsAppUserProfile = /* GraphQL */ `subscription OnCreateAps
       nextToken
       __typename
     }
+    passportStamps {
+      nextToken
+      __typename
+    }
     notes {
       nextToken
       __typename
@@ -4173,6 +4462,10 @@ export const onUpdateApsAppUserProfile = /* GraphQL */ `subscription OnUpdateAps
       nextToken
       __typename
     }
+    passportStamps {
+      nextToken
+      __typename
+    }
     notes {
       nextToken
       __typename
@@ -4273,6 +4566,10 @@ export const onDeleteApsAppUserProfile = /* GraphQL */ `subscription OnDeleteAps
       __typename
     }
     favoritedByProfiles {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -5387,6 +5684,8 @@ export const onCreateApsSponsor = /* GraphQL */ `subscription OnCreateApsSponsor
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5466,6 +5765,8 @@ export const onUpdateApsSponsor = /* GraphQL */ `subscription OnUpdateApsSponsor
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5545,6 +5846,8 @@ export const onDeleteApsSponsor = /* GraphQL */ `subscription OnDeleteApsSponsor
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5619,6 +5922,8 @@ export const onCreateAPSCompany = /* GraphQL */ `subscription OnCreateAPSCompany
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5690,6 +5995,8 @@ export const onUpdateAPSCompany = /* GraphQL */ `subscription OnUpdateAPSCompany
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5761,6 +6068,8 @@ export const onDeleteAPSCompany = /* GraphQL */ `subscription OnDeleteAPSCompany
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -5977,6 +6286,8 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
     video
     videoCaption
     boothNumber
+    qrCode
+    passportQrPayload
     visits
     views
     likes
@@ -5985,6 +6296,10 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
       __typename
     }
     favoriteByUsers {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -6072,6 +6387,8 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
     video
     videoCaption
     boothNumber
+    qrCode
+    passportQrPayload
     visits
     views
     likes
@@ -6080,6 +6397,10 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
       __typename
     }
     favoriteByUsers {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -6167,6 +6488,8 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
     video
     videoCaption
     boothNumber
+    qrCode
+    passportQrPayload
     visits
     views
     likes
@@ -6175,6 +6498,10 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
       __typename
     }
     favoriteByUsers {
+      nextToken
+      __typename
+    }
+    passportStamps {
       nextToken
       __typename
     }
@@ -6202,6 +6529,8 @@ export const onCreateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnCr
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6254,6 +6583,8 @@ export const onUpdateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnUp
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6306,6 +6637,8 @@ export const onDeleteApsAppExhibitorPromotion = /* GraphQL */ `subscription OnDe
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6358,6 +6691,8 @@ export const onCreateApsAppExhibitorDeal = /* GraphQL */ `subscription OnCreateA
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6420,6 +6755,8 @@ export const onUpdateApsAppExhibitorDeal = /* GraphQL */ `subscription OnUpdateA
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6482,6 +6819,8 @@ export const onDeleteApsAppExhibitorDeal = /* GraphQL */ `subscription OnDeleteA
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6544,6 +6883,8 @@ export const onCreateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnCreate
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6597,6 +6938,8 @@ export const onUpdateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnUpdate
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6650,6 +6993,8 @@ export const onDeleteApsAppExhibitorPhoto = /* GraphQL */ `subscription OnDelete
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6703,6 +7048,8 @@ export const onCreateApsAppExhibitorHandout = /* GraphQL */ `subscription OnCrea
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6754,6 +7101,8 @@ export const onUpdateApsAppExhibitorHandout = /* GraphQL */ `subscription OnUpda
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -6805,6 +7154,8 @@ export const onDeleteApsAppExhibitorHandout = /* GraphQL */ `subscription OnDele
       video
       videoCaption
       boothNumber
+      qrCode
+      passportQrPayload
       visits
       views
       likes
@@ -7007,6 +7358,7 @@ export const onCreateRegistrantAddOnRequest = /* GraphQL */ `subscription OnCrea
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -7101,6 +7453,7 @@ export const onUpdateRegistrantAddOnRequest = /* GraphQL */ `subscription OnUpda
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -7195,6 +7548,7 @@ export const onDeleteRegistrantAddOnRequest = /* GraphQL */ `subscription OnDele
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -7358,6 +7712,7 @@ export const onCreateApsSeatingChartRegistrant = /* GraphQL */ `subscription OnC
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -7446,6 +7801,7 @@ export const onUpdateApsSeatingChartRegistrant = /* GraphQL */ `subscription OnU
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
@@ -7534,6 +7890,7 @@ export const onDeleteApsSeatingChartRegistrant = /* GraphQL */ `subscription OnD
       billingAddressCity
       billingAddressState
       billingAddressZip
+      billingAddressCountry
       sameAsAttendee
       speakerTopic
       learningObjectives
