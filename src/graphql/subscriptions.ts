@@ -2066,6 +2066,9 @@ export const onCreateApsContactRequest = /* GraphQL */ `subscription OnCreateAps
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
@@ -2090,6 +2093,9 @@ export const onUpdateApsContactRequest = /* GraphQL */ `subscription OnUpdateAps
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
@@ -2114,6 +2120,9 @@ export const onDeleteApsContactRequest = /* GraphQL */ `subscription OnDeleteAps
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt

@@ -125,12 +125,50 @@ export type APSCodeItem = {
   used: number;
 };
 
+export type APSCodeRegistrantUsage = {
+  name: string;
+  email: string;
+  company: string | null;
+};
+
 type ApsCodesResponse = {
   aPSCodesByEventId?: {
     items?: Array<APSCodeItem | null>;
     nextToken?: string | null;
   } | null;
 };
+
+type ApsRegistrantsByEventResponse = {
+  apsRegistrantsByApsID?: {
+    items?: Array<{
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+      company?: {
+        name?: string | null;
+      } | null;
+      discountCode?: string | null;
+    } | null>;
+    nextToken?: string | null;
+  } | null;
+};
+
+const APS_REGISTRANTS_BY_APS_ID_FOR_CODES = /* GraphQL */ `
+  query ApsRegistrantsByApsIDForCodes($apsID: ID!, $limit: Int, $nextToken: String) {
+    apsRegistrantsByApsID(apsID: $apsID, limit: $limit, nextToken: $nextToken) {
+      items {
+        firstName
+        lastName
+        email
+        company {
+          name
+        }
+        discountCode
+      }
+      nextToken
+    }
+  }
+`;
 
 export async function fetchCodesByEventId(eventId: string): Promise<APSCodeItem[]> {
   const items: APSCodeItem[] = [];
@@ -149,6 +187,43 @@ export async function fetchCodesByEventId(eventId: string): Promise<APSCodeItem[
   } while (nextToken);
 
   return items.sort((a, b) => a.code.localeCompare(b.code, undefined, { sensitivity: 'base' }));
+}
+
+export async function fetchCodeRegistrationsByCode(
+  eventId: string,
+  code: string
+): Promise<APSCodeRegistrantUsage[]> {
+  const matches: APSCodeRegistrantUsage[] = [];
+  const normalizedCode = code.trim();
+  if (!normalizedCode) return matches;
+
+  let nextToken: string | null | undefined = null;
+  do {
+    const data = await requestGraphQL<ApsRegistrantsByEventResponse>(
+      APS_REGISTRANTS_BY_APS_ID_FOR_CODES,
+      {
+        apsID: eventId,
+        limit: 1000,
+        nextToken: nextToken || undefined,
+      }
+    );
+
+    const page = data.apsRegistrantsByApsID?.items ?? [];
+    for (const item of page) {
+      if (!item?.email) continue;
+      if ((item.discountCode ?? '').trim() !== normalizedCode) continue;
+
+      const name = `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim() || 'Unknown';
+      matches.push({
+        name,
+        email: item.email,
+        company: item.company?.name ?? null,
+      });
+    }
+    nextToken = data.apsRegistrantsByApsID?.nextToken ?? null;
+  } while (nextToken);
+
+  return matches.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 }
 
 export async function createAps(formData: FormData) {

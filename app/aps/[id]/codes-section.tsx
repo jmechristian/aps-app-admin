@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { APSCodeItem } from '@/app/actions/aps';
+import type { APSCodeItem, APSCodeRegistrantUsage } from '@/app/actions/aps';
 
 type CodesSectionProps = {
   eventId: string;
   codes: APSCodeItem[];
   onAddCode: (id: string, code: string) => Promise<void>;
   onAddCodes?: (id: string, codes: string[]) => Promise<void>;
+  onFetchCodeRegistrations: (
+    eventId: string,
+    code: string
+  ) => Promise<APSCodeRegistrantUsage[]>;
   onUpdateCode: (
     eventId: string,
     codeId: string,
@@ -21,13 +25,17 @@ export default function CodesSection({
   codes,
   onAddCode,
   onAddCodes,
+  onFetchCodeRegistrations,
   onUpdateCode,
   onRemoveCode,
 }: CodesSectionProps) {
   const [newCode, setNewCode] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editCode, setEditCode] = useState('');
   const [editLimit, setEditLimit] = useState<string>('');
+  const [selectedUsed, setSelectedUsed] = useState<number>(0);
+  const [codeRegistrants, setCodeRegistrants] = useState<APSCodeRegistrantUsage[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -35,16 +43,31 @@ export default function CodesSection({
   const existingSet = new Set(codeStrings);
 
   function startEditing(item: APSCodeItem) {
+    setIsModalOpen(true);
     setEditingId(item.id);
     setEditCode(item.code);
     setEditLimit(item.limit != null ? String(item.limit) : '');
+    setSelectedUsed(item.used);
+    setCodeRegistrants([]);
     setError(null);
+
+    startTransition(async () => {
+      try {
+        const registrations = await onFetchCodeRegistrations(eventId, item.code);
+        setCodeRegistrants(registrations);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load code usage details');
+      }
+    });
   }
 
   function cancelEditing() {
+    setIsModalOpen(false);
     setEditingId(null);
     setEditCode('');
     setEditLimit('');
+    setSelectedUsed(0);
+    setCodeRegistrants([]);
     setError(null);
   }
 
@@ -141,7 +164,7 @@ export default function CodesSection({
           <h2 className='text-2xl font-bold text-slate-900'>Manage Codes</h2>
           <p className='mt-1 text-sm text-slate-600'>
             Create and manage discount codes for this event. Paste multiple codes
-            (comma- or newline-separated) for bulk upload. Click a code to edit.
+            (comma- or newline-separated) for bulk upload. Click a code to view details.
           </p>
         </div>
         <span className='rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white'>
@@ -179,82 +202,149 @@ export default function CodesSection({
         </div>
       ) : (
         <div className='flex flex-wrap gap-3'>
-          {codes.map((codeItem) =>
-            editingId === codeItem.id ? (
-              <div
-                key={codeItem.id}
-                className='flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-3 shadow-sm'
+          {codes.map((codeItem) => (
+            <div
+              key={codeItem.id}
+              role='button'
+              tabIndex={0}
+              onClick={() => startEditing(codeItem)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  startEditing(codeItem);
+                }
+              }}
+              className='group relative flex cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-4 py-2 pr-8 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              <span>{codeItem.code}</span>
+              {(codeItem.limit != null || codeItem.used > 0) && (
+                <span className='text-xs text-slate-500'>
+                  ({codeItem.used}
+                  {codeItem.limit != null ? `/${codeItem.limit}` : ''})
+                </span>
+              )}
+              <button
+                type='button'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveCode(codeItem);
+                }}
+                disabled={isPending}
+                className='absolute right-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-300 hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-slate-900 disabled:cursor-not-allowed disabled:opacity-50'
+                aria-label={`Remove ${codeItem.code}`}
               >
-                <input
-                  type='text'
-                  value={editCode}
-                  onChange={(e) => setEditCode(e.target.value)}
-                  placeholder='Code'
-                  disabled={isPending}
-                  className='w-28 rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-900 outline-none transition focus:border-slate-400'
-                />
-                <input
-                  type='number'
-                  min={0}
-                  value={editLimit}
-                  onChange={(e) => setEditLimit(e.target.value)}
-                  placeholder='Limit (optional)'
-                  disabled={isPending}
-                  className='w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
-                />
-                <button
-                  type='button'
-                  onClick={handleSaveEdit}
-                  disabled={isPending}
-                  className='rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50'
-                >
-                  Save
-                </button>
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isModalOpen && editingId && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
+          <div className='w-full max-w-3xl rounded-2xl border border-slate-200 bg-white shadow-2xl'>
+            <div className='flex items-center justify-between border-b border-slate-200 px-6 py-4'>
+              <div>
+                <h3 className='text-xl font-bold text-slate-900'>Code details</h3>
+                <p className='mt-1 text-sm text-slate-600'>
+                  Edit limit and review who used this code.
+                </p>
+              </div>
+              <button
+                type='button'
+                onClick={cancelEditing}
+                className='rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900'
+                aria-label='Close code details'
+              >
+                ×
+              </button>
+            </div>
+
+            <div className='space-y-6 p-6'>
+              <div className='grid gap-4 sm:grid-cols-3'>
+                <div className='sm:col-span-2'>
+                  <label className='mb-1 block text-sm font-medium text-slate-700'>Code</label>
+                  <input
+                    type='text'
+                    value={editCode}
+                    onChange={(e) => setEditCode(e.target.value)}
+                    disabled={isPending}
+                    className='w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-slate-500'
+                  />
+                </div>
+                <div>
+                  <label className='mb-1 block text-sm font-medium text-slate-700'>Limit</label>
+                  <input
+                    type='number'
+                    min={0}
+                    value={editLimit}
+                    onChange={(e) => setEditLimit(e.target.value)}
+                    placeholder='No limit'
+                    disabled={isPending}
+                    className='w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-slate-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+                  />
+                </div>
+              </div>
+
+              <div className='rounded-xl border border-slate-200 bg-slate-50 p-4'>
+                <p className='text-sm text-slate-700'>
+                  <span className='font-semibold text-slate-900'>Usage:</span> {selectedUsed}
+                  {editLimit.trim() ? ` / ${editLimit}` : ''}
+                </p>
+              </div>
+
+              <div>
+                <h4 className='mb-2 text-sm font-semibold uppercase tracking-wide text-slate-600'>
+                  Registrations using this code
+                </h4>
+                {isPending && codeRegistrants.length === 0 ? (
+                  <p className='text-sm text-slate-600'>Loading registrations...</p>
+                ) : codeRegistrants.length === 0 ? (
+                  <p className='text-sm text-slate-600'>No registrations found for this code.</p>
+                ) : (
+                  <div className='overflow-hidden rounded-xl border border-slate-200'>
+                    <table className='min-w-full divide-y divide-slate-200 text-left text-sm'>
+                      <thead className='bg-slate-50 text-xs uppercase tracking-wide text-slate-600'>
+                        <tr>
+                          <th className='px-3 py-2 font-semibold'>Name</th>
+                          <th className='px-3 py-2 font-semibold'>Email</th>
+                          <th className='px-3 py-2 font-semibold'>Company</th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-y divide-slate-100 bg-white text-slate-800'>
+                        {codeRegistrants.map((registrant) => (
+                          <tr key={`${registrant.email}-${registrant.name}`}>
+                            <td className='px-3 py-2'>{registrant.name}</td>
+                            <td className='px-3 py-2'>{registrant.email}</td>
+                            <td className='px-3 py-2'>{registrant.company ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className='flex items-center justify-end gap-3'>
                 <button
                   type='button'
                   onClick={cancelEditing}
                   disabled={isPending}
-                  className='rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50'
+                  className='rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50'
                 >
                   Cancel
                 </button>
-              </div>
-            ) : (
-              <div
-                key={codeItem.id}
-                role='button'
-                tabIndex={0}
-                onClick={() => startEditing(codeItem)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    startEditing(codeItem);
-                  }
-                }}
-                className='group relative flex cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-4 py-2 pr-8 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-              >
-                <span>{codeItem.code}</span>
-                {(codeItem.limit != null || codeItem.used > 0) && (
-                  <span className='text-xs text-slate-500'>
-                    ({codeItem.used}
-                    {codeItem.limit != null ? `/${codeItem.limit}` : ''})
-                  </span>
-                )}
                 <button
                   type='button'
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveCode(codeItem);
-                  }}
+                  onClick={handleSaveEdit}
                   disabled={isPending}
-                  className='absolute right-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-300 hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-slate-900 disabled:cursor-not-allowed disabled:opacity-50'
-                  aria-label={`Remove ${codeItem.code}`}
+                  className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50'
                 >
-                  ×
+                  {isPending ? 'Saving...' : 'Save changes'}
                 </button>
               </div>
-            )
-          )}
+            </div>
+          </div>
         </div>
       )}
     </div>

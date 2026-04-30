@@ -4,6 +4,7 @@ import CodesSection from '../codes-section';
 import {
   addCodeToAps,
   addCodesToAps,
+  fetchCodeRegistrationsByCode,
   fetchCodesByEventId,
   removeCodeFromAps,
   updateCode,
@@ -70,6 +71,7 @@ export default async function CodesPage({ params }: PageProps) {
           codes={codes}
           onAddCode={addCodeToAps}
           onAddCodes={addCodesToAps}
+          onFetchCodeRegistrations={fetchCodeRegistrationsByCode}
           onUpdateCode={updateCode}
           onRemoveCode={removeCodeFromAps}
         />

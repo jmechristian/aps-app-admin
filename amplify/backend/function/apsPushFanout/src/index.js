@@ -79,6 +79,14 @@ function requestKeyFor(eventId, a, b) {
   return `e:${eventId}|u:${a}|u:${b}`;
 }
 
+function dmKeyFor(a, b) {
+  return `u:${a}|u:${b}`;
+}
+
+function dmThreadIdFor(eventId, a, b) {
+  return `e:${eventId}|${dmKeyFor(a, b)}`;
+}
+
 function dmParticipantStateKey(eventId, threadId, userId) {
   return `e:${eventId}|t:${threadId}|u:${userId}`;
 }
@@ -291,6 +299,19 @@ const GET_PROFILE_ID_BY_USERID = /* GraphQL */ `
     apsAppUserProfilesByUserId(userId: $userId, limit: $limit) {
       items {
         id
+      }
+    }
+  }
+`;
+
+const GET_PROFILE_LABEL_BY_USERID = /* GraphQL */ `
+  query ApsAppUserProfilesByUserId($userId: ID!, $limit: Int) {
+    apsAppUserProfilesByUserId(userId: $userId, limit: $limit) {
+      items {
+        id
+        firstName
+        lastName
+        email
       }
     }
   }
@@ -639,6 +660,21 @@ async function getAppUserProfileId(userSub) {
   }
 }
 
+async function getUserDisplayLabel(userSub) {
+  try {
+    const data = await appsyncRequest(GET_PROFILE_LABEL_BY_USERID, { userId: userSub, limit: 1 });
+    const profile = data?.apsAppUserProfilesByUserId?.items?.find?.((x) => x?.id) || null;
+    const first = String(profile?.firstName || '').trim();
+    const last = String(profile?.lastName || '').trim();
+    const fullName = `${first} ${last}`.trim();
+    if (fullName) return fullName;
+    if (profile?.email) return String(profile.email).trim();
+  } catch {
+    // best effort fallback below
+  }
+  return 'Community member';
+}
+
 async function putContact({ userSub, otherProfileId }) {
   requireEnv('APP_USER_CONTACT_TABLE_NAME');
   const id = `${userSub}:${otherProfileId}`;
@@ -984,6 +1020,8 @@ async function handleStreamFanout(event) {
     const requestOwners = getStringList(img.owners);
     const requestedByUserId = getString(img.requestedByUserId);
     const requestId = getString(img.id);
+    const introMessage = getString(img.introMessage);
+    const introDeliveredAt = getString(img.introDeliveredAt);
 
     if (requestId && r.eventName === 'MODIFY' && requestStatus) {
       const old = unmarshallOldImage(r);
@@ -1009,13 +1047,14 @@ async function handleStreamFanout(event) {
       const recipients = requestOwners.filter(
         (x) => x && x !== requestedByUserId
       );
+      const requesterLabel = await getUserDisplayLabel(requestedByUserId);
       for (const recipientUserId of recipients) {
         const tokens = await listTokensByUser(recipientUserId);
         for (const token of tokens) {
           expoMessages.push({
             to: token,
             title: 'New request',
-            body: 'You have a new contact request',
+            body: `You have a contact request and message from ${requesterLabel}`,
             badge: 1,
             data: { type: 'request', eventId, requestId },
           });
@@ -1091,6 +1130,125 @@ async function handleStreamFanout(event) {
         });
       }
 
+      // Seed intro message into DM thread once, after acceptance.
+      if (introMessage && !introDeliveredAt && eventId) {
+        const [a, b] = sortPair(userA, userB);
+        const threadIdForPair = dmThreadIdFor(eventId, a, b);
+        const now = new Date().toISOString();
+
+        try {
+          let thread = await getThread(threadIdForPair);
+          if (!thread?.id) {
+            await ddb.send(
+              new PutCommand({
+                TableName: DM_THREAD_TABLE_NAME,
+                Item: {
+                  id: threadIdForPair,
+                  eventId,
+                  dmKey: dmKeyFor(a, b),
+                  userAId: a,
+                  userBId: b,
+                  owners: [a, b],
+                  lastMessageAt: null,
+                  lastMessagePreview: null,
+                  createdAt: now,
+                  updatedAt: now,
+                },
+                ConditionExpression: 'attribute_not_exists(#id)',
+                ExpressionAttributeNames: { '#id': 'id' },
+              })
+            );
+            thread = await getThread(threadIdForPair);
+          }
+
+          const introMessageId = `intro:${requestId}`;
+          const introItem = {
+            id: introMessageId,
+            eventId,
+            threadId: threadIdForPair,
+            senderUserId: requestedByUserId,
+            owners: [a, b],
+            type: 'text',
+            body: safeSlice(introMessage, 2000),
+            createdAt: getString(img.introSentAt) || now,
+            updatedAt: now,
+          };
+
+          try {
+            await ddb.send(
+              new PutCommand({
+                TableName: DM_MESSAGE_TABLE_NAME,
+                Item: introItem,
+                ConditionExpression: 'attribute_not_exists(#id)',
+                ExpressionAttributeNames: { '#id': 'id' },
+              })
+            );
+          } catch (e) {
+            if (!(e && e.name === 'ConditionalCheckFailedException')) throw e;
+          }
+
+          await ddb.send(
+            new UpdateCommand({
+              TableName: DM_THREAD_TABLE_NAME,
+              Key: { id: threadIdForPair },
+              UpdateExpression:
+                'SET #lastMessageAt = :lastMessageAt, #lastMessagePreview = :lastMessagePreview, #updatedAt = :updatedAt',
+              ExpressionAttributeNames: {
+                '#lastMessageAt': 'lastMessageAt',
+                '#lastMessagePreview': 'lastMessagePreview',
+                '#updatedAt': 'updatedAt',
+              },
+              ExpressionAttributeValues: {
+                ':lastMessageAt': now,
+                ':lastMessagePreview': safeSlice(introItem.body, 240),
+                ':updatedAt': now,
+              },
+            })
+          );
+
+          await upsertParticipantState({
+            eventId,
+            threadId: threadIdForPair,
+            userId: requestedByUserId,
+            lastReadAt: now,
+            unreadDelta: 0,
+            resetUnread: true,
+            now,
+          });
+          await upsertParticipantState({
+            eventId,
+            threadId: threadIdForPair,
+            userId: acceptedBy,
+            lastReadAt: null,
+            unreadDelta: 1,
+            resetUnread: false,
+            now,
+          });
+
+          await ddb.send(
+            new UpdateCommand({
+              TableName: CONTACT_REQUEST_TABLE_NAME,
+              Key: { id: requestId },
+              UpdateExpression: 'SET #introDeliveredAt = :introDeliveredAt, #updatedAt = :updatedAt',
+              ConditionExpression: 'attribute_not_exists(#introDeliveredAt)',
+              ExpressionAttributeNames: {
+                '#introDeliveredAt': 'introDeliveredAt',
+                '#updatedAt': 'updatedAt',
+              },
+              ExpressionAttributeValues: {
+                ':introDeliveredAt': now,
+                ':updatedAt': now,
+              },
+            })
+          );
+        } catch (e) {
+          console.log('acceptance: intro seed failed', {
+            requestId: safeSlice(requestId, 64),
+            error: e?.message || String(e),
+          });
+        }
+      }
+
       // Notify requester that their request was accepted.
       const tokens = await listTokensByUser(requestedByUserId);
       for (const token of tokens) {
@@ -1099,7 +1257,12 @@ async function handleStreamFanout(event) {
           title: 'Request accepted',
           body: 'Your contact request was accepted',
           badge: 1,
-          data: { type: 'requestAccepted', eventId: eventId || null, otherUserId: acceptedBy },
+          data: {
+            type: 'requestAccepted',
+            eventId: eventId || null,
+            requestId: requestId || null,
+            otherUserId: acceptedBy,
+          },
         });
       }
       continue;

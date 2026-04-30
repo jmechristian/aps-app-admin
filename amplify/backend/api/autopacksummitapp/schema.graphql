@@ -990,6 +990,12 @@ type ApsContactRequest
   # PENDING | ACCEPTED | DECLINED | BLOCKED
   status: String! @index(name: "byStatusUpdated", sortKeyFields: ["updatedAt"])
 
+  # Optional intro message sent with the initial request.
+  introMessage: String
+  introSentAt: AWSDateTime
+  # Set once intro has been seeded into the accepted DM thread.
+  introDeliveredAt: AWSDateTime
+
   acceptedAt: AWSDateTime
   declinedAt: AWSDateTime
   blockedAt: AWSDateTime

@@ -918,6 +918,9 @@ export const getApsContactRequest = /* GraphQL */ `query GetApsContactRequest($i
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
@@ -949,6 +952,9 @@ export const listApsContactRequests = /* GraphQL */ `query ListApsContactRequest
       owners
       requestedByUserId
       status
+      introMessage
+      introSentAt
+      introDeliveredAt
       acceptedAt
       declinedAt
       blockedAt
@@ -2443,6 +2449,9 @@ export const apsContactRequestsByRequestKey = /* GraphQL */ `query ApsContactReq
       owners
       requestedByUserId
       status
+      introMessage
+      introSentAt
+      introDeliveredAt
       acceptedAt
       declinedAt
       blockedAt
@@ -2483,6 +2492,9 @@ export const apsContactRequestsByRequestedByUserIdAndCreatedAt = /* GraphQL */ `
       owners
       requestedByUserId
       status
+      introMessage
+      introSentAt
+      introDeliveredAt
       acceptedAt
       declinedAt
       blockedAt
@@ -2523,6 +2535,9 @@ export const apsContactRequestsByStatusAndUpdatedAt = /* GraphQL */ `query ApsCo
       owners
       requestedByUserId
       status
+      introMessage
+      introSentAt
+      introDeliveredAt
       acceptedAt
       declinedAt
       blockedAt

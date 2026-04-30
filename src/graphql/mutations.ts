@@ -5379,6 +5379,9 @@ export const createApsContactRequest = /* GraphQL */ `mutation CreateApsContactR
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
@@ -5404,6 +5407,9 @@ export const updateApsContactRequest = /* GraphQL */ `mutation UpdateApsContactR
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
@@ -5429,6 +5435,9 @@ export const deleteApsContactRequest = /* GraphQL */ `mutation DeleteApsContactR
     owners
     requestedByUserId
     status
+    introMessage
+    introSentAt
+    introDeliveredAt
     acceptedAt
     declinedAt
     blockedAt
