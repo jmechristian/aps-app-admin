@@ -199,7 +199,7 @@ export async function fetchCodeRegistrationsByCode(
 
   let nextToken: string | null | undefined = null;
   do {
-    const data = await requestGraphQL<ApsRegistrantsByEventResponse>(
+    const data: ApsRegistrantsByEventResponse = await requestGraphQL<ApsRegistrantsByEventResponse>(
       APS_REGISTRANTS_BY_APS_ID_FOR_CODES,
       {
         apsID: eventId,
