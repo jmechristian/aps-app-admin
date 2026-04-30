@@ -1101,15 +1101,6 @@ export type ModelIntInput = {
   attributeType?: ModelAttributeTypes | null,
 };
 
-export type UpdateAPSCodeInput = {
-  id: string,
-  code?: string | null,
-  eventId?: string | null,
-  limit?: number | null,
-  used?: number | null,
-  aPSCodesId?: string | null,
-};
-
 export type DeleteAPSCodeInput = {
   id: string,
 };
@@ -2605,6 +2596,15 @@ export type CreateAPSInput = {
   zip?: string | null,
   website?: string | null,
   aPSAgendaId?: string | null,
+};
+
+export type UpdateAPSCodeInput = {
+  id: string,
+  code?: string | null,
+  eventId?: string | null,
+  limit?: number | null,
+  used?: number | null,
+  aPSCodesId?: string | null,
 };
 
 export type CreateAPSBoardInput = {
@@ -5034,41 +5034,6 @@ export type CreateAPSCodeMutationVariables = {
 
 export type CreateAPSCodeMutation = {
   createAPSCode?:  {
-    __typename: "APSCode",
-    id: string,
-    code: string,
-    eventId: string,
-    event:  {
-      __typename: "APS",
-      id: string,
-      year: string,
-      startDate?: string | null,
-      endDate?: string | null,
-      location?: string | null,
-      address?: string | null,
-      city?: string | null,
-      state?: string | null,
-      zip?: string | null,
-      website?: string | null,
-      createdAt: string,
-      updatedAt: string,
-      aPSAgendaId?: string | null,
-    },
-    limit?: number | null,
-    used: number,
-    createdAt: string,
-    updatedAt: string,
-    aPSCodesId?: string | null,
-  } | null,
-};
-
-export type UpdateAPSCodeMutationVariables = {
-  input: UpdateAPSCodeInput,
-  condition?: ModelAPSCodeConditionInput | null,
-};
-
-export type UpdateAPSCodeMutation = {
-  updateAPSCode?:  {
     __typename: "APSCode",
     id: string,
     code: string,
@@ -10996,6 +10961,41 @@ export type CreateAPSMutation = {
     createdAt: string,
     updatedAt: string,
     aPSAgendaId?: string | null,
+  } | null,
+};
+
+export type UpdateAPSCodeMutationVariables = {
+  input: UpdateAPSCodeInput,
+  condition?: ModelAPSCodeConditionInput | null,
+};
+
+export type UpdateAPSCodeMutation = {
+  updateAPSCode?:  {
+    __typename: "APSCode",
+    id: string,
+    code: string,
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    limit?: number | null,
+    used: number,
+    createdAt: string,
+    updatedAt: string,
+    aPSCodesId?: string | null,
   } | null,
 };
 
