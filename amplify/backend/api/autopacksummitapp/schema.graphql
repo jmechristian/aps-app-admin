@@ -102,7 +102,7 @@ type APSCode
   @model
   @auth(
     rules: [
-      { allow: public, operations: [read] }
+      { allow: public, operations: [read, update] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
