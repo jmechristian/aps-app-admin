@@ -61,6 +61,33 @@ export const syncMyThinkificProgress = /* GraphQL */ `mutation SyncMyThinkificPr
   APITypes.SyncMyThinkificProgressMutationVariables,
   APITypes.SyncMyThinkificProgressMutation
 >;
+export const adminCreateRegistrant = /* GraphQL */ `mutation AdminCreateRegistrant($input: AdminCreateRegistrantInput!) {
+  adminCreateRegistrant(input: $input) {
+    id
+    email
+    companyId
+    tempPassword
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.AdminCreateRegistrantMutationVariables,
+  APITypes.AdminCreateRegistrantMutation
+>;
+export const adminReissueRegistrantTempPassword = /* GraphQL */ `mutation AdminReissueRegistrantTempPassword(
+  $input: AdminReissueRegistrantTempPasswordInput!
+) {
+  adminReissueRegistrantTempPassword(input: $input) {
+    registrantId
+    email
+    tempPassword
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.AdminReissueRegistrantTempPasswordMutationVariables,
+  APITypes.AdminReissueRegistrantTempPasswordMutation
+>;
 export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
   $input: UpdateAPSInput!
   $condition: ModelAPSConditionInput

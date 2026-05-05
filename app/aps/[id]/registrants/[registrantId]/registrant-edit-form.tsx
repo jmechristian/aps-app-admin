@@ -15,6 +15,7 @@ import {
   updateRegistrantEmailSync,
   type RegistrantDetail,
 } from '@/app/actions/registrants';
+import { updateRegistrantSeatingAssignment } from '@/app/actions/seating';
 
 type RegistrantEditFormProps = {
   registrant: RegistrantDetail;
@@ -65,19 +66,21 @@ export default function RegistrantEditForm({
     updateRegistrantCompanyAssignment,
     initialState,
   );
-  const [selectedCompanyId, setSelectedCompanyId] = useState(
-    registrant.company?.id ?? registrant.companyId ?? '',
+  const [seatingState, seatingAction] = useActionState(
+    updateRegistrantSeatingAssignment,
+    initialState,
   );
+  const [selectedCompanyIdOverride, setSelectedCompanyIdOverride] = useState<
+    string | null
+  >(null);
+  const selectedCompanyId =
+    selectedCompanyIdOverride ?? registrant.company?.id ?? registrant.companyId ?? '';
 
   useEffect(() => {
-    setSelectedCompanyId(registrant.company?.id ?? registrant.companyId ?? '');
-  }, [registrant.company?.id, registrant.companyId]);
-
-  useEffect(() => {
-    if (profileState.ok || emailState.ok || companyState.ok) {
+    if (profileState.ok || emailState.ok || companyState.ok || seatingState.ok) {
       router.refresh();
     }
-  }, [profileState.ok, emailState.ok, companyState.ok, router]);
+  }, [profileState.ok, emailState.ok, companyState.ok, seatingState.ok, router]);
 
   const profile = registrant.appUser?.profile ?? null;
   const [profilePicture, setProfilePicture] = useState(
@@ -207,7 +210,7 @@ export default function RegistrantEditForm({
                   name: `${company.name} (${company.email}) · ${company.id.slice(0, 8)}`,
                 }))}
                 value={selectedCompanyId}
-                onChange={setSelectedCompanyId}
+                onChange={setSelectedCompanyIdOverride}
                 placeholder='Select company'
               />
               <p className='text-xs text-slate-600'>
@@ -242,13 +245,49 @@ export default function RegistrantEditForm({
             {selectedCompanyId ? (
               <button
                 type='button'
-                onClick={() => setSelectedCompanyId('')}
+                onClick={() => setSelectedCompanyIdOverride('')}
                 className='inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50'
               >
                 Clear
               </button>
             ) : null}
           </div>
+        </form>
+      </div>
+
+      <div className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+        <div className='mb-6 flex items-center justify-between'>
+          <h2 className='text-xl font-bold text-slate-900'>Seating Assignment</h2>
+          {seatingState.message ? (
+            <p
+              className={`text-sm ${
+                seatingState.ok ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {seatingState.message}
+            </p>
+          ) : null}
+        </div>
+        <form action={seatingAction} className='space-y-4'>
+          <input type='hidden' name='eventId' value={eventId} />
+          <input type='hidden' name='registrantId' value={registrant.id} />
+          <label className='space-y-1 text-sm text-slate-700'>
+            <span className='font-semibold uppercase tracking-[0.2em] text-xs text-slate-500'>
+              Table Number
+            </span>
+            <input
+              name='tableNumber'
+              type='number'
+              min={1}
+              defaultValue={registrant.seatingChartRegistrant?.tableNumber ?? ''}
+              placeholder='Leave blank to unassign'
+              className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
+            />
+          </label>
+          <p className='text-xs text-slate-500'>
+            Leave blank and save to remove this registrant from the seating chart.
+          </p>
+          <SubmitButton label='Save seating assignment' />
         </form>
       </div>
 

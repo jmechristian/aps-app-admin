@@ -686,6 +686,11 @@ const GET_REGISTRANT = /* GraphQL */ `
       presentationSummary
       bio
       qrCode
+      seatingChartRegistrant {
+        id
+        tableNumber
+        seatingChartID
+      }
       createdAt
       updatedAt
       appUser {
@@ -989,6 +994,11 @@ export type Registrant = {
       thinkificId?: number | null;
       apcProgress?: number | null;
     } | null;
+  } | null;
+  seatingChartRegistrant?: {
+    id: string;
+    tableNumber?: number | null;
+    seatingChartID: string;
   } | null;
   createdAt: string;
   updatedAt: string;

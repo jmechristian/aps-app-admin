@@ -975,6 +975,38 @@ export type ThinkificProgressSyncResult = {
   message?: string | null,
 };
 
+export type AdminCreateRegistrantInput = {
+  apsID?: string | null,
+  firstName: string,
+  lastName: string,
+  email: string,
+  phone?: string | null,
+  companyId?: string | null,
+  jobTitle?: string | null,
+  attendeeType: RegistrantType,
+  status: RegistrantStatus,
+};
+
+export type AdminCreateRegistrantResult = {
+  __typename: "AdminCreateRegistrantResult",
+  id: string,
+  email: string,
+  companyId?: string | null,
+  tempPassword?: string | null,
+};
+
+export type AdminReissueRegistrantTempPasswordInput = {
+  registrantId: string,
+  email?: string | null,
+};
+
+export type AdminReissueRegistrantTempPasswordResult = {
+  __typename: "AdminReissueRegistrantTempPasswordResult",
+  registrantId: string,
+  email: string,
+  tempPassword: string,
+};
+
 export type UpdateAPSInput = {
   id: string,
   year?: string | null,
@@ -4818,6 +4850,33 @@ export type SyncMyThinkificProgressMutation = {
     updated: boolean,
     syncedAt: string,
     message?: string | null,
+  } | null,
+};
+
+export type AdminCreateRegistrantMutationVariables = {
+  input: AdminCreateRegistrantInput,
+};
+
+export type AdminCreateRegistrantMutation = {
+  adminCreateRegistrant?:  {
+    __typename: "AdminCreateRegistrantResult",
+    id: string,
+    email: string,
+    companyId?: string | null,
+    tempPassword?: string | null,
+  } | null,
+};
+
+export type AdminReissueRegistrantTempPasswordMutationVariables = {
+  input: AdminReissueRegistrantTempPasswordInput,
+};
+
+export type AdminReissueRegistrantTempPasswordMutation = {
+  adminReissueRegistrantTempPassword?:  {
+    __typename: "AdminReissueRegistrantTempPasswordResult",
+    registrantId: string,
+    email: string,
+    tempPassword: string,
   } | null,
 };
 

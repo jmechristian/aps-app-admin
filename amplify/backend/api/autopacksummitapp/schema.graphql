@@ -38,12 +38,42 @@ input SyncThinkificProgressInput {
   email: String
 }
 
+input AdminCreateRegistrantInput {
+  apsID: ID
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String
+  companyId: ID
+  jobTitle: String
+  attendeeType: RegistrantType!
+  status: RegistrantStatus!
+}
+
 type ThinkificProgressSyncResult {
   thinkificUserId: Int
   apcProgramProgress: Float
   updated: Boolean!
   syncedAt: AWSDateTime!
   message: String
+}
+
+type AdminCreateRegistrantResult {
+  id: ID!
+  email: String!
+  companyId: ID
+  tempPassword: String
+}
+
+input AdminReissueRegistrantTempPasswordInput {
+  registrantId: ID!
+  email: String
+}
+
+type AdminReissueRegistrantTempPasswordResult {
+  registrantId: ID!
+  email: String!
+  tempPassword: String!
 }
 
 type Mutation {
@@ -54,6 +84,16 @@ type Mutation {
     input: SyncThinkificProgressInput
   ): ThinkificProgressSyncResult
     @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  adminCreateRegistrant(
+    input: AdminCreateRegistrantInput!
+  ): AdminCreateRegistrantResult
+    @function(name: "adminRegistrantOps-${env}")
+    @aws_cognito_user_pools
+  adminReissueRegistrantTempPassword(
+    input: AdminReissueRegistrantTempPasswordInput!
+  ): AdminReissueRegistrantTempPasswordResult
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
 }
 
