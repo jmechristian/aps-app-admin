@@ -97,6 +97,7 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -267,6 +268,7 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -437,6 +439,7 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -1583,6 +1586,7 @@ export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnC
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -1662,6 +1666,7 @@ export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnU
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -1741,6 +1746,7 @@ export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnD
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -5173,6 +5179,7 @@ export const onCreateApsAppSession = /* GraphQL */ `subscription OnCreateApsAppS
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -5222,6 +5229,7 @@ export const onUpdateApsAppSession = /* GraphQL */ `subscription OnUpdateApsAppS
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -5271,6 +5279,7 @@ export const onDeleteApsAppSession = /* GraphQL */ `subscription OnDeleteApsAppS
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -5323,6 +5332,7 @@ export const onCreateApsAppSessionQuestion = /* GraphQL */ `subscription OnCreat
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -5363,6 +5373,7 @@ export const onUpdateApsAppSessionQuestion = /* GraphQL */ `subscription OnUpdat
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -5403,6 +5414,7 @@ export const onDeleteApsAppSessionQuestion = /* GraphQL */ `subscription OnDelet
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8114,6 +8126,7 @@ export const onCreateSessionSpeakers = /* GraphQL */ `subscription OnCreateSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8155,6 +8168,7 @@ export const onUpdateSessionSpeakers = /* GraphQL */ `subscription OnUpdateSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8196,6 +8210,7 @@ export const onDeleteSessionSpeakers = /* GraphQL */ `subscription OnDeleteSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8237,6 +8252,7 @@ export const onCreateSessionSponsors = /* GraphQL */ `subscription OnCreateSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8278,6 +8294,7 @@ export const onUpdateSessionSponsors = /* GraphQL */ `subscription OnUpdateSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -8319,6 +8336,7 @@ export const onDeleteSessionSponsors = /* GraphQL */ `subscription OnDeleteSessi
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt

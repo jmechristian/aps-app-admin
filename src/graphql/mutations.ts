@@ -88,6 +88,21 @@ export const adminReissueRegistrantTempPassword = /* GraphQL */ `mutation AdminR
   APITypes.AdminReissueRegistrantTempPasswordMutationVariables,
   APITypes.AdminReissueRegistrantTempPasswordMutation
 >;
+export const adminCreateExhibitor = /* GraphQL */ `mutation AdminCreateExhibitor($input: AdminCreateExhibitorInput!) {
+  adminCreateExhibitor(input: $input) {
+    id
+    companyId
+    eventId
+    boothNumber
+    passportQrPayload
+    qrCode
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.AdminCreateExhibitorMutationVariables,
+  APITypes.AdminCreateExhibitorMutation
+>;
 export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
   $input: UpdateAPSInput!
   $condition: ModelAPSConditionInput
@@ -1131,6 +1146,7 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -1301,6 +1317,7 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -1471,6 +1488,7 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -2100,6 +2118,7 @@ export const createApsAppSession = /* GraphQL */ `mutation CreateApsAppSession(
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -2150,6 +2169,7 @@ export const updateApsAppSession = /* GraphQL */ `mutation UpdateApsAppSession(
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -2200,6 +2220,7 @@ export const deleteApsAppSession = /* GraphQL */ `mutation DeleteApsAppSession(
     endTime
     location
     description
+    embedUrl
     agendaId
     agenda {
       id
@@ -2253,6 +2274,7 @@ export const createApsAppSessionQuestion = /* GraphQL */ `mutation CreateApsAppS
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -2294,6 +2316,7 @@ export const updateApsAppSessionQuestion = /* GraphQL */ `mutation UpdateApsAppS
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -2335,6 +2358,7 @@ export const deleteApsAppSessionQuestion = /* GraphQL */ `mutation DeleteApsAppS
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -4223,6 +4247,7 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -4302,6 +4327,7 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -4381,6 +4407,7 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -5993,6 +6020,7 @@ export const createSessionSpeakers = /* GraphQL */ `mutation CreateSessionSpeake
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -6035,6 +6063,7 @@ export const updateSessionSpeakers = /* GraphQL */ `mutation UpdateSessionSpeake
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -6077,6 +6106,7 @@ export const deleteSessionSpeakers = /* GraphQL */ `mutation DeleteSessionSpeake
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -6119,6 +6149,7 @@ export const createSessionSponsors = /* GraphQL */ `mutation CreateSessionSponso
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -6161,6 +6192,7 @@ export const updateSessionSponsors = /* GraphQL */ `mutation UpdateSessionSponso
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt
@@ -6203,6 +6235,7 @@ export const deleteSessionSponsors = /* GraphQL */ `mutation DeleteSessionSponso
       endTime
       location
       description
+      embedUrl
       agendaId
       createdAt
       updatedAt

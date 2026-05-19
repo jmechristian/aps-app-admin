@@ -21,7 +21,17 @@
       "arn:aws:dynamodb:*:*:table/ApsDmMessage-*",
       "arn:aws:dynamodb:*:*:table/ApsDmMessage-*/index/*",
       "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*",
-      "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*"
+      "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*",
+      "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*",
+      "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*"
+    ]
+  },
+  {
+    "Action": [
+      "s3:PutObject"
+    ],
+    "Resource": [
+      "arn:aws:s3:::*/qrcodes/exhibitor-passport/*"
     ]
   }
 ]

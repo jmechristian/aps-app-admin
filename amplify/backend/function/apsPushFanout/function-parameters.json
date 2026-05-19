@@ -36,6 +36,13 @@
         "Query",
         "Mutation"
       ]
+    },
+    "storage": {
+      "apsapp": [
+        "create",
+        "read",
+        "update"
+      ]
     }
   }
 }

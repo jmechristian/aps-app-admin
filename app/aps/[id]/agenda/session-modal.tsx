@@ -41,6 +41,7 @@ export type AgendaSessionRow = {
   endTime?: string | null;
   location?: string | null;
   description?: string | null;
+  embedUrl?: string | null;
   speakerNames?: string[] | null;
   sponsorNames?: string[] | null;
 };
@@ -112,6 +113,7 @@ export default function SessionModal({
     endTime: '',
     location: '',
     description: '',
+    embedUrl: '',
     speakerQuery: '',
     sponsorQuery: '',
     speakerIds: [] as string[],
@@ -152,6 +154,7 @@ export default function SessionModal({
         endTime: '',
         location: '',
         description: '',
+        embedUrl: '',
         speakerQuery: '',
         sponsorQuery: '',
         speakerIds: [],
@@ -169,6 +172,7 @@ export default function SessionModal({
       endTime: initialSession?.endTime ?? '',
       location: initialSession?.location ?? '',
       description: initialSession?.description ?? '',
+      embedUrl: initialSession?.embedUrl ?? '',
       speakerQuery: '',
       sponsorQuery: '',
       speakerIds: [],
@@ -262,6 +266,7 @@ export default function SessionModal({
               endTime: form.endTime || null,
               location: form.location || null,
               description: form.description || null,
+              embedUrl: form.embedUrl || null,
             },
           },
           authMode: 'userPool',
@@ -285,6 +290,7 @@ export default function SessionModal({
               endTime: form.endTime || null,
               location: form.location || null,
               description: form.description || null,
+              embedUrl: form.embedUrl || null,
             },
           },
           authMode: 'userPool',
@@ -572,6 +578,19 @@ export default function SessionModal({
                   Stored as HTML. Rendering elsewhere should use{' '}
                   <span className='font-mono'>dangerouslySetInnerHTML</span>.
                 </p>
+              </div>
+              <div>
+                <label className='mb-1 block text-sm font-medium text-slate-700'>
+                  Embed URL
+                </label>
+                <input
+                  value={form.embedUrl}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, embedUrl: e.target.value }))
+                  }
+                  placeholder='https://...'
+                  className='w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
+                />
               </div>
             </div>
 

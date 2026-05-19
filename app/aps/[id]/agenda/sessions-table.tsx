@@ -38,6 +38,7 @@ export default function SessionsTable({
               <th className='px-4 py-3'>Speakers</th>
               <th className='px-4 py-3'>Sponsors</th>
               <th className='px-4 py-3'>Location</th>
+              <th className='px-4 py-3'>Embed URL</th>
             </tr>
           </thead>
           <tbody className='divide-y divide-slate-200'>
@@ -67,6 +68,21 @@ export default function SessionsTable({
                   </span>
                 </td>
                 <td className='px-4 py-3 text-slate-700'>{s.location || '—'}</td>
+                <td className='px-4 py-3 text-slate-700'>
+                  {s.embedUrl ? (
+                    <a
+                      href={s.embedUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='block max-w-[18rem] truncate text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-800'
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {s.embedUrl}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

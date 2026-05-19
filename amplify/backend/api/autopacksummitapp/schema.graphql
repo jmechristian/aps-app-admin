@@ -76,6 +76,44 @@ type AdminReissueRegistrantTempPasswordResult {
   tempPassword: String!
 }
 
+input AdminCreateExhibitorInput {
+  companyId: ID!
+  eventId: ID!
+  boothNumber: String
+}
+
+type AdminCreateExhibitorResult {
+  id: ID!
+  companyId: ID!
+  eventId: ID!
+  boothNumber: String
+  passportQrPayload: String!
+  qrCode: String!
+}
+
+type AdminLatestTempCredentialResult {
+  registrantId: ID!
+  email: String!
+  tempPassword: String!
+  createdAt: AWSDateTime!
+}
+
+type AdminThinkificEnrollment {
+  enrollmentId: Int
+  courseId: Int
+  courseName: String
+  percentageCompleted: Float
+  completedAt: String
+  activatedAt: String
+}
+
+type AdminThinkificByEmailResult {
+  email: String!
+  thinkificUserId: Int
+  apcEnrollments: [AdminThinkificEnrollment!]!
+  otherEnrollments: [AdminThinkificEnrollment!]!
+}
+
 type Mutation {
   sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
     @function(name: "apsPushFanout-${env}")
@@ -93,6 +131,22 @@ type Mutation {
   adminReissueRegistrantTempPassword(
     input: AdminReissueRegistrantTempPasswordInput!
   ): AdminReissueRegistrantTempPasswordResult
+    @function(name: "adminRegistrantOps-${env}")
+    @aws_cognito_user_pools
+  adminCreateExhibitor(
+    input: AdminCreateExhibitorInput!
+  ): AdminCreateExhibitorResult
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+}
+
+type Query {
+  adminGetThinkificByEmail(email: String!): AdminThinkificByEmailResult
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  adminGetLatestRegistrantTempCredential(
+    registrantId: ID!
+  ): AdminLatestTempCredentialResult
     @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
 }
@@ -521,6 +575,7 @@ type ApsAppSession
   endTime: String
   location: String
   description: String
+  embedUrl: String
   agendaId: ID @index(name: "byAgenda")
   agenda: ApsAgenda @belongsTo(fields: ["agendaId"])
   sessionQuestions: [ApsAppSessionQuestion]

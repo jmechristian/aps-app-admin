@@ -8,6 +8,13 @@
           ],
           "category": "auth",
           "resourceName": "autopacksummitappfefbe6f1"
+        },
+        {
+          "attributes": [
+            "BucketName"
+          ],
+          "category": "storage",
+          "resourceName": "apsapp"
         }
       ],
       "output": {
@@ -92,6 +99,13 @@
           ],
           "category": "api",
           "resourceName": "autopacksummitapp"
+        },
+        {
+          "attributes": [
+            "BucketName"
+          ],
+          "category": "storage",
+          "resourceName": "apsapp"
         }
       ],
       "providerPlugin": "awscloudformation",

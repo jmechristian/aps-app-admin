@@ -12,7 +12,10 @@ Amplify Params - DO NOT EDIT *//**
  *
  * @type {import('@types/aws-lambda').DynamoDBStreamHandler}
  */
+const crypto = require('crypto');
+const QRCode = require('qrcode');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const {
   DynamoDBDocumentClient,
   GetCommand,
@@ -23,6 +26,7 @@ const {
 } = require('@aws-sdk/lib-dynamodb');
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const s3 = new S3Client({});
 
 const EXPO_PUSH_URL =
   process.env.EXPO_PUSH_URL || 'https://exp.host/--/api/v2/push/send';
@@ -38,6 +42,7 @@ const CONTACT_REQUEST_TABLE_NAME = process.env.CONTACT_REQUEST_TABLE_NAME;
 const DM_THREAD_TABLE_NAME = process.env.DM_THREAD_TABLE_NAME;
 const DM_MESSAGE_TABLE_NAME = process.env.DM_MESSAGE_TABLE_NAME;
 const DM_PARTICIPANT_STATE_TABLE_NAME = process.env.DM_PARTICIPANT_STATE_TABLE_NAME;
+const EXHIBITOR_PROFILE_TABLE_NAME = process.env.EXHIBITOR_PROFILE_TABLE_NAME;
 
 const APPSYNC_ENDPOINT = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIENDPOINTOUTPUT;
 const APPSYNC_API_KEY = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIKEYOUTPUT;
@@ -47,6 +52,29 @@ const THINKIFIC_ENROLLMENTS_URL =
 const THINKIFIC_API_KEY = process.env.THINKIFIC_API_KEY || '';
 const THINKIFIC_SUBDOMAIN = process.env.THINKIFIC_SUBDOMAIN || '';
 const APC_TOTAL_COURSES = Number(process.env.APC_TOTAL_COURSES || '10') || 10;
+function resolveExhibitorQrBucket() {
+  const candidates = [
+    'autopacksummitapp94b14feadba64f23aff0ed8deae77b99bc6-dev',
+    process.env.STORAGE_APSAPP_BUCKETNAME,
+    process.env.EXHIBITOR_QR_BUCKET,
+    process.env.S3_BUCKET,
+    'apsapp',
+  ]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .filter(
+      (value) =>
+        value !== 'storageapsappBucketName' &&
+        value !== 'STORAGE_APSAPP_BUCKETNAME'
+    );
+  return candidates[0] || 'apsapp';
+}
+const EXHIBITOR_QR_BUCKET = resolveExhibitorQrBucket();
+const EXHIBITOR_QR_SECRET =
+  process.env.EXHIBITOR_QR_SECRET ||
+  process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIIDOUTPUT ||
+  'aps-qr-secret';
+const EXHIBITOR_QR_KEY_PREFIX = 'qrcodes/exhibitor-passport';
 
 const APC_PRIORITY_PROGRESS_COURSE_ID = 699298;
 const APC_COMPLETION_COURSE_IDS = new Set([591574]);
@@ -98,6 +126,24 @@ function getIdentitySub(event) {
     event?.identity?.username ||
     null
   );
+}
+
+function normalizeGroups(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item || '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return [value.trim().toLowerCase()];
+  }
+  return [];
+}
+
+function isAdminIdentity(event) {
+  const claims = event?.identity?.claims || {};
+  const groups = normalizeGroups(claims['cognito:groups']);
+  return groups.includes('admin');
 }
 
 function normalizeForModeration(text) {
@@ -474,6 +520,52 @@ async function getThinkificRegistrantSummaryByEmail(email) {
         : completedFinalAssessment
           ? 100
           : apcProgramProgress,
+  };
+}
+
+function mapThinkificEnrollment(item) {
+  const percentageRaw = Number(item?.percentage_completed);
+  const percentageCompleted = Number.isFinite(percentageRaw)
+    ? clampProgress(percentageRaw)
+    : null;
+  return {
+    enrollmentId: Number.isFinite(Number(item?.id)) ? Number(item.id) : null,
+    courseId: Number.isFinite(Number(item?.course_id)) ? Number(item.course_id) : null,
+    courseName: item?.course_name || null,
+    percentageCompleted,
+    completedAt: item?.completed_at || null,
+    activatedAt: item?.activated_at || null,
+  };
+}
+
+async function handleAdminGetThinkificByEmail(event) {
+  if (!isAdminIdentity(event)) throw new Error('Unauthorized');
+  const email = String(event?.arguments?.email || '')
+    .trim()
+    .toLowerCase();
+  if (!email) throw new Error('email is required');
+
+  const enrollments = await getThinkificEnrollmentsByEmail(email);
+  const mapped = enrollments.map(mapThinkificEnrollment);
+  const apcEnrollments = mapped.filter((item) =>
+    String(item?.courseName || '')
+      .toUpperCase()
+      .includes('APC')
+  );
+  const otherEnrollments = mapped.filter((item) =>
+    !String(item?.courseName || '')
+      .toUpperCase()
+      .includes('APC')
+  );
+  const thinkificUserId =
+    enrollments.find((enrollment) => Number.isFinite(Number(enrollment?.user_id)))?.user_id ??
+    null;
+
+  return {
+    email,
+    thinkificUserId: thinkificUserId == null ? null : Number(thinkificUserId),
+    apcEnrollments,
+    otherEnrollments,
   };
 }
 
@@ -1289,9 +1381,160 @@ async function handleStreamFanout(event) {
   return { ok: true, sent: expoMessages.length };
 }
 
+function buildExhibitorPassportPayload(eventId, exhibitorId) {
+  const nonce = crypto.randomBytes(18).toString('base64url');
+  const raw = `${eventId}:${exhibitorId}:${nonce}`;
+  const signature = crypto
+    .createHmac('sha256', String(EXHIBITOR_QR_SECRET))
+    .update(raw)
+    .digest('base64url');
+  return `aps-passport:v1:${eventId}:${exhibitorId}:${nonce}:${signature}`;
+}
+
+function buildS3PublicUrl(bucket, key) {
+  const region = process.env.REGION || process.env.AWS_REGION || 'us-east-1';
+  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+}
+
+async function createExhibitorBase(input) {
+  if (!EXHIBITOR_PROFILE_TABLE_NAME) throw new Error('Missing EXHIBITOR_PROFILE_TABLE_NAME');
+  const now = new Date().toISOString();
+  const created = {
+    id: crypto.randomUUID(),
+    companyId: input.companyId,
+    eventId: input.eventId,
+    boothNumber: input.boothNumber || null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await ddb.send(
+    new PutCommand({
+      TableName: EXHIBITOR_PROFILE_TABLE_NAME,
+      Item: created,
+      ConditionExpression: 'attribute_not_exists(#id)',
+      ExpressionAttributeNames: { '#id': 'id' },
+    })
+  );
+  return created;
+}
+
+async function uploadExhibitorQrPng({ exhibitorId, payload }) {
+  const key = `${EXHIBITOR_QR_KEY_PREFIX}/${exhibitorId}.png`;
+  const pngBuffer = await QRCode.toBuffer(payload, {
+    type: 'png',
+    width: 640,
+    errorCorrectionLevel: 'M',
+    margin: 1,
+  });
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: EXHIBITOR_QR_BUCKET,
+      Key: key,
+      Body: pngBuffer,
+      ContentType: 'image/png',
+    })
+  );
+  return {
+    key,
+    publicUrl: buildS3PublicUrl(EXHIBITOR_QR_BUCKET, key),
+  };
+}
+
+async function updateExhibitorQrFields({ exhibitorId, passportQrPayload, qrCode }) {
+  if (!EXHIBITOR_PROFILE_TABLE_NAME) throw new Error('Missing EXHIBITOR_PROFILE_TABLE_NAME');
+  await ddb.send(
+    new UpdateCommand({
+      TableName: EXHIBITOR_PROFILE_TABLE_NAME,
+      Key: { id: exhibitorId },
+      UpdateExpression:
+        'SET #passportQrPayload = :passportQrPayload, #qrCode = :qrCode, #updatedAt = :updatedAt',
+      ExpressionAttributeNames: {
+        '#passportQrPayload': 'passportQrPayload',
+        '#qrCode': 'qrCode',
+        '#updatedAt': 'updatedAt',
+      },
+      ExpressionAttributeValues: {
+        ':passportQrPayload': passportQrPayload,
+        ':qrCode': qrCode,
+        ':updatedAt': new Date().toISOString(),
+      },
+    })
+  );
+  const out = await ddb.send(
+    new GetCommand({
+      TableName: EXHIBITOR_PROFILE_TABLE_NAME,
+      Key: { id: exhibitorId },
+    })
+  );
+  return out?.Item || null;
+}
+
+async function handleAdminCreateExhibitor(event) {
+  if (!isAdminIdentity(event)) throw new Error('Unauthorized');
+  const input = event?.arguments?.input || {};
+  const companyId = String(input.companyId || '').trim();
+  const eventId = String(input.eventId || '').trim();
+  const boothNumber = String(input.boothNumber || '').trim();
+  if (!companyId) throw new Error('companyId is required');
+  if (!eventId) throw new Error('eventId is required');
+
+  let exhibitor = null;
+  try {
+    exhibitor = await createExhibitorBase({
+      companyId,
+      eventId,
+      boothNumber: boothNumber || null,
+    });
+  } catch (error) {
+    throw new Error(`adminCreateExhibitor:create profile failed: ${error?.message || String(error)}`);
+  }
+  if (!exhibitor?.id) throw new Error('adminCreateExhibitor:create profile returned no id');
+
+  const payload = buildExhibitorPassportPayload(eventId, exhibitor.id);
+
+  let uploaded = null;
+  try {
+    uploaded = await uploadExhibitorQrPng({
+      exhibitorId: exhibitor.id,
+      payload,
+    });
+  } catch (error) {
+    throw new Error(
+      `adminCreateExhibitor:upload qr failed (bucket=${EXHIBITOR_QR_BUCKET}): ${error?.message || String(error)}`
+    );
+  }
+
+  let updated = null;
+  try {
+    updated = await updateExhibitorQrFields({
+      exhibitorId: exhibitor.id,
+      passportQrPayload: payload,
+      qrCode: uploaded.publicUrl,
+    });
+  } catch (error) {
+    throw new Error(
+      `adminCreateExhibitor:update qr fields failed: ${error?.message || String(error)}`
+    );
+  }
+  if (!updated?.id) throw new Error('adminCreateExhibitor:update qr fields returned no id');
+
+  return {
+    id: String(updated.id),
+    companyId: String(updated.companyId || companyId),
+    eventId: String(updated.eventId || eventId),
+    boothNumber: updated.boothNumber || null,
+    passportQrPayload: String(updated.passportQrPayload || payload),
+    qrCode: String(updated.qrCode || uploaded.publicUrl),
+  };
+}
+
 exports.handler = async (event) => {
   const isStream = Array.isArray(event?.Records);
   if (isStream) return handleStreamFanout(event);
+
+  if (event?.typeName === 'Query' && event?.fieldName === 'adminGetThinkificByEmail') {
+    return handleAdminGetThinkificByEmail(event);
+  }
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'syncMyThinkificProgress') {
     return handleSyncMyThinkificProgress(event);
@@ -1299,6 +1542,10 @@ exports.handler = async (event) => {
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'sendModeratedDmMessage') {
     return handleSendModeratedDmMessage(event);
+  }
+
+  if (event?.typeName === 'Mutation' && event?.fieldName === 'adminCreateExhibitor') {
+    return handleAdminCreateExhibitor(event);
   }
 
   throw new Error('Unsupported invocation');

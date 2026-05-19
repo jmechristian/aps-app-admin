@@ -57,6 +57,10 @@
     "apcTotalCourses": {
       "Type": "String",
       "Default": "10"
+    },
+    "storageapsappBucketName": {
+      "Type": "String",
+      "Default": "storageapsappBucketName"
     }
   },
   "Conditions": {
@@ -142,6 +146,17 @@
             "APC_TOTAL_COURSES": {
               "Ref": "apcTotalCourses"
             },
+            "EXHIBITOR_QR_BUCKET": {
+              "Fn::Join": [
+                "",
+                [
+                  "autopacksummitapp94b14feadba64f23aff0ed8deae77b99bc6-dev"
+                ]
+              ]
+            },
+            "EXHIBITOR_QR_SECRET": {
+              "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+            },
             "APP_USER_TABLE_NAME": {
               "Fn::Join": [
                 "",
@@ -177,6 +192,21 @@
                 "",
                 [
                   "ApsAppUserProfile-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            },
+            "EXHIBITOR_PROFILE_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsAppExhibitorProfile-",
                   {
                     "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
                   },
@@ -531,7 +561,18 @@
                 "arn:aws:dynamodb:*:*:table/ApsDmMessage-*",
                 "arn:aws:dynamodb:*:*:table/ApsDmMessage-*/index/*",
                 "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*",
-                "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*"
+                "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*",
+                "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Resource": [
+                "arn:aws:s3:::*/qrcodes/exhibitor-passport/*"
               ],
               "Effect": "Allow"
             }
