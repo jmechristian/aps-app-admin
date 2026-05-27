@@ -1735,6 +1735,19 @@ function readStringArrayField(
   return list.length > 0 ? list : null;
 }
 
+function readBooleanField(
+  formData: FormData,
+  key: string,
+): boolean | null | undefined {
+  const value = formData.get(key);
+  if (value === null || value === undefined) return undefined;
+  if (typeof value !== 'string') return undefined;
+  if (value === '') return null;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+}
+
 async function listAllIds(
   query: string,
   responseKey: string,
@@ -2079,6 +2092,131 @@ export async function updateRegistrant(
   } catch (error) {
     console.error('Failed to update registrant:', error);
     return { ok: false, message: 'Failed to update registrant.' };
+  }
+}
+
+export async function updateRegistrantInfo(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const registrantId = readStringField(formData, 'registrantId');
+    const profileId = readStringField(formData, 'profileId');
+    const eventId = readStringField(formData, 'eventId');
+    const email = readStringField(formData, 'email');
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    if (!email) {
+      return { ok: false, message: 'Email is required.' };
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const input: Record<string, unknown> = {
+      id: registrantId,
+      email: normalizedEmail,
+    };
+    const stringFields = [
+      'firstName',
+      'lastName',
+      'phone',
+      'jobTitle',
+      'attendeeType',
+      'bio',
+      'otherInterest',
+      'buyerQuestion',
+      'packagingChallenge',
+      'certification',
+      'status',
+      'paymentConfirmation',
+      'discountCode',
+    ];
+
+    for (const field of stringFields) {
+      const value = readStringField(formData, field);
+      if (value !== undefined && value !== null) {
+        input[field] = value;
+      }
+    }
+
+    const termsAccepted = readBooleanField(formData, 'termsAccepted');
+    if (termsAccepted !== undefined) {
+      input.termsAccepted = termsAccepted;
+    }
+
+    const interests = readStringArrayField(formData, 'interests');
+    if (interests !== undefined) {
+      input.interests = interests;
+    }
+
+    await requestGraphQL(UPDATE_REGISTRANT, { input });
+
+    if (profileId) {
+      await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+        input: {
+          id: profileId,
+          email: normalizedEmail,
+        },
+      });
+    }
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+      revalidatePath(`/aps/${eventId}/speakers`);
+    }
+
+    return { ok: true, message: 'Registrant info updated.' };
+  } catch (error) {
+    console.error('Failed to update registrant info:', error);
+    return { ok: false, message: 'Failed to update registrant info.' };
+  }
+}
+
+export async function regenerateRegistrantQRCode(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const registrantId = readStringField(formData, 'registrantId');
+    const eventId = readStringField(formData, 'eventId');
+    if (!registrantId) {
+      return { ok: false, message: 'Missing registrant id.' };
+    }
+
+    const registrant = await fetchRegistrantById(registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
+    const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
+      firstName: registrant.firstName ?? null,
+      lastName: registrant.lastName ?? null,
+      email: registrant.email,
+      phone: registrant.phone ?? null,
+      company: registrant.company?.name ?? null,
+      jobTitle: registrant.jobTitle ?? null,
+    });
+
+    await requestGraphQL(UPDATE_REGISTRANT, {
+      input: {
+        id: registrantId,
+        qrCode: qrCodeUrl,
+      },
+    });
+
+    if (eventId) {
+      revalidatePath(`/aps/${eventId}`);
+      revalidatePath(`/aps/${eventId}/registrants/${registrantId}`);
+    }
+
+    return { ok: true, message: 'QR code regenerated.' };
+  } catch (error) {
+    console.error('Failed to regenerate QR code:', error);
+    return { ok: false, message: 'Failed to regenerate QR code.' };
   }
 }
 

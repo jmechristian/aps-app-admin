@@ -585,6 +585,7 @@ type ApsAppSession
   sponsors: [ApsSponsor] @manyToMany(relationName: "SessionSponsors")
   favoriteByUsers: [ApsAppUserFavoriteSession]
     @hasMany(indexName: "bySession", fields: ["id"])
+  draft: Boolean
 }
 
 # Session Questions

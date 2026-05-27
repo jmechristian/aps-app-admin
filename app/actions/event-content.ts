@@ -514,6 +514,7 @@ export type AgendaSessionListItem = {
   location?: string | null;
   description?: string | null;
   embedUrl?: string | null;
+  draft?: boolean | null;
   speakerNames?: string[] | null;
   sponsorNames?: string[] | null;
 };
@@ -543,6 +544,7 @@ const LIST_SESSIONS_BY_AGENDA = /* GraphQL */ `
         location
         description
         embedUrl
+        draft
         speakers(limit: 1000) {
           items {
             id
@@ -662,6 +664,7 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
       location: s.location ?? null,
       description: s.description ?? null,
       embedUrl: s.embedUrl ?? null,
+      draft: s.draft ?? null,
       speakerNames,
       sponsorNames,
     };

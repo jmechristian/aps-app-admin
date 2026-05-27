@@ -42,6 +42,7 @@ export type AgendaSessionRow = {
   location?: string | null;
   description?: string | null;
   embedUrl?: string | null;
+  draft?: boolean | null;
   speakerNames?: string[] | null;
   sponsorNames?: string[] | null;
 };
@@ -114,6 +115,7 @@ export default function SessionModal({
     location: '',
     description: '',
     embedUrl: '',
+    draft: false,
     speakerQuery: '',
     sponsorQuery: '',
     speakerIds: [] as string[],
@@ -155,6 +157,7 @@ export default function SessionModal({
         location: '',
         description: '',
         embedUrl: '',
+        draft: false,
         speakerQuery: '',
         sponsorQuery: '',
         speakerIds: [],
@@ -173,6 +176,7 @@ export default function SessionModal({
       location: initialSession?.location ?? '',
       description: initialSession?.description ?? '',
       embedUrl: initialSession?.embedUrl ?? '',
+      draft: initialSession?.draft ?? false,
       speakerQuery: '',
       sponsorQuery: '',
       speakerIds: [],
@@ -267,6 +271,7 @@ export default function SessionModal({
               location: form.location || null,
               description: form.description || null,
               embedUrl: form.embedUrl || null,
+              draft: form.draft,
             },
           },
           authMode: 'userPool',
@@ -291,6 +296,7 @@ export default function SessionModal({
               location: form.location || null,
               description: form.description || null,
               embedUrl: form.embedUrl || null,
+              draft: form.draft,
             },
           },
           authMode: 'userPool',
@@ -592,6 +598,17 @@ export default function SessionModal({
                   className='w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
                 />
               </div>
+              <label className='inline-flex items-center gap-3 text-sm font-medium text-slate-700'>
+                <input
+                  type='checkbox'
+                  checked={form.draft}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, draft: e.target.checked }))
+                  }
+                  className='h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900'
+                />
+                Draft
+              </label>
             </div>
 
             <div className='grid gap-6 lg:grid-cols-2'>

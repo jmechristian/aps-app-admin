@@ -13,6 +13,7 @@ import {
 } from '@/app/actions/thinkific';
 import CompanyLogoForm from './company-logo-form';
 import RegistrantEditForm from './registrant-edit-form';
+import RegistrantQrCodePanel from './registrant-qr-code-panel';
 import RegistrantWorkflowPanel from './registrant-workflow-panel';
 
 type PageProps = {
@@ -317,30 +318,12 @@ export default async function RegistrantProfile({ params }: PageProps) {
             )}
 
             {/* QR Code */}
-            {registrant.qrCode && (
-              <div className='w-full rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
-                <h3 className='mb-4 text-lg font-semibold text-slate-900'>
-                  QR Code
-                </h3>
-                <div className='flex justify-center'>
-                  <img
-                    src={registrant.qrCode}
-                    alt='Registrant QR Code'
-                    width={256}
-                    height={256}
-                    className='rounded-lg'
-                  />
-                </div>
-                <div className='mt-6'>
-                  <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                    Encoded vCard preview
-                  </p>
-                  <pre className='mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700'>
-                    {vCardPreview}
-                  </pre>
-                </div>
-              </div>
-            )}
+            <RegistrantQrCodePanel
+              eventId={eventId}
+              registrantId={registrant.id}
+              qrCode={registrant.qrCode ?? null}
+              vCardPreview={vCardPreview}
+            />
           </div>
         </div>
       </main>
