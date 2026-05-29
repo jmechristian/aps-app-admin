@@ -1025,6 +1025,12 @@ export type AdminCreateExhibitorResult = {
   qrCode: string,
 };
 
+export type AdminPublishDueAnnouncementsResult = {
+  __typename: "AdminPublishDueAnnouncementsResult",
+  publishedCount: number,
+  publishedIds: Array< string >,
+};
+
 export type UpdateAPSInput = {
   id: string,
   year?: string | null,
@@ -2447,6 +2453,8 @@ export type CreateApsAdminAnnouncementInput = {
   title?: string | null,
   body: string,
   deepLink?: string | null,
+  scheduledAt?: string | null,
+  publishedAt?: string | null,
   createdAt?: string | null,
   updatedAt?: string | null,
 };
@@ -2456,6 +2464,8 @@ export type ModelApsAdminAnnouncementConditionInput = {
   title?: ModelStringInput | null,
   body?: ModelStringInput | null,
   deepLink?: ModelStringInput | null,
+  scheduledAt?: ModelStringInput | null,
+  publishedAt?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
   and?: Array< ModelApsAdminAnnouncementConditionInput | null > | null,
@@ -2470,6 +2480,8 @@ export type ApsAdminAnnouncement = {
   title?: string | null,
   body: string,
   deepLink?: string | null,
+  scheduledAt?: string | null,
+  publishedAt?: string | null,
   createdAt: string,
   updatedAt: string,
 };
@@ -2480,6 +2492,8 @@ export type UpdateApsAdminAnnouncementInput = {
   title?: string | null,
   body?: string | null,
   deepLink?: string | null,
+  scheduledAt?: string | null,
+  publishedAt?: string | null,
   createdAt?: string | null,
   updatedAt?: string | null,
 };
@@ -3448,6 +3462,8 @@ export type ModelApsAdminAnnouncementFilterInput = {
   title?: ModelStringInput | null,
   body?: ModelStringInput | null,
   deepLink?: ModelStringInput | null,
+  scheduledAt?: ModelStringInput | null,
+  publishedAt?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
   and?: Array< ModelApsAdminAnnouncementFilterInput | null > | null,
@@ -4309,6 +4325,8 @@ export type ModelSubscriptionApsAdminAnnouncementFilterInput = {
   title?: ModelSubscriptionStringInput | null,
   body?: ModelSubscriptionStringInput | null,
   deepLink?: ModelSubscriptionStringInput | null,
+  scheduledAt?: ModelSubscriptionStringInput | null,
+  publishedAt?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionApsAdminAnnouncementFilterInput | null > | null,
@@ -4947,6 +4965,18 @@ export type AdminCreateExhibitorMutation = {
     boothNumber?: string | null,
     passportQrPayload: string,
     qrCode: string,
+  } | null,
+};
+
+export type AdminPublishDueAnnouncementsMutationVariables = {
+  eventId: string,
+};
+
+export type AdminPublishDueAnnouncementsMutation = {
+  adminPublishDueAnnouncements?:  {
+    __typename: "AdminPublishDueAnnouncementsResult",
+    publishedCount: number,
+    publishedIds: Array< string >,
   } | null,
 };
 
@@ -10573,6 +10603,8 @@ export type CreateApsAdminAnnouncementMutation = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -10591,6 +10623,8 @@ export type UpdateApsAdminAnnouncementMutation = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -10609,6 +10643,8 @@ export type DeleteApsAdminAnnouncementMutation = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -14489,6 +14525,8 @@ export type GetApsAdminAnnouncementQuery = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -14510,6 +14548,8 @@ export type ListApsAdminAnnouncementsQuery = {
       title?: string | null,
       body: string,
       deepLink?: string | null,
+      scheduledAt?: string | null,
+      publishedAt?: string | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -15764,6 +15804,36 @@ export type ApsAdminAnnouncementsByEventIdAndCreatedAtQuery = {
       title?: string | null,
       body: string,
       deepLink?: string | null,
+      scheduledAt?: string | null,
+      publishedAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAdminAnnouncementsByEventIdAndScheduledAtQueryVariables = {
+  eventId: string,
+  scheduledAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAdminAnnouncementFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAdminAnnouncementsByEventIdAndScheduledAtQuery = {
+  apsAdminAnnouncementsByEventIdAndScheduledAt?:  {
+    __typename: "ModelApsAdminAnnouncementConnection",
+    items:  Array< {
+      __typename: "ApsAdminAnnouncement",
+      id: string,
+      eventId: string,
+      title?: string | null,
+      body: string,
+      deepLink?: string | null,
+      scheduledAt?: string | null,
+      publishedAt?: string | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -22443,6 +22513,8 @@ export type OnCreateApsAdminAnnouncementSubscription = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -22460,6 +22532,8 @@ export type OnUpdateApsAdminAnnouncementSubscription = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -22477,6 +22551,8 @@ export type OnDeleteApsAdminAnnouncementSubscription = {
     title?: string | null,
     body: string,
     deepLink?: string | null,
+    scheduledAt?: string | null,
+    publishedAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,

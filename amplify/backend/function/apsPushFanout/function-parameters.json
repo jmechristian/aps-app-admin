@@ -28,6 +28,10 @@
     {
       "cloudFormationParameterName": "apcTotalCourses",
       "environmentVariableName": "APC_TOTAL_COURSES"
+    },
+    {
+      "cloudFormationParameterName": "apsEventId",
+      "environmentVariableName": "APS_EVENT_ID"
     }
   ],
   "permissions": {

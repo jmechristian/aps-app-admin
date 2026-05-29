@@ -23,7 +23,9 @@
       "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*",
       "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*",
       "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*",
-      "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*"
+      "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*",
+      "arn:aws:dynamodb:*:*:table/ApsAdminAnnouncement-*",
+      "arn:aws:dynamodb:*:*:table/ApsAdminAnnouncement-*/index/*"
     ]
   },
   {

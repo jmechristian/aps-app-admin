@@ -2468,6 +2468,8 @@ export const onCreateApsAdminAnnouncement = /* GraphQL */ `subscription OnCreate
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename
@@ -2486,6 +2488,8 @@ export const onUpdateApsAdminAnnouncement = /* GraphQL */ `subscription OnUpdate
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename
@@ -2504,6 +2508,8 @@ export const onDeleteApsAdminAnnouncement = /* GraphQL */ `subscription OnDelete
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename

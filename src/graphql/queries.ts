@@ -1203,6 +1203,8 @@ export const getApsAdminAnnouncement = /* GraphQL */ `query GetApsAdminAnnouncem
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename
@@ -1228,6 +1230,8 @@ export const listApsAdminAnnouncements = /* GraphQL */ `query ListApsAdminAnnoun
       title
       body
       deepLink
+      scheduledAt
+      publishedAt
       createdAt
       updatedAt
       __typename
@@ -2800,6 +2804,8 @@ export const apsAdminAnnouncementsByEventIdAndCreatedAt = /* GraphQL */ `query A
       title
       body
       deepLink
+      scheduledAt
+      publishedAt
       createdAt
       updatedAt
       __typename
@@ -2811,6 +2817,42 @@ export const apsAdminAnnouncementsByEventIdAndCreatedAt = /* GraphQL */ `query A
 ` as GeneratedQuery<
   APITypes.ApsAdminAnnouncementsByEventIdAndCreatedAtQueryVariables,
   APITypes.ApsAdminAnnouncementsByEventIdAndCreatedAtQuery
+>;
+export const apsAdminAnnouncementsByEventIdAndScheduledAt = /* GraphQL */ `query ApsAdminAnnouncementsByEventIdAndScheduledAt(
+  $eventId: ID!
+  $scheduledAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAdminAnnouncementFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAdminAnnouncementsByEventIdAndScheduledAt(
+    eventId: $eventId
+    scheduledAt: $scheduledAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      eventId
+      title
+      body
+      deepLink
+      scheduledAt
+      publishedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAdminAnnouncementsByEventIdAndScheduledAtQueryVariables,
+  APITypes.ApsAdminAnnouncementsByEventIdAndScheduledAtQuery
 >;
 export const apsPushTokensByUserIdAndUpdatedAt = /* GraphQL */ `query ApsPushTokensByUserIdAndUpdatedAt(
   $userId: ID!

@@ -17,6 +17,13 @@ const QRCode = require('qrcode');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const {
+  SchedulerClient,
+  CreateScheduleCommand,
+  UpdateScheduleCommand,
+  DeleteScheduleCommand,
+  GetScheduleCommand,
+} = require('@aws-sdk/client-scheduler');
+const {
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
@@ -27,6 +34,7 @@ const {
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const s3 = new S3Client({});
+const scheduler = new SchedulerClient({});
 
 const EXPO_PUSH_URL =
   process.env.EXPO_PUSH_URL || 'https://exp.host/--/api/v2/push/send';
@@ -43,6 +51,13 @@ const DM_THREAD_TABLE_NAME = process.env.DM_THREAD_TABLE_NAME;
 const DM_MESSAGE_TABLE_NAME = process.env.DM_MESSAGE_TABLE_NAME;
 const DM_PARTICIPANT_STATE_TABLE_NAME = process.env.DM_PARTICIPANT_STATE_TABLE_NAME;
 const EXHIBITOR_PROFILE_TABLE_NAME = process.env.EXHIBITOR_PROFILE_TABLE_NAME;
+const ANNOUNCEMENT_TABLE_NAME = process.env.ANNOUNCEMENT_TABLE_NAME;
+const ANNOUNCEMENT_SCHEDULED_GSI_NAME =
+  process.env.ANNOUNCEMENT_SCHEDULED_GSI_NAME || 'byEventScheduled';
+const APS_EVENT_ID = process.env.APS_EVENT_ID || '';
+const ANNOUNCEMENT_SCHEDULER_GROUP = process.env.ANNOUNCEMENT_SCHEDULER_GROUP || '';
+const ANNOUNCEMENT_SCHEDULER_ROLE_ARN = process.env.ANNOUNCEMENT_SCHEDULER_ROLE_ARN || '';
+const LAMBDA_FUNCTION_ARN = process.env.LAMBDA_FUNCTION_ARN || '';
 
 const APPSYNC_ENDPOINT = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIENDPOINTOUTPUT;
 const APPSYNC_API_KEY = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIKEYOUTPUT;
@@ -318,6 +333,71 @@ function getStringList(attr) {
   if (Array.isArray(attr)) return attr.filter((x) => typeof x === 'string');
   if (attr.L) return attr.L.map((x) => getString(x)).filter(Boolean);
   return [];
+}
+
+function parseIsoMs(value) {
+  if (!value) return null;
+  const ms = Date.parse(String(value));
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function isLegacyAnnouncement(img) {
+  return !getString(img?.scheduledAt) && !getString(img?.publishedAt);
+}
+
+function shouldSendAnnouncementPush(img, oldImg, eventName) {
+  const body = getString(img?.body);
+  const eventId = getString(img?.eventId);
+  const threadId = getString(img?.threadId);
+  if (!body || !eventId || threadId) return false;
+
+  const publishedAt = getString(img?.publishedAt);
+  const scheduledAt = getString(img?.scheduledAt);
+  const nowMs = Date.now();
+  const scheduledMs = parseIsoMs(scheduledAt);
+
+  if (eventName === 'INSERT') {
+    if (isLegacyAnnouncement(img)) return true;
+    if (!publishedAt) return false;
+    if (scheduledMs != null && scheduledMs > nowMs) return false;
+    return true;
+  }
+
+  if (eventName === 'MODIFY') {
+    const oldPublishedAt = getString(oldImg?.publishedAt);
+    if (oldPublishedAt || !publishedAt) return false;
+    if (scheduledMs != null && scheduledMs > nowMs) return false;
+    return true;
+  }
+
+  return false;
+}
+
+function buildAnnouncementPushMessages(announcement, tokens) {
+  const announcementId = getString(announcement?.id);
+  const title = getString(announcement?.title) || 'New announcement';
+  const body = getString(announcement?.body) || '';
+  const deepLink = getString(announcement?.deepLink);
+  const defaultDeepLink = 'app://notifications';
+
+  return tokens.map((token) => ({
+    to: token,
+    title,
+    body: safeSlice(body, 180),
+    badge: 1,
+    data: {
+      type: 'announcement',
+      announcementId: announcementId || null,
+      deepLink: deepLink || defaultDeepLink,
+    },
+  }));
+}
+
+async function sendAnnouncementPush(announcement) {
+  const tokens = await listAllTokens();
+  const messages = buildAnnouncementPushMessages(announcement, tokens);
+  await sendExpoPush(messages);
+  return messages.length;
 }
 
 async function appsyncRequest(query, variables) {
@@ -702,7 +782,8 @@ async function listAllTokens() {
   const out = await ddb.send(
     new ScanCommand({ TableName: PUSH_TOKEN_TABLE_NAME })
   );
-  return (out.Items || []).map((x) => x?.token).filter(Boolean);
+  // Same physical device can register multiple user rows with the same Expo token.
+  return Array.from(new Set((out.Items || []).map((x) => x?.token).filter(Boolean)));
 }
 
 async function getAppUserProfileId(userSub) {
@@ -1361,17 +1442,24 @@ async function handleStreamFanout(event) {
     }
 
     // Announcements: have body + eventId and no threadId
-    if (r.eventName === 'INSERT' && announcementBody && getString(img.eventId) && !threadId) {
+    const announcementId = getString(img.id);
+    if (
+      announcementId &&
+      shouldSendAnnouncementPush(img, unmarshallOldImage(r), r.eventName)
+    ) {
       const tokens = await listAllTokens();
-      for (const token of tokens) {
-        expoMessages.push({
-          to: token,
-          title: announcementTitle || 'New announcement',
-          body: safeSlice(announcementBody, 180),
-          badge: 1,
-          data: { type: 'announcement', deepLink: deepLink || null },
-        });
+      for (const msg of buildAnnouncementPushMessages(
+        {
+          id: announcementId,
+          title: announcementTitle,
+          body: announcementBody,
+          deepLink,
+        },
+        tokens
+      )) {
+        expoMessages.push(msg);
       }
+      continue;
     }
   }
 
@@ -1528,9 +1616,93 @@ async function handleAdminCreateExhibitor(event) {
   };
 }
 
+async function publishDueAnnouncements(eventId) {
+  if (!ANNOUNCEMENT_TABLE_NAME) {
+    throw new Error('ANNOUNCEMENT_TABLE_NAME is not configured');
+  }
+
+  const nowIso = new Date().toISOString();
+  const due = [];
+  let lastEvaluatedKey = undefined;
+
+  do {
+    const resp = await ddb.send(
+      new QueryCommand({
+        TableName: ANNOUNCEMENT_TABLE_NAME,
+        IndexName: ANNOUNCEMENT_SCHEDULED_GSI_NAME,
+        KeyConditionExpression: 'eventId = :eventId AND scheduledAt <= :now',
+        ExpressionAttributeValues: {
+          ':eventId': eventId,
+          ':now': nowIso,
+        },
+        ExclusiveStartKey: lastEvaluatedKey,
+        Limit: 100,
+      })
+    );
+    due.push(
+      ...(resp.Items || []).filter((item) => item?.id && !getString(item?.publishedAt))
+    );
+    lastEvaluatedKey = resp.LastEvaluatedKey;
+  } while (lastEvaluatedKey);
+
+  const publishedIds = [];
+  for (const item of due) {
+    try {
+      await ddb.send(
+        new UpdateCommand({
+          TableName: ANNOUNCEMENT_TABLE_NAME,
+          Key: { id: String(item.id) },
+          UpdateExpression: 'SET publishedAt = :publishedAt, updatedAt = :updatedAt',
+          ConditionExpression: 'attribute_not_exists(publishedAt)',
+          ExpressionAttributeValues: {
+            ':publishedAt': nowIso,
+            ':updatedAt': nowIso,
+          },
+        })
+      );
+      publishedIds.push(String(item.id));
+    } catch (error) {
+      if (error?.name !== 'ConditionalCheckFailedException') {
+        throw error;
+      }
+    }
+  }
+
+  console.log('publishDueAnnouncements', {
+    eventId,
+    dueCount: due.length,
+    publishedCount: publishedIds.length,
+    publishedIds,
+  });
+
+  return {
+    publishedCount: publishedIds.length,
+    publishedIds,
+  };
+}
+
+async function handleAdminPublishDueAnnouncements(event) {
+  if (!isAdminIdentity(event)) throw new Error('Unauthorized');
+  const eventId = String(event?.arguments?.eventId || '').trim();
+  if (!eventId) throw new Error('eventId is required');
+  return publishDueAnnouncements(eventId);
+}
+
+function isScheduledPublishInvocation(event) {
+  if (event?.action === 'publishDueAnnouncements') return true;
+  if (event?.source === 'aws.events') return true;
+  return event?.['detail-type'] === 'Scheduled Event';
+}
+
 exports.handler = async (event) => {
   const isStream = Array.isArray(event?.Records);
   if (isStream) return handleStreamFanout(event);
+
+  if (isScheduledPublishInvocation(event)) {
+    const eventId = String(APS_EVENT_ID || event?.eventId || '').trim();
+    if (!eventId) throw new Error('APS_EVENT_ID is required for scheduled publish');
+    return publishDueAnnouncements(eventId);
+  }
 
   if (event?.typeName === 'Query' && event?.fieldName === 'adminGetThinkificByEmail') {
     return handleAdminGetThinkificByEmail(event);
@@ -1546,6 +1718,10 @@ exports.handler = async (event) => {
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'adminCreateExhibitor') {
     return handleAdminCreateExhibitor(event);
+  }
+
+  if (event?.typeName === 'Mutation' && event?.fieldName === 'adminPublishDueAnnouncements') {
+    return handleAdminPublishDueAnnouncements(event);
   }
 
   throw new Error('Unsupported invocation');

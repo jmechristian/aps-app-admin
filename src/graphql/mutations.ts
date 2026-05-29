@@ -103,6 +103,17 @@ export const adminCreateExhibitor = /* GraphQL */ `mutation AdminCreateExhibitor
   APITypes.AdminCreateExhibitorMutationVariables,
   APITypes.AdminCreateExhibitorMutation
 >;
+export const adminPublishDueAnnouncements = /* GraphQL */ `mutation AdminPublishDueAnnouncements($eventId: ID!) {
+  adminPublishDueAnnouncements(eventId: $eventId) {
+    publishedCount
+    publishedIds
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.AdminPublishDueAnnouncementsMutationVariables,
+  APITypes.AdminPublishDueAnnouncementsMutation
+>;
 export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
   $input: UpdateAPSInput!
   $condition: ModelAPSConditionInput
@@ -5808,6 +5819,8 @@ export const createApsAdminAnnouncement = /* GraphQL */ `mutation CreateApsAdmin
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename
@@ -5827,6 +5840,8 @@ export const updateApsAdminAnnouncement = /* GraphQL */ `mutation UpdateApsAdmin
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename
@@ -5846,6 +5861,8 @@ export const deleteApsAdminAnnouncement = /* GraphQL */ `mutation DeleteApsAdmin
     title
     body
     deepLink
+    scheduledAt
+    publishedAt
     createdAt
     updatedAt
     __typename

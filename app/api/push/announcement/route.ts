@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requestGraphQL } from '@/lib/appsync';
+import { computeUnreadAnnouncements } from '@/lib/push-unread';
 
 type PushTokenItem = {
   id: string;
@@ -20,37 +21,6 @@ const LIST_PUSH_TOKENS = /* GraphQL */ `
         id
         userId
         token
-      }
-      nextToken
-    }
-  }
-`;
-
-const GET_ENGAGE_STATE = /* GraphQL */ `
-  query GetApsUserEngageState($id: ID!) {
-    getApsUserEngageState(id: $id) {
-      id
-      lastSeenAnnouncementAt
-    }
-  }
-`;
-
-const ANNOUNCEMENTS_BY_EVENT_CREATED = /* GraphQL */ `
-  query ApsAdminAnnouncementsByEventIdAndCreatedAt(
-    $eventId: ID!
-    $createdAt: ModelStringKeyConditionInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    apsAdminAnnouncementsByEventIdAndCreatedAt(
-      eventId: $eventId
-      createdAt: $createdAt
-      limit: $limit
-      nextToken: $nextToken
-    ) {
-      items {
-        id
-        createdAt
       }
       nextToken
     }
@@ -195,57 +165,6 @@ async function computeUnreadRequests({
         total += 1;
     }
     nextToken = data.apsContactRequestsByStatusAndUpdatedAt?.nextToken;
-  } while (nextToken);
-
-  return total;
-}
-
-async function computeUnreadAnnouncements({
-  eventId,
-  userId,
-  jwt,
-}: {
-  eventId: string;
-  userId: string;
-  jwt: string;
-}): Promise<number> {
-  const engageId = `e:${eventId}|u:${userId}`;
-
-  type EngageResp = {
-    getApsUserEngageState?: { lastSeenAnnouncementAt?: string | null } | null;
-  };
-  const engage: EngageResp = await requestGraphQL<EngageResp>(
-    GET_ENGAGE_STATE,
-    { id: engageId },
-    { authMode: 'userPools', jwt }
-  );
-  const lastSeen = engage.getApsUserEngageState?.lastSeenAnnouncementAt ?? null;
-
-  let nextToken: string | null | undefined = null;
-  let total = 0;
-
-  do {
-    type Resp = {
-      apsAdminAnnouncementsByEventIdAndCreatedAt?: {
-        items?: Array<{ id: string; createdAt: string }>;
-        nextToken?: string | null;
-      } | null;
-    };
-
-    const data: Resp = await requestGraphQL<Resp>(
-      ANNOUNCEMENTS_BY_EVENT_CREATED,
-      {
-        eventId,
-        createdAt: lastSeen ? { gt: lastSeen } : undefined,
-        limit: 1000,
-        nextToken: nextToken || undefined,
-      },
-      { authMode: 'userPools', jwt }
-    );
-
-    const items = data.apsAdminAnnouncementsByEventIdAndCreatedAt?.items ?? [];
-    total += items.filter(Boolean).length;
-    nextToken = data.apsAdminAnnouncementsByEventIdAndCreatedAt?.nextToken;
   } while (nextToken);
 
   return total;

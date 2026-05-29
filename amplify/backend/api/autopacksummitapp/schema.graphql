@@ -114,6 +114,11 @@ type AdminThinkificByEmailResult {
   otherEnrollments: [AdminThinkificEnrollment!]!
 }
 
+type AdminPublishDueAnnouncementsResult {
+  publishedCount: Int!
+  publishedIds: [ID!]!
+}
+
 type Mutation {
   sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
     @function(name: "apsPushFanout-${env}")
@@ -136,6 +141,11 @@ type Mutation {
   adminCreateExhibitor(
     input: AdminCreateExhibitorInput!
   ): AdminCreateExhibitorResult
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  adminPublishDueAnnouncements(
+    eventId: ID!
+  ): AdminPublishDueAnnouncementsResult
     @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
 }
@@ -1200,11 +1210,15 @@ type ApsAdminAnnouncement
     ]
   ) {
   id: ID!
-  eventId: ID! @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
+  eventId: ID!
+    @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
+    @index(name: "byEventScheduled", sortKeyFields: ["scheduledAt"])
 
   title: String
   body: String!
   deepLink: String # optional, e.g. "app://announcements/<id>"
+  scheduledAt: AWSDateTime # optional future publish time
+  publishedAt: AWSDateTime # set when visible + push is sent
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }

@@ -58,6 +58,10 @@
       "Type": "String",
       "Default": "10"
     },
+    "apsEventId": {
+      "Type": "String",
+      "Default": "d00b35f5-c45b-42eb-b306-fa3dfeee0251"
+    },
     "storageapsappBucketName": {
       "Type": "String",
       "Default": "storageapsappBucketName"
@@ -145,6 +149,9 @@
             },
             "APC_TOTAL_COURSES": {
               "Ref": "apcTotalCourses"
+            },
+            "APS_EVENT_ID": {
+              "Ref": "apsEventId"
             },
             "EXHIBITOR_QR_BUCKET": {
               "Fn::Join": [
@@ -277,7 +284,23 @@
                   }
                 ]
               ]
-            }
+            },
+            "ANNOUNCEMENT_TABLE_NAME": {
+              "Fn::Join": [
+                "",
+                [
+                  "ApsAdminAnnouncement-",
+                  {
+                    "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                  },
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            },
+            "ANNOUNCEMENT_SCHEDULED_GSI_NAME": "byEventScheduled"
           }
         },
         "Role": {
@@ -485,6 +508,62 @@
         "StartingPosition": "LATEST"
       }
     },
+    "LambdaTriggerPolicyApsAdminAnnouncement": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy-ApsAdminAnnouncement",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:DescribeStream",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:ListStreams"
+              ],
+              "Resource": {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${apiautopacksummitappGraphQLAPIIdOutput}:GetAtt:ApsAdminAnnouncementTable:StreamArn"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "LambdaEventSourceMappingApsAdminAnnouncement": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [
+        "LambdaTriggerPolicyApsAdminAnnouncement",
+        "LambdaExecutionRole"
+      ],
+      "Properties": {
+        "BatchSize": 100,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${apiautopacksummitappGraphQLAPIIdOutput}:GetAtt:ApsAdminAnnouncementTable:StreamArn"
+          }
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "LATEST"
+      }
+    },
     "AmplifyResourcesPolicy": {
       "DependsOn": [
         "LambdaExecutionRole"
@@ -525,6 +604,26 @@
                       "/types/Query/*"
                     ]
                   ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:appsync:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":apis/",
+                      {
+                        "Ref": "apiautopacksummitappGraphQLAPIIdOutput"
+                      },
+                      "/types/Mutation/*"
+                    ]
+                  ]
                 }
               ]
             }
@@ -563,7 +662,9 @@
                 "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*",
                 "arn:aws:dynamodb:*:*:table/ApsDmParticipantState-*/index/*",
                 "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*",
-                "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*"
+                "arn:aws:dynamodb:*:*:table/ApsAppExhibitorProfile-*/index/*",
+                "arn:aws:dynamodb:*:*:table/ApsAdminAnnouncement-*",
+                "arn:aws:dynamodb:*:*:table/ApsAdminAnnouncement-*/index/*"
               ],
               "Effect": "Allow"
             },
@@ -585,6 +686,42 @@
         ]
       },
       "DependsOn": "LambdaExecutionRole"
+    },
+    "PublishDueAnnouncementsScheduleRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Description": "Publish scheduled announcements when due",
+        "ScheduleExpression": "rate(1 minute)",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "LambdaFunction",
+                "Arn"
+              ]
+            },
+            "Id": "PublishDueAnnouncementsTarget",
+            "Input": "{\"action\":\"publishDueAnnouncements\"}"
+          }
+        ]
+      }
+    },
+    "PublishDueAnnouncementsSchedulePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "LambdaFunction"
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "PublishDueAnnouncementsScheduleRule",
+            "Arn"
+          ]
+        }
+      }
     }
   },
   "Outputs": {
