@@ -3,6 +3,7 @@
 import { requestGraphQL } from '@/lib/appsync';
 import { revalidatePath } from 'next/cache';
 import { fetchRegistrantById } from '@/app/actions/registrants';
+import { fetchSpeakerProfileById } from '@/app/actions/event-content';
 
 const CREATE_APS_SPEAKER = /* GraphQL */ `
   mutation CreateAPSSpeaker($input: CreateAPSSpeakerInput!) {
@@ -70,6 +71,62 @@ const LIST_SESSION_SPEAKERS = /* GraphQL */ `
 const DELETE_SESSION_SPEAKERS = /* GraphQL */ `
   mutation DeleteSessionSpeakers($input: DeleteSessionSpeakersInput!) {
     deleteSessionSpeakers(input: $input) {
+      id
+    }
+  }
+`;
+
+const DELETE_APS_SPEAKER = /* GraphQL */ `
+  mutation DeleteAPSSpeaker($input: DeleteAPSSpeakerInput!) {
+    deleteAPSSpeaker(input: $input) {
+      id
+    }
+  }
+`;
+
+const SESSION_SPEAKERS_BY_SPEAKER_ID = /* GraphQL */ `
+  query SessionSpeakersByAPSSpeakerId(
+    $aPSSpeakerId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    sessionSpeakersByAPSSpeakerId(
+      aPSSpeakerId: $aPSSpeakerId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const FAVORITE_SPEAKERS_BY_SPEAKER_ID = /* GraphQL */ `
+  query ApsAppUserFavoriteSpeakersBySpeakerIdAndCreatedAt(
+    $speakerId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    apsAppUserFavoriteSpeakersBySpeakerIdAndCreatedAt(
+      speakerId: $speakerId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+      }
+      nextToken
+    }
+  }
+`;
+
+const DELETE_FAVORITE_SPEAKER = /* GraphQL */ `
+  mutation DeleteApsAppUserFavoriteSpeaker(
+    $input: DeleteApsAppUserFavoriteSpeakerInput!
+  ) {
+    deleteApsAppUserFavoriteSpeaker(input: $input) {
       id
     }
   }
@@ -153,6 +210,106 @@ export async function createSpeakerFromRegistrantId(input: {
   });
 
   return speakerRes.createAPSSpeaker;
+}
+
+async function listSessionSpeakerJoinIdsBySpeakerId(
+  speakerId: string,
+): Promise<string[]> {
+  const ids: string[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response: {
+      sessionSpeakersByAPSSpeakerId?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(SESSION_SPEAKERS_BY_SPEAKER_ID, {
+      aPSSpeakerId: speakerId,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = response.sessionSpeakersByAPSSpeakerId?.items ?? [];
+    for (const item of items) {
+      if (item?.id) ids.push(item.id);
+    }
+    nextToken = response.sessionSpeakersByAPSSpeakerId?.nextToken ?? null;
+  } while (nextToken);
+
+  return ids;
+}
+
+async function listFavoriteSpeakerIdsBySpeakerId(
+  speakerId: string,
+): Promise<string[]> {
+  const ids: string[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response: {
+      apsAppUserFavoriteSpeakersBySpeakerIdAndCreatedAt?: {
+        items?: Array<{ id?: string | null } | null>;
+        nextToken?: string | null;
+      } | null;
+    } = await requestGraphQL(FAVORITE_SPEAKERS_BY_SPEAKER_ID, {
+      speakerId,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items =
+      response.apsAppUserFavoriteSpeakersBySpeakerIdAndCreatedAt?.items ?? [];
+    for (const item of items) {
+      if (item?.id) ids.push(item.id);
+    }
+    nextToken =
+      response.apsAppUserFavoriteSpeakersBySpeakerIdAndCreatedAt?.nextToken ??
+      null;
+  } while (nextToken);
+
+  return ids;
+}
+
+/**
+ * Removes an APSSpeaker from the event (and session links) without deleting
+ * the registrant or app user profile.
+ */
+export async function deleteSpeaker(input: {
+  speakerId: string;
+  eventId: string;
+}) {
+  const speaker = await fetchSpeakerProfileById(input.speakerId);
+  if (!speaker) {
+    throw new Error('Speaker not found');
+  }
+  if (speaker.eventId !== input.eventId) {
+    throw new Error('Speaker does not belong to this event');
+  }
+
+  const sessionSpeakerIds = await listSessionSpeakerJoinIdsBySpeakerId(
+    input.speakerId,
+  );
+  for (const id of sessionSpeakerIds) {
+    await requestGraphQL(DELETE_SESSION_SPEAKERS, { input: { id } });
+  }
+
+  const favoriteIds = await listFavoriteSpeakerIdsBySpeakerId(input.speakerId);
+  for (const id of favoriteIds) {
+    await requestGraphQL(DELETE_FAVORITE_SPEAKER, { input: { id } });
+  }
+
+  if (speaker.profileId) {
+    await requestGraphQL(UPDATE_APP_USER_PROFILE, {
+      input: { id: speaker.profileId, speakerId: null },
+    });
+  }
+
+  await requestGraphQL(DELETE_APS_SPEAKER, { input: { id: input.speakerId } });
+
+  revalidatePath(`/aps/${input.eventId}/speakers`);
+  revalidatePath(`/aps/${input.eventId}/speakers/${input.speakerId}`);
+  revalidatePath(`/aps/${input.eventId}/agenda`);
 }
 
 export async function cleanupOrphanedSessionSpeakers() {

@@ -4,6 +4,7 @@ import {
   fetchSpeakerProfilesByEventId,
 } from '@/app/actions/event-content';
 import CreateSpeakerButton from './create-speaker-button';
+import DeleteSpeakerButton from './delete-speaker-button';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
 import StorageImage from '@/app/components/storage-image';
 
@@ -70,6 +71,7 @@ export default async function SpeakersPage({ params }: PageProps) {
                   <th className='px-4 py-3'>Email</th>
                   <th className='px-4 py-3'>Company</th>
                   <th className='px-4 py-3'>Title</th>
+                  <th className='px-4 py-3'>Actions</th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-slate-200'>
@@ -110,6 +112,13 @@ export default async function SpeakersPage({ params }: PageProps) {
                     </td>
                     <td className='px-4 py-3 text-slate-700'>
                       {s.profile?.jobTitle ?? '—'}
+                    </td>
+                    <td className='px-4 py-3'>
+                      <DeleteSpeakerButton
+                        speakerId={s.id}
+                        eventId={eventId}
+                        speakerName={`${s.profile?.firstName ?? ''} ${s.profile?.lastName ?? ''}`.trim()}
+                      />
                     </td>
                   </tr>
                 ))}

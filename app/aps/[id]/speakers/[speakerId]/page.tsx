@@ -6,6 +6,7 @@ import {
   fetchRegistrantsByApsId,
 } from '@/app/actions/registrants';
 import SpeakerEditForm from './speaker-edit-form';
+import DeleteSpeakerButton from '../delete-speaker-button';
 import CompanyLogoForm from '../../registrants/[registrantId]/company-logo-form';
 
 type PageProps = {
@@ -48,7 +49,13 @@ export default async function SpeakerDetailPage({ params }: PageProps) {
               {speaker.profile?.jobTitle ? ` · ${speaker.profile.jobTitle}` : ''}
             </p>
           </div>
-          <div className='flex flex-wrap gap-3'>
+          <div className='flex flex-wrap items-center gap-3'>
+            <DeleteSpeakerButton
+              speakerId={speakerId}
+              eventId={eventId}
+              speakerName={`${speaker.profile?.firstName ?? ''} ${speaker.profile?.lastName ?? ''}`.trim()}
+              redirectToListOnSuccess
+            />
             <Link
               href={`/aps/${eventId}/speakers`}
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
