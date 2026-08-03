@@ -119,6 +119,11 @@ type AdminPublishDueAnnouncementsResult {
   publishedIds: [ID!]!
 }
 
+type DeleteMyAccountResult {
+  success: Boolean!
+  message: String
+}
+
 type Mutation {
   sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
     @function(name: "apsPushFanout-${env}")
@@ -147,6 +152,9 @@ type Mutation {
     eventId: ID!
   ): AdminPublishDueAnnouncementsResult
     @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  deleteMyAccount: DeleteMyAccountResult
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
 }
 
@@ -1268,6 +1276,26 @@ type ApsPushToken
   platform: String
   updatedAt: AWSDateTime!
   createdAt: AWSDateTime!
+}
+
+# In-app feedback submissions (text + optional screenshot/image keys).
+type ApsAppFeedback
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools, operations: [create, read] }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userId: ID! @index(name: "byUser", sortKeyFields: ["createdAt"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  message: String!
+  imageKeys: [String]
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # --- Auth directive fix ---

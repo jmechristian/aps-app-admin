@@ -153,6 +153,9 @@
             "APS_EVENT_ID": {
               "Ref": "apsEventId"
             },
+            "AWS_ACCOUNT_ID": {
+              "Ref": "AWS::AccountId"
+            },
             "EXHIBITOR_QR_BUCKET": {
               "Fn::Join": [
                 "",
@@ -300,7 +303,13 @@
                 ]
               ]
             },
-            "ANNOUNCEMENT_SCHEDULED_GSI_NAME": "byEventScheduled"
+            "ANNOUNCEMENT_SCHEDULED_GSI_NAME": "byEventScheduled",
+            "ANNOUNCEMENT_SCHEDULER_GROUP": {
+              "Fn::Sub": "aps-announcements-${env}"
+            },
+            "ANNOUNCEMENT_SCHEDULER_ROLE_ARN": {
+              "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/aps-announcement-scheduler-${env}"
+            }
           }
         },
         "Role": {
@@ -676,6 +685,18 @@
                 "arn:aws:s3:::*/qrcodes/exhibitor-passport/*"
               ],
               "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "scheduler:CreateSchedule",
+                "scheduler:UpdateSchedule",
+                "scheduler:DeleteSchedule",
+                "scheduler:GetSchedule"
+              ],
+              "Resource": [
+                "arn:aws:scheduler:*:*:schedule/aps-announcements-*/*"
+              ],
+              "Effect": "Allow"
             }
           ]
         },
@@ -691,7 +712,7 @@
       "Type": "AWS::Events::Rule",
       "Properties": {
         "Description": "Publish scheduled announcements when due",
-        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
         "State": "ENABLED",
         "Targets": [
           {
@@ -720,6 +741,64 @@
             "PublishDueAnnouncementsScheduleRule",
             "Arn"
           ]
+        }
+      }
+    },
+    "AnnouncementSchedulerGroup": {
+      "Type": "AWS::Scheduler::ScheduleGroup",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "aps-announcements-${env}"
+        }
+      }
+    },
+    "AnnouncementSchedulerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Sub": "aps-announcement-scheduler-${env}"
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "scheduler.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "invoke-publish-lambda",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:apsPushFanout-${env}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AnnouncementSchedulerInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "LambdaFunction"
+        },
+        "Principal": "scheduler.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/aps-announcements-${env}/*"
         }
       }
     }

@@ -57,7 +57,14 @@ const ANNOUNCEMENT_SCHEDULED_GSI_NAME =
 const APS_EVENT_ID = process.env.APS_EVENT_ID || '';
 const ANNOUNCEMENT_SCHEDULER_GROUP = process.env.ANNOUNCEMENT_SCHEDULER_GROUP || '';
 const ANNOUNCEMENT_SCHEDULER_ROLE_ARN = process.env.ANNOUNCEMENT_SCHEDULER_ROLE_ARN || '';
-const LAMBDA_FUNCTION_ARN = process.env.LAMBDA_FUNCTION_ARN || '';
+
+function getLambdaFunctionArn() {
+  const region = process.env.AWS_REGION || process.env.REGION || 'us-east-1';
+  const accountId = process.env.AWS_ACCOUNT_ID || '';
+  const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME || '';
+  if (!accountId || !functionName) return '';
+  return `arn:aws:lambda:${region}:${accountId}:function:${functionName}`;
+}
 
 const APPSYNC_ENDPOINT = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIENDPOINTOUTPUT;
 const APPSYNC_API_KEY = process.env.API_AUTOPACKSUMMITAPP_GRAPHQLAPIKEYOUTPUT;
@@ -398,6 +405,167 @@ async function sendAnnouncementPush(announcement) {
   const messages = buildAnnouncementPushMessages(announcement, tokens);
   await sendExpoPush(messages);
   return messages.length;
+}
+
+function announcementScheduleName(announcementId) {
+  return `ann-${String(announcementId || '')
+    .replace(/[^a-zA-Z0-9-_]/g, '')
+    .slice(0, 56)}`;
+}
+
+function formatSchedulerAt(isoValue) {
+  const ms = parseIsoMs(isoValue);
+  if (ms == null) return null;
+  return new Date(ms).toISOString().slice(0, 19);
+}
+
+function canUseAnnouncementScheduler() {
+  return !!(
+    ANNOUNCEMENT_SCHEDULER_GROUP &&
+    ANNOUNCEMENT_SCHEDULER_ROLE_ARN &&
+    getLambdaFunctionArn()
+  );
+}
+
+async function deleteAnnouncementSchedule(announcementId) {
+  if (!canUseAnnouncementScheduler()) return;
+  try {
+    await scheduler.send(
+      new DeleteScheduleCommand({
+        Name: announcementScheduleName(announcementId),
+        GroupName: ANNOUNCEMENT_SCHEDULER_GROUP,
+      })
+    );
+  } catch (error) {
+    if (error?.name !== 'ResourceNotFoundException') {
+      console.log('deleteAnnouncementSchedule failed', {
+        announcementId,
+        error: error?.message || String(error),
+      });
+    }
+  }
+}
+
+async function publishAnnouncementById(announcementId) {
+  if (!ANNOUNCEMENT_TABLE_NAME) {
+    throw new Error('ANNOUNCEMENT_TABLE_NAME is not configured');
+  }
+  const nowIso = new Date().toISOString();
+  await ddb.send(
+    new UpdateCommand({
+      TableName: ANNOUNCEMENT_TABLE_NAME,
+      Key: { id: announcementId },
+      UpdateExpression: 'SET publishedAt = :publishedAt, updatedAt = :updatedAt',
+      ConditionExpression: 'attribute_not_exists(publishedAt)',
+      ExpressionAttributeValues: {
+        ':publishedAt': nowIso,
+        ':updatedAt': nowIso,
+      },
+    })
+  );
+  return { published: true, announcementId };
+}
+
+async function upsertAnnouncementSchedule(announcementId, scheduledAt) {
+  if (!canUseAnnouncementScheduler()) return;
+  const atExpression = formatSchedulerAt(scheduledAt);
+  const scheduledMs = parseIsoMs(scheduledAt);
+  if (!atExpression || scheduledMs == null) return;
+
+  if (scheduledMs <= Date.now()) {
+    try {
+      await publishAnnouncementById(announcementId);
+    } catch (error) {
+      if (error?.name !== 'ConditionalCheckFailedException') throw error;
+    }
+    await deleteAnnouncementSchedule(announcementId);
+    return;
+  }
+
+  const scheduleName = announcementScheduleName(announcementId);
+  const params = {
+    Name: scheduleName,
+    GroupName: ANNOUNCEMENT_SCHEDULER_GROUP,
+    ScheduleExpression: `at(${atExpression})`,
+    FlexibleTimeWindow: { Mode: 'OFF' },
+    ActionAfterCompletion: 'DELETE',
+    Target: {
+      Arn: getLambdaFunctionArn(),
+      RoleArn: ANNOUNCEMENT_SCHEDULER_ROLE_ARN,
+      Input: JSON.stringify({
+        action: 'publishAnnouncement',
+        announcementId,
+      }),
+      RetryPolicy: {
+        MaximumEventAgeInSeconds: 3600,
+        MaximumRetryAttempts: 2,
+      },
+    },
+  };
+
+  try {
+    await scheduler.send(
+      new GetScheduleCommand({
+        Name: scheduleName,
+        GroupName: ANNOUNCEMENT_SCHEDULER_GROUP,
+      })
+    );
+    await scheduler.send(new UpdateScheduleCommand(params));
+  } catch (error) {
+    if (error?.name === 'ResourceNotFoundException') {
+      await scheduler.send(new CreateScheduleCommand(params));
+    } else {
+      throw error;
+    }
+  }
+}
+
+async function syncAnnouncementPublishSchedule({
+  id,
+  scheduledAt,
+  publishedAt,
+  eventName,
+}) {
+  if (!id) return;
+  if (eventName === 'REMOVE' || publishedAt) {
+    await deleteAnnouncementSchedule(id);
+    return;
+  }
+  if (!scheduledAt) {
+    await deleteAnnouncementSchedule(id);
+    return;
+  }
+  await upsertAnnouncementSchedule(id, scheduledAt);
+}
+
+async function backfillUpcomingAnnouncementSchedules(eventId) {
+  if (!canUseAnnouncementScheduler() || !ANNOUNCEMENT_TABLE_NAME) return;
+  const nowIso = new Date().toISOString();
+  let lastEvaluatedKey = undefined;
+
+  do {
+    const resp = await ddb.send(
+      new QueryCommand({
+        TableName: ANNOUNCEMENT_TABLE_NAME,
+        IndexName: ANNOUNCEMENT_SCHEDULED_GSI_NAME,
+        KeyConditionExpression: 'eventId = :eventId AND scheduledAt > :now',
+        ExpressionAttributeValues: {
+          ':eventId': eventId,
+          ':now': nowIso,
+        },
+        ExclusiveStartKey: lastEvaluatedKey,
+        Limit: 100,
+      })
+    );
+
+    for (const item of resp.Items || []) {
+      if (item?.id && item?.scheduledAt && !getString(item?.publishedAt)) {
+        await upsertAnnouncementSchedule(String(item.id), String(item.scheduledAt));
+      }
+    }
+
+    lastEvaluatedKey = resp.LastEvaluatedKey;
+  } while (lastEvaluatedKey);
 }
 
 async function appsyncRequest(query, variables) {
@@ -1443,6 +1611,25 @@ async function handleStreamFanout(event) {
 
     // Announcements: have body + eventId and no threadId
     const announcementId = getString(img.id);
+    const isAnnouncementRecord =
+      announcementId && announcementBody && eventId && !threadId;
+
+    if (isAnnouncementRecord) {
+      if (r.eventName === 'REMOVE') {
+        await syncAnnouncementPublishSchedule({
+          id: announcementId,
+          eventName: 'REMOVE',
+        });
+      } else {
+        await syncAnnouncementPublishSchedule({
+          id: announcementId,
+          scheduledAt: getString(img.scheduledAt),
+          publishedAt: getString(img.publishedAt),
+          eventName: r.eventName,
+        });
+      }
+    }
+
     if (
       announcementId &&
       shouldSendAnnouncementPush(img, unmarshallOldImage(r), r.eventName)
@@ -1675,6 +1862,8 @@ async function publishDueAnnouncements(eventId) {
     publishedIds,
   });
 
+  await backfillUpcomingAnnouncementSchedules(eventId);
+
   return {
     publishedCount: publishedIds.length,
     publishedIds,
@@ -1690,6 +1879,7 @@ async function handleAdminPublishDueAnnouncements(event) {
 
 function isScheduledPublishInvocation(event) {
   if (event?.action === 'publishDueAnnouncements') return true;
+  if (event?.action === 'publishAnnouncement') return false;
   if (event?.source === 'aws.events') return true;
   return event?.['detail-type'] === 'Scheduled Event';
 }
@@ -1697,6 +1887,19 @@ function isScheduledPublishInvocation(event) {
 exports.handler = async (event) => {
   const isStream = Array.isArray(event?.Records);
   if (isStream) return handleStreamFanout(event);
+
+  if (event?.action === 'publishAnnouncement') {
+    const announcementId = String(event?.announcementId || '').trim();
+    if (!announcementId) throw new Error('announcementId is required');
+    try {
+      return await publishAnnouncementById(announcementId);
+    } catch (error) {
+      if (error?.name === 'ConditionalCheckFailedException') {
+        return { published: false, announcementId, reason: 'already-published' };
+      }
+      throw error;
+    }
+  }
 
   if (isScheduledPublishInvocation(event)) {
     const eventId = String(APS_EVENT_ID || event?.eventId || '').trim();
