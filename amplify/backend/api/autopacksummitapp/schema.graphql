@@ -207,6 +207,7 @@ type APS
   favoriteSessions: [ApsAppUserFavoriteSession] @hasMany(indexName: "byEvent")
   favoriteContacts: [ApsAppUserFavoriteContact] @hasMany(indexName: "byEvent")
   passportStamps: [ApsAppUserPassportStamp] @hasMany(indexName: "byEvent")
+  exhibitorViews: [ApsAppUserExhibitorView] @hasMany(indexName: "byEvent")
   addOns: [ApsAddOn] @hasMany(indexName: "byEvent")
 }
 
@@ -492,6 +493,8 @@ type ApsAppUserProfile
     @hasMany(indexName: "byContactProfile", fields: ["id"])
   passportStamps: [ApsAppUserPassportStamp]
     @hasMany(indexName: "byUserProfile", fields: ["id"])
+  exhibitorViews: [ApsAppUserExhibitorView]
+    @hasMany(indexName: "byUserProfile", fields: ["id"])
 
   # Notes about this profile (contact notes)
   notes: [ApsAppUserNote] @hasMany(indexName: "byProfile", fields: ["id"])
@@ -751,6 +754,31 @@ type ApsAppExhibitorProfile
     @hasMany(indexName: "byExhibitor", fields: ["id"])
   passportStamps: [ApsAppUserPassportStamp]
     @hasMany(indexName: "byExhibitor", fields: ["id"])
+  viewedByUsers: [ApsAppUserExhibitorView]
+    @hasMany(indexName: "byExhibitor", fields: ["id"])
+}
+
+# Unique exhibitor profile views (one per user per exhibitor/event)
+type ApsAppUserExhibitorView
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  userProfileId: ID! @index(name: "byUserProfile", sortKeyFields: ["createdAt"])
+  userProfile: ApsAppUserProfile! @belongsTo(fields: ["userProfileId"])
+  exhibitorId: ID! @index(name: "byExhibitor", sortKeyFields: ["createdAt"])
+  exhibitor: ApsAppExhibitorProfile! @belongsTo(fields: ["exhibitorId"])
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  event: APS! @belongsTo(fields: ["eventId"])
+  viewKey: String! @index(name: "byViewKey")
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # Passport Challenge Stamps
