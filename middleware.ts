@@ -30,15 +30,21 @@ export function middleware(req: NextRequest) {
   }
 
   const token = req.cookies.get(AUTH_COOKIE)?.value ?? null;
-  if (!token) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
-
-  const payload = readJwtPayload(token);
+  const payload = token ? readJwtPayload(token) : null;
   const exp = payload?.exp ? Number(payload.exp) : 0;
-  if (!exp || exp * 1000 < Date.now()) {
+  const isExpired = !token || !exp || exp * 1000 < Date.now();
+
+  if (isExpired) {
+    // Server Actions expect an RSC flight response. A login redirect becomes
+    // HTML (after fetch follows it) and surfaces as:
+    // "An unexpected response was received from the server."
+    if (req.headers.has('next-action')) {
+      return new NextResponse('Your session expired. Please log in again.', {
+        status: 401,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

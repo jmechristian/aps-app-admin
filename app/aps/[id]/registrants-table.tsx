@@ -176,66 +176,102 @@ export default function RegistrantsTable({
 
     setDeletingId(registrantId);
     startTransition(async () => {
-      const result = await deleteRegistrantCascade({
-        registrantId,
-        eventId,
-      });
-      if (!result.ok) {
-        window.alert(result.message || 'Failed to delete registrant.');
+      try {
+        const result = await deleteRegistrantCascade({
+          registrantId,
+          eventId,
+        });
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to delete registrant.');
+        }
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete registrant.',
+        );
+      } finally {
+        setDeletingId(null);
       }
-      setDeletingId(null);
-      router.refresh();
     });
   };
 
   const handleWelcomeEmailClick = (registrantId: string) => {
     setEmailingId(registrantId);
     startTransition(async () => {
-      const result = await sendWelcomeEmail({
-        registrantId,
-        eventId,
-      });
-      if (!result.ok) {
-        window.alert(result.message || 'Failed to send welcome email.');
-      } else {
-        window.alert('Welcome email sent.');
+      try {
+        const result = await sendWelcomeEmail({
+          registrantId,
+          eventId,
+        });
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to send welcome email.');
+        } else {
+          window.alert('Welcome email sent.');
+        }
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to send welcome email.',
+        );
+      } finally {
+        setEmailingId(null);
       }
-      setEmailingId(null);
-      router.refresh();
     });
   };
 
   const handleAppEmailClick = (registrantId: string) => {
     setAppEmailingId(registrantId);
     startTransition(async () => {
-      const result = await sendAppAccessEmail({
-        registrantId,
-        eventId,
-      });
-      if (!result.ok) {
-        window.alert(result.message || 'Failed to send app access email.');
-      } else {
-        window.alert('App access email sent.');
+      try {
+        const result = await sendAppAccessEmail({
+          registrantId,
+          eventId,
+        });
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to send app access email.');
+        } else {
+          window.alert('App access email sent.');
+        }
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to send app access email.',
+        );
+      } finally {
+        setAppEmailingId(null);
       }
-      setAppEmailingId(null);
-      router.refresh();
     });
   };
 
   const handleApprove = (registrantId: string) => {
     setApprovingId(registrantId);
     startTransition(async () => {
-      const result = await approveRegistrant({
-        registrantId,
-        eventId,
-      });
-      if (!result.ok) {
-        window.alert(result.message || 'Failed to approve registrant.');
-      } else {
-        window.alert(result.message || 'Registrant approved.');
+      try {
+        const result = await approveRegistrant({
+          registrantId,
+          eventId,
+        });
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to approve registrant.');
+        } else {
+          window.alert(result.message || 'Registrant approved.');
+        }
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to approve registrant.',
+        );
+      } finally {
+        setApprovingId(null);
       }
-      setApprovingId(null);
-      router.refresh();
     });
   };
 
@@ -257,31 +293,40 @@ export default function RegistrantsTable({
 
     setSavingTypeId(registrantId);
     startTransition(async () => {
-      const result = await updateRegistrantAttendeeType({
-        registrantId,
-        eventId,
-        attendeeType: nextAttendeeType as
-          | 'OEM'
-          | 'TIER1'
-          | 'SOLUTIONPROVIDER'
-          | 'SPONSOR'
-          | 'SPEAKER'
-          | 'STAFF'
-          | 'EXHIBITOR',
-      });
-
-      if (!result.ok) {
-        window.alert(result.message || 'Failed to update registrant type.');
-      } else {
-        setSelectedTypes((prev) => {
-          const next = { ...prev };
-          delete next[registrantId];
-          return next;
+      try {
+        const result = await updateRegistrantAttendeeType({
+          registrantId,
+          eventId,
+          attendeeType: nextAttendeeType as
+            | 'OEM'
+            | 'TIER1'
+            | 'SOLUTIONPROVIDER'
+            | 'SPONSOR'
+            | 'SPEAKER'
+            | 'STAFF'
+            | 'EXHIBITOR',
         });
-      }
 
-      setSavingTypeId(null);
-      router.refresh();
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to update registrant type.');
+        } else {
+          setSelectedTypes((prev) => {
+            const next = { ...prev };
+            delete next[registrantId];
+            return next;
+          });
+        }
+
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to update registrant type.',
+        );
+      } finally {
+        setSavingTypeId(null);
+      }
     });
   };
 

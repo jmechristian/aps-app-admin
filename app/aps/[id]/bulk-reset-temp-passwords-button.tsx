@@ -32,17 +32,26 @@ export default function BulkResetTempPasswordsButton({
 
           setResultMessage(null);
           startTransition(async () => {
-            const result = await regenerateApprovedTempPasswords({ eventId });
-            const detail =
-              result.failed > 0 && result.errors.length
-                ? `\n\nFirst failures:\n${result.errors
-                    .slice(0, 8)
-                    .map((e) => `• ${e.email}: ${e.error}`)
-                    .join('\n')}`
-                : '';
-            setResultMessage(result.message);
-            window.alert(`${result.message}${detail}`);
-            router.refresh();
+            try {
+              const result = await regenerateApprovedTempPasswords({ eventId });
+              const detail =
+                result.failed > 0 && result.errors.length
+                  ? `\n\nFirst failures:\n${result.errors
+                      .slice(0, 8)
+                      .map((e) => `• ${e.email}: ${e.error}`)
+                      .join('\n')}`
+                  : '';
+              setResultMessage(result.message);
+              window.alert(`${result.message}${detail}`);
+              router.refresh();
+            } catch (error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to reset temporary passwords.';
+              setResultMessage(message);
+              window.alert(message);
+            }
           });
         }}
         className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-950 shadow-sm transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
