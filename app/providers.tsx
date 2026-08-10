@@ -83,7 +83,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         setDeniedReason(e instanceof Error ? e.message : 'Unauthorized');
         clearAuthCookie();
         setReady(false);
-        router.replace('/login');
+        const next = encodeURIComponent(pathname || '/');
+        router.replace(`/login?next=${next}`);
       }
     }
 
@@ -92,7 +93,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isLoginRoute, router]);
+  }, [isLoginRoute, pathname, router]);
 
   if (isLoginRoute) return children;
 

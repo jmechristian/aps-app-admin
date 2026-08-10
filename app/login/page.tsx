@@ -61,6 +61,18 @@ function isPasswordResetRequiredError(err: unknown): boolean {
   );
 }
 
+function safeNextPath(raw: string | null): string {
+  if (!raw) return '/';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  if (raw.startsWith('/login')) return '/';
+  return raw;
+}
+
+function readNextPathFromLocation(): string {
+  if (typeof window === 'undefined') return '/';
+  return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -79,7 +91,13 @@ export default function LoginPage() {
     (async () => {
       try {
         await getCurrentUser();
-        router.replace('/');
+        // Amplify session can still be valid after the middleware cookie expires.
+        // Refresh the cookie before leaving /login or middleware will bounce us
+        // right back here (login ↔ home loop).
+        const session = await fetchAuthSession();
+        const jwt = session.tokens?.idToken?.toString();
+        if (jwt) setAuthCookie(jwt);
+        router.replace(readNextPathFromLocation());
       } catch {
         // no active session
       }
@@ -90,7 +108,7 @@ export default function LoginPage() {
     const session = await fetchAuthSession();
     const jwt = session.tokens?.idToken?.toString();
     if (jwt) setAuthCookie(jwt);
-    router.replace('/');
+    router.replace(readNextPathFromLocation());
   }
 
   async function handleSignIn(e: React.FormEvent) {

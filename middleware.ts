@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const AUTH_COOKIE = 'apsAdminJwt';
 
+function normalizeCookieToken(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 function readJwtPayload(token: string): { exp?: number } | null {
   const parts = token.split('.');
   if (parts.length < 2) return null;
@@ -13,6 +21,17 @@ function readJwtPayload(token: string): { exp?: number } | null {
   } catch {
     return null;
   }
+}
+
+function loginRedirect(req: NextRequest) {
+  const url = req.nextUrl.clone();
+  const nextPath = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+  url.pathname = '/login';
+  url.search = '';
+  if (nextPath && nextPath !== '/' && !nextPath.startsWith('/login')) {
+    url.searchParams.set('next', nextPath);
+  }
+  return NextResponse.redirect(url);
 }
 
 export function middleware(req: NextRequest) {
@@ -29,7 +48,8 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get(AUTH_COOKIE)?.value ?? null;
+  const rawToken = req.cookies.get(AUTH_COOKIE)?.value ?? null;
+  const token = rawToken ? normalizeCookieToken(rawToken) : null;
   const payload = token ? readJwtPayload(token) : null;
   const exp = payload?.exp ? Number(payload.exp) : 0;
   const isExpired = !token || !exp || exp * 1000 < Date.now();
@@ -45,9 +65,7 @@ export function middleware(req: NextRequest) {
       });
     }
 
-    const url = req.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return loginRedirect(req);
   }
 
   return NextResponse.next();
