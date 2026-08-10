@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
+import BulkResetTempPasswordsButton from './bulk-reset-temp-passwords-button';
 import RegistrantsTable from './registrants-table';
 import {
   fetchRegistrantsByApsId,
@@ -113,10 +114,13 @@ function ApsDetailClient({
   totalPages: number;
   pageSize: number;
 }) {
+  const approvedCount = allRegistrants.filter((r) => r.status === 'APPROVED')
+    .length;
+
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
       <main className='page-container flex flex-col gap-10'>
-        <header className='flex items-center justify-between gap-4'>
+        <header className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
               APS Detail
@@ -128,7 +132,7 @@ function ApsDetailClient({
               Review the core properties for this APS event.
             </p>
           </div>
-          <div className='flex items-center gap-3'>
+          <div className='flex flex-wrap items-center gap-3'>
             <CreateRegistrantButton eventId={eventId} />
             <a
               href={`/aps/${eventId}/registrants/export.csv`}
@@ -142,6 +146,10 @@ function ApsDetailClient({
             >
               Download temp passwords CSV
             </a>
+            <BulkResetTempPasswordsButton
+              eventId={eventId}
+              approvedCount={approvedCount}
+            />
             <Link
               href='/'
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'

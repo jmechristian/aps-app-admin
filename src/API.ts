@@ -125,6 +125,10 @@ export type ApsRegistrant = {
   welcomeEmailSentDate?: string | null,
   welcomeEmailReceived?: boolean | null,
   welcomeEmailReceivedDate?: string | null,
+  appEmailSent?: boolean | null,
+  appEmailSentDate?: string | null,
+  appEmailReceived?: boolean | null,
+  appEmailReceivedDate?: string | null,
   paymentMethod?: string | null,
   paymentLast4?: string | null,
   approvedAt?: string | null,
@@ -177,6 +181,7 @@ export type APS = {
   favoriteSessions?: ModelApsAppUserFavoriteSessionConnection | null,
   favoriteContacts?: ModelApsAppUserFavoriteContactConnection | null,
   passportStamps?: ModelApsAppUserPassportStampConnection | null,
+  exhibitorViews?: ModelApsAppUserExhibitorViewConnection | null,
   addOns?: ModelApsAddOnConnection | null,
   createdAt: string,
   updatedAt: string,
@@ -312,6 +317,7 @@ export type ApsAppExhibitorProfile = {
   notes?: ModelApsAppUserNoteConnection | null,
   favoriteByUsers?: ModelApsAppUserFavoriteExhibitorConnection | null,
   passportStamps?: ModelApsAppUserPassportStampConnection | null,
+  viewedByUsers?: ModelApsAppUserExhibitorViewConnection | null,
   createdAt: string,
   updatedAt: string,
   aPSExhibitorsId?: string | null,
@@ -467,6 +473,7 @@ export type ApsAppUserProfile = {
   favoriteContacts?: ModelApsAppUserFavoriteContactConnection | null,
   favoritedByProfiles?: ModelApsAppUserFavoriteContactConnection | null,
   passportStamps?: ModelApsAppUserPassportStampConnection | null,
+  exhibitorViews?: ModelApsAppUserExhibitorViewConnection | null,
   notes?: ModelApsAppUserNoteConnection | null,
   speakerId?: string | null,
   speaker?: APSSpeaker | null,
@@ -721,6 +728,28 @@ export type ApsAppUserPassportStamp = {
   createdAt: string,
   updatedAt: string,
   aPSPassportStampsId?: string | null,
+};
+
+export type ModelApsAppUserExhibitorViewConnection = {
+  __typename: "ModelApsAppUserExhibitorViewConnection",
+  items:  Array<ApsAppUserExhibitorView | null >,
+  nextToken?: string | null,
+};
+
+export type ApsAppUserExhibitorView = {
+  __typename: "ApsAppUserExhibitorView",
+  id: string,
+  owner?: string | null,
+  userProfileId: string,
+  userProfile: ApsAppUserProfile,
+  exhibitorId: string,
+  exhibitor: ApsAppExhibitorProfile,
+  eventId: string,
+  event: APS,
+  viewKey: string,
+  createdAt: string,
+  updatedAt: string,
+  aPSExhibitorViewsId?: string | null,
 };
 
 export enum SponsorType {
@@ -1031,6 +1060,12 @@ export type AdminPublishDueAnnouncementsResult = {
   publishedIds: Array< string >,
 };
 
+export type DeleteMyAccountResult = {
+  __typename: "DeleteMyAccountResult",
+  success: boolean,
+  message?: string | null,
+};
+
 export type UpdateAPSInput = {
   id: string,
   year?: string | null,
@@ -1227,6 +1262,10 @@ export type ModelApsRegistrantConditionInput = {
   welcomeEmailSentDate?: ModelStringInput | null,
   welcomeEmailReceived?: ModelBooleanInput | null,
   welcomeEmailReceivedDate?: ModelStringInput | null,
+  appEmailSent?: ModelBooleanInput | null,
+  appEmailSentDate?: ModelStringInput | null,
+  appEmailReceived?: ModelBooleanInput | null,
+  appEmailReceivedDate?: ModelStringInput | null,
   paymentMethod?: ModelStringInput | null,
   paymentLast4?: ModelStringInput | null,
   approvedAt?: ModelStringInput | null,
@@ -1821,6 +1860,48 @@ export type ModelApsAppExhibitorProfileConditionInput = {
 };
 
 export type DeleteApsAppExhibitorProfileInput = {
+  id: string,
+};
+
+export type CreateApsAppUserExhibitorViewInput = {
+  id?: string | null,
+  owner?: string | null,
+  userProfileId: string,
+  exhibitorId: string,
+  eventId: string,
+  viewKey: string,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+  aPSExhibitorViewsId?: string | null,
+};
+
+export type ModelApsAppUserExhibitorViewConditionInput = {
+  owner?: ModelStringInput | null,
+  userProfileId?: ModelIDInput | null,
+  exhibitorId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  viewKey?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppUserExhibitorViewConditionInput | null > | null,
+  or?: Array< ModelApsAppUserExhibitorViewConditionInput | null > | null,
+  not?: ModelApsAppUserExhibitorViewConditionInput | null,
+  aPSExhibitorViewsId?: ModelIDInput | null,
+};
+
+export type UpdateApsAppUserExhibitorViewInput = {
+  id: string,
+  owner?: string | null,
+  userProfileId?: string | null,
+  exhibitorId?: string | null,
+  eventId?: string | null,
+  viewKey?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+  aPSExhibitorViewsId?: string | null,
+};
+
+export type DeleteApsAppUserExhibitorViewInput = {
   id: string,
 };
 
@@ -2502,6 +2583,127 @@ export type DeleteApsAdminAnnouncementInput = {
   id: string,
 };
 
+export type DeleteApsEmailCampaignInput = {
+  id: string,
+};
+
+export type ModelApsEmailCampaignConditionInput = {
+  eventId?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  templateKey?: ModelStringInput | null,
+  subject?: ModelStringInput | null,
+  audienceStatuses?: ModelRegistrantStatusListInput | null,
+  audienceTypes?: ModelRegistrantTypeListInput | null,
+  status?: ModelEmailCampaignStatusInput | null,
+  scheduledAt?: ModelStringInput | null,
+  startedAt?: ModelStringInput | null,
+  completedAt?: ModelStringInput | null,
+  totalRecipients?: ModelIntInput | null,
+  sentCount?: ModelIntInput | null,
+  failedCount?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsEmailCampaignConditionInput | null > | null,
+  or?: Array< ModelApsEmailCampaignConditionInput | null > | null,
+  not?: ModelApsEmailCampaignConditionInput | null,
+};
+
+export type ModelRegistrantStatusListInput = {
+  eq?: Array< RegistrantStatus | null > | null,
+  ne?: Array< RegistrantStatus | null > | null,
+  contains?: RegistrantStatus | null,
+  notContains?: RegistrantStatus | null,
+};
+
+export type ModelRegistrantTypeListInput = {
+  eq?: Array< RegistrantType | null > | null,
+  ne?: Array< RegistrantType | null > | null,
+  contains?: RegistrantType | null,
+  notContains?: RegistrantType | null,
+};
+
+export type ModelEmailCampaignStatusInput = {
+  eq?: EmailCampaignStatus | null,
+  ne?: EmailCampaignStatus | null,
+};
+
+export enum EmailCampaignStatus {
+  DRAFT = "DRAFT",
+  SCHEDULED = "SCHEDULED",
+  SENDING = "SENDING",
+  SENT = "SENT",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+}
+
+
+export type ApsEmailCampaign = {
+  __typename: "ApsEmailCampaign",
+  id: string,
+  eventId: string,
+  name: string,
+  templateKey: string,
+  subject: string,
+  audienceStatuses?: Array< RegistrantStatus | null > | null,
+  audienceTypes?: Array< RegistrantType | null > | null,
+  status: EmailCampaignStatus,
+  scheduledAt?: string | null,
+  startedAt?: string | null,
+  completedAt?: string | null,
+  totalRecipients?: number | null,
+  sentCount?: number | null,
+  failedCount?: number | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type DeleteApsEmailSendInput = {
+  id: string,
+};
+
+export type ModelApsEmailSendConditionInput = {
+  campaignId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  registrantId?: ModelIDInput | null,
+  email?: ModelStringInput | null,
+  status?: ModelEmailSendStatusInput | null,
+  sesMessageId?: ModelStringInput | null,
+  error?: ModelStringInput | null,
+  sentAt?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsEmailSendConditionInput | null > | null,
+  or?: Array< ModelApsEmailSendConditionInput | null > | null,
+  not?: ModelApsEmailSendConditionInput | null,
+};
+
+export type ModelEmailSendStatusInput = {
+  eq?: EmailSendStatus | null,
+  ne?: EmailSendStatus | null,
+};
+
+export enum EmailSendStatus {
+  PENDING = "PENDING",
+  SENT = "SENT",
+  FAILED = "FAILED",
+}
+
+
+export type ApsEmailSend = {
+  __typename: "ApsEmailSend",
+  id: string,
+  campaignId: string,
+  eventId: string,
+  registrantId: string,
+  email: string,
+  status: EmailSendStatus,
+  sesMessageId?: string | null,
+  error?: string | null,
+  sentAt?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
 export type CreateApsUserEngageStateInput = {
   id?: string | null,
   eventId: string,
@@ -2585,6 +2787,57 @@ export type UpdateApsPushTokenInput = {
 };
 
 export type DeleteApsPushTokenInput = {
+  id: string,
+};
+
+export type CreateApsAppFeedbackInput = {
+  id?: string | null,
+  owner?: string | null,
+  userId: string,
+  eventId: string,
+  message: string,
+  imageKeys?: Array< string | null > | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type ModelApsAppFeedbackConditionInput = {
+  owner?: ModelStringInput | null,
+  userId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  message?: ModelStringInput | null,
+  imageKeys?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppFeedbackConditionInput | null > | null,
+  or?: Array< ModelApsAppFeedbackConditionInput | null > | null,
+  not?: ModelApsAppFeedbackConditionInput | null,
+};
+
+export type ApsAppFeedback = {
+  __typename: "ApsAppFeedback",
+  id: string,
+  owner?: string | null,
+  userId: string,
+  eventId: string,
+  message: string,
+  imageKeys?: Array< string | null > | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateApsAppFeedbackInput = {
+  id: string,
+  owner?: string | null,
+  userId?: string | null,
+  eventId?: string | null,
+  message?: string | null,
+  imageKeys?: Array< string | null > | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteApsAppFeedbackInput = {
   id: string,
 };
 
@@ -2772,6 +3025,10 @@ export type CreateApsRegistrantInput = {
   welcomeEmailSentDate?: string | null,
   welcomeEmailReceived?: boolean | null,
   welcomeEmailReceivedDate?: string | null,
+  appEmailSent?: boolean | null,
+  appEmailSentDate?: string | null,
+  appEmailReceived?: boolean | null,
+  appEmailReceivedDate?: string | null,
   paymentMethod?: string | null,
   paymentLast4?: string | null,
   approvedAt?: string | null,
@@ -2828,6 +3085,10 @@ export type UpdateApsRegistrantInput = {
   welcomeEmailSentDate?: string | null,
   welcomeEmailReceived?: boolean | null,
   welcomeEmailReceivedDate?: string | null,
+  appEmailSent?: boolean | null,
+  appEmailSentDate?: string | null,
+  appEmailReceived?: boolean | null,
+  appEmailReceivedDate?: string | null,
   paymentMethod?: string | null,
   paymentLast4?: string | null,
   approvedAt?: string | null,
@@ -3207,6 +3468,72 @@ export type CreateRegistrantAddOnRequestInput = {
   preferences?: string | null,
 };
 
+export type CreateApsEmailCampaignInput = {
+  id?: string | null,
+  eventId: string,
+  name: string,
+  templateKey: string,
+  subject: string,
+  audienceStatuses?: Array< RegistrantStatus | null > | null,
+  audienceTypes?: Array< RegistrantType | null > | null,
+  status: EmailCampaignStatus,
+  scheduledAt?: string | null,
+  startedAt?: string | null,
+  completedAt?: string | null,
+  totalRecipients?: number | null,
+  sentCount?: number | null,
+  failedCount?: number | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type UpdateApsEmailCampaignInput = {
+  id: string,
+  eventId?: string | null,
+  name?: string | null,
+  templateKey?: string | null,
+  subject?: string | null,
+  audienceStatuses?: Array< RegistrantStatus | null > | null,
+  audienceTypes?: Array< RegistrantType | null > | null,
+  status?: EmailCampaignStatus | null,
+  scheduledAt?: string | null,
+  startedAt?: string | null,
+  completedAt?: string | null,
+  totalRecipients?: number | null,
+  sentCount?: number | null,
+  failedCount?: number | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type CreateApsEmailSendInput = {
+  id?: string | null,
+  campaignId: string,
+  eventId: string,
+  registrantId: string,
+  email: string,
+  status: EmailSendStatus,
+  sesMessageId?: string | null,
+  error?: string | null,
+  sentAt?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type UpdateApsEmailSendInput = {
+  id: string,
+  campaignId?: string | null,
+  eventId?: string | null,
+  registrantId?: string | null,
+  email?: string | null,
+  status?: EmailSendStatus | null,
+  sesMessageId?: string | null,
+  error?: string | null,
+  sentAt?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
 export type CreateAPSCompanyEventsInput = {
   id?: string | null,
   aPSId: string,
@@ -3283,6 +3610,21 @@ export type ModelApsAppUserNoteFilterInput = {
   or?: Array< ModelApsAppUserNoteFilterInput | null > | null,
   not?: ModelApsAppUserNoteFilterInput | null,
   apsAppUserNotesId?: ModelIDInput | null,
+};
+
+export type ModelApsAppUserExhibitorViewFilterInput = {
+  id?: ModelIDInput | null,
+  owner?: ModelStringInput | null,
+  userProfileId?: ModelIDInput | null,
+  exhibitorId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  viewKey?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppUserExhibitorViewFilterInput | null > | null,
+  or?: Array< ModelApsAppUserExhibitorViewFilterInput | null > | null,
+  not?: ModelApsAppUserExhibitorViewFilterInput | null,
+  aPSExhibitorViewsId?: ModelIDInput | null,
 };
 
 export type ModelApsAppUserPassportStampFilterInput = {
@@ -3513,6 +3855,26 @@ export type ModelApsPushTokenConnection = {
   nextToken?: string | null,
 };
 
+export type ModelApsAppFeedbackFilterInput = {
+  id?: ModelIDInput | null,
+  owner?: ModelStringInput | null,
+  userId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  message?: ModelStringInput | null,
+  imageKeys?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppFeedbackFilterInput | null > | null,
+  or?: Array< ModelApsAppFeedbackFilterInput | null > | null,
+  not?: ModelApsAppFeedbackFilterInput | null,
+};
+
+export type ModelApsAppFeedbackConnection = {
+  __typename: "ModelApsAppFeedbackConnection",
+  items:  Array<ApsAppFeedback | null >,
+  nextToken?: string | null,
+};
+
 export type ModelStringKeyConditionInput = {
   eq?: string | null,
   le?: string | null,
@@ -3656,6 +4018,10 @@ export type ModelApsRegistrantFilterInput = {
   welcomeEmailSentDate?: ModelStringInput | null,
   welcomeEmailReceived?: ModelBooleanInput | null,
   welcomeEmailReceivedDate?: ModelStringInput | null,
+  appEmailSent?: ModelBooleanInput | null,
+  appEmailSentDate?: ModelStringInput | null,
+  appEmailReceived?: ModelBooleanInput | null,
+  appEmailReceivedDate?: ModelStringInput | null,
   paymentMethod?: ModelStringInput | null,
   paymentLast4?: ModelStringInput | null,
   approvedAt?: ModelStringInput | null,
@@ -4070,6 +4436,57 @@ export type ModelApsSeatingChartRegistrantFilterInput = {
   apsSeatingChartRegistrantsId?: ModelIDInput | null,
 };
 
+export type ModelApsEmailCampaignFilterInput = {
+  id?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  templateKey?: ModelStringInput | null,
+  subject?: ModelStringInput | null,
+  audienceStatuses?: ModelRegistrantStatusListInput | null,
+  audienceTypes?: ModelRegistrantTypeListInput | null,
+  status?: ModelEmailCampaignStatusInput | null,
+  scheduledAt?: ModelStringInput | null,
+  startedAt?: ModelStringInput | null,
+  completedAt?: ModelStringInput | null,
+  totalRecipients?: ModelIntInput | null,
+  sentCount?: ModelIntInput | null,
+  failedCount?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsEmailCampaignFilterInput | null > | null,
+  or?: Array< ModelApsEmailCampaignFilterInput | null > | null,
+  not?: ModelApsEmailCampaignFilterInput | null,
+};
+
+export type ModelApsEmailCampaignConnection = {
+  __typename: "ModelApsEmailCampaignConnection",
+  items:  Array<ApsEmailCampaign | null >,
+  nextToken?: string | null,
+};
+
+export type ModelApsEmailSendFilterInput = {
+  id?: ModelIDInput | null,
+  campaignId?: ModelIDInput | null,
+  eventId?: ModelIDInput | null,
+  registrantId?: ModelIDInput | null,
+  email?: ModelStringInput | null,
+  status?: ModelEmailSendStatusInput | null,
+  sesMessageId?: ModelStringInput | null,
+  error?: ModelStringInput | null,
+  sentAt?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsEmailSendFilterInput | null > | null,
+  or?: Array< ModelApsEmailSendFilterInput | null > | null,
+  not?: ModelApsEmailSendFilterInput | null,
+};
+
+export type ModelApsEmailSendConnection = {
+  __typename: "ModelApsEmailSendConnection",
+  items:  Array<ApsEmailSend | null >,
+  nextToken?: string | null,
+};
+
 export type ModelAPSCompanyEventsFilterInput = {
   id?: ModelIDInput | null,
   aPSId?: ModelIDInput | null,
@@ -4173,6 +4590,19 @@ export type ModelSubscriptionApsAppUserNoteFilterInput = {
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
   or?: Array< ModelSubscriptionApsAppUserNoteFilterInput | null > | null,
+  owner?: ModelStringInput | null,
+};
+
+export type ModelSubscriptionApsAppUserExhibitorViewFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  userProfileId?: ModelSubscriptionIDInput | null,
+  exhibitorId?: ModelSubscriptionIDInput | null,
+  eventId?: ModelSubscriptionIDInput | null,
+  viewKey?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsAppUserExhibitorViewFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsAppUserExhibitorViewFilterInput | null > | null,
   owner?: ModelStringInput | null,
 };
 
@@ -4355,6 +4785,19 @@ export type ModelSubscriptionApsPushTokenFilterInput = {
   userId?: ModelStringInput | null,
 };
 
+export type ModelSubscriptionApsAppFeedbackFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  userId?: ModelSubscriptionIDInput | null,
+  eventId?: ModelSubscriptionIDInput | null,
+  message?: ModelSubscriptionStringInput | null,
+  imageKeys?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsAppFeedbackFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsAppFeedbackFilterInput | null > | null,
+  owner?: ModelStringInput | null,
+};
+
 export type ModelSubscriptionAPSFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   year?: ModelSubscriptionStringInput | null,
@@ -4386,6 +4829,7 @@ export type ModelSubscriptionAPSFilterInput = {
   aPSFavoriteSessionsId?: ModelSubscriptionIDInput | null,
   aPSFavoriteContactsId?: ModelSubscriptionIDInput | null,
   aPSPassportStampsId?: ModelSubscriptionIDInput | null,
+  aPSExhibitorViewsId?: ModelSubscriptionIDInput | null,
   aPSAddOnsId?: ModelSubscriptionIDInput | null,
   aPSAgendaId?: ModelSubscriptionIDInput | null,
 };
@@ -4467,6 +4911,10 @@ export type ModelSubscriptionApsRegistrantFilterInput = {
   welcomeEmailSentDate?: ModelSubscriptionStringInput | null,
   welcomeEmailReceived?: ModelSubscriptionBooleanInput | null,
   welcomeEmailReceivedDate?: ModelSubscriptionStringInput | null,
+  appEmailSent?: ModelSubscriptionBooleanInput | null,
+  appEmailSentDate?: ModelSubscriptionStringInput | null,
+  appEmailReceived?: ModelSubscriptionBooleanInput | null,
+  appEmailReceivedDate?: ModelSubscriptionStringInput | null,
   paymentMethod?: ModelSubscriptionStringInput | null,
   paymentLast4?: ModelSubscriptionStringInput | null,
   approvedAt?: ModelSubscriptionStringInput | null,
@@ -4840,6 +5288,43 @@ export type ModelSubscriptionApsSeatingChartRegistrantFilterInput = {
   or?: Array< ModelSubscriptionApsSeatingChartRegistrantFilterInput | null > | null,
 };
 
+export type ModelSubscriptionApsEmailCampaignFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  eventId?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  templateKey?: ModelSubscriptionStringInput | null,
+  subject?: ModelSubscriptionStringInput | null,
+  audienceStatuses?: ModelSubscriptionStringInput | null,
+  audienceTypes?: ModelSubscriptionStringInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  scheduledAt?: ModelSubscriptionStringInput | null,
+  startedAt?: ModelSubscriptionStringInput | null,
+  completedAt?: ModelSubscriptionStringInput | null,
+  totalRecipients?: ModelSubscriptionIntInput | null,
+  sentCount?: ModelSubscriptionIntInput | null,
+  failedCount?: ModelSubscriptionIntInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsEmailCampaignFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsEmailCampaignFilterInput | null > | null,
+};
+
+export type ModelSubscriptionApsEmailSendFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  campaignId?: ModelSubscriptionIDInput | null,
+  eventId?: ModelSubscriptionIDInput | null,
+  registrantId?: ModelSubscriptionIDInput | null,
+  email?: ModelSubscriptionStringInput | null,
+  status?: ModelSubscriptionStringInput | null,
+  sesMessageId?: ModelSubscriptionStringInput | null,
+  error?: ModelSubscriptionStringInput | null,
+  sentAt?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsEmailSendFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsEmailSendFilterInput | null > | null,
+};
+
 export type ModelSubscriptionAPSCompanyEventsFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   aPSId?: ModelSubscriptionIDInput | null,
@@ -4980,6 +5465,17 @@ export type AdminPublishDueAnnouncementsMutation = {
   } | null,
 };
 
+export type DeleteMyAccountMutationVariables = {
+};
+
+export type DeleteMyAccountMutation = {
+  deleteMyAccount?:  {
+    __typename: "DeleteMyAccountResult",
+    success: boolean,
+    message?: string | null,
+  } | null,
+};
+
 export type UpdateAPSMutationVariables = {
   input: UpdateAPSInput,
   condition?: ModelAPSConditionInput | null,
@@ -5071,6 +5567,10 @@ export type UpdateAPSMutation = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     addOns?:  {
@@ -5174,6 +5674,10 @@ export type DeleteAPSMutation = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     addOns?:  {
@@ -5444,6 +5948,10 @@ export type DeleteApsRegistrantMutation = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -5610,6 +6118,10 @@ export type CreateApsAppUserMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -5740,6 +6252,10 @@ export type DeleteApsAppUserMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -6079,6 +6595,10 @@ export type CreateApsAppUserNoteMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -6250,6 +6770,10 @@ export type UpdateApsAppUserNoteMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -6421,6 +6945,10 @@ export type DeleteApsAppUserNoteMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -6742,6 +7270,10 @@ export type CreateApsAppUserProfileMutation = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     notes?:  {
       __typename: "ModelApsAppUserNoteConnection",
       nextToken?: string | null,
@@ -6847,6 +7379,10 @@ export type DeleteApsAppUserProfileMutation = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     notes?:  {
@@ -7980,6 +8516,10 @@ export type CreateApsAppExhibitorProfileMutation = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     createdAt: string,
     updatedAt: string,
     aPSExhibitorsId?: string | null,
@@ -8081,9 +8621,259 @@ export type DeleteApsAppExhibitorProfileMutation = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     createdAt: string,
     updatedAt: string,
     aPSExhibitorsId?: string | null,
+  } | null,
+};
+
+export type CreateApsAppUserExhibitorViewMutationVariables = {
+  input: CreateApsAppUserExhibitorViewInput,
+  condition?: ModelApsAppUserExhibitorViewConditionInput | null,
+};
+
+export type CreateApsAppUserExhibitorViewMutation = {
+  createApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
+  } | null,
+};
+
+export type UpdateApsAppUserExhibitorViewMutationVariables = {
+  input: UpdateApsAppUserExhibitorViewInput,
+  condition?: ModelApsAppUserExhibitorViewConditionInput | null,
+};
+
+export type UpdateApsAppUserExhibitorViewMutation = {
+  updateApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
+  } | null,
+};
+
+export type DeleteApsAppUserExhibitorViewMutationVariables = {
+  input: DeleteApsAppUserExhibitorViewInput,
+  condition?: ModelApsAppUserExhibitorViewConditionInput | null,
+};
+
+export type DeleteApsAppUserExhibitorViewMutation = {
+  deleteApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
   } | null,
 };
 
@@ -9740,6 +10530,10 @@ export type UpdateRegistrantAddOnRequestMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -9835,6 +10629,10 @@ export type DeleteRegistrantAddOnRequestMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -9999,6 +10797,10 @@ export type CreateApsSeatingChartRegistrantMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -10088,6 +10890,10 @@ export type UpdateApsSeatingChartRegistrantMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -10177,6 +10983,10 @@ export type DeleteApsSeatingChartRegistrantMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -10650,6 +11460,55 @@ export type DeleteApsAdminAnnouncementMutation = {
   } | null,
 };
 
+export type DeleteApsEmailCampaignMutationVariables = {
+  input: DeleteApsEmailCampaignInput,
+  condition?: ModelApsEmailCampaignConditionInput | null,
+};
+
+export type DeleteApsEmailCampaignMutation = {
+  deleteApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteApsEmailSendMutationVariables = {
+  input: DeleteApsEmailSendInput,
+  condition?: ModelApsEmailSendConditionInput | null,
+};
+
+export type DeleteApsEmailSendMutation = {
+  deleteApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
 export type CreateApsUserEngageStateMutationVariables = {
   input: CreateApsUserEngageStateInput,
   condition?: ModelApsUserEngageStateConditionInput | null,
@@ -10749,6 +11608,63 @@ export type DeleteApsPushTokenMutation = {
     platform?: string | null,
     updatedAt: string,
     createdAt: string,
+  } | null,
+};
+
+export type CreateApsAppFeedbackMutationVariables = {
+  input: CreateApsAppFeedbackInput,
+  condition?: ModelApsAppFeedbackConditionInput | null,
+};
+
+export type CreateApsAppFeedbackMutation = {
+  createApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateApsAppFeedbackMutationVariables = {
+  input: UpdateApsAppFeedbackInput,
+  condition?: ModelApsAppFeedbackConditionInput | null,
+};
+
+export type UpdateApsAppFeedbackMutation = {
+  updateApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteApsAppFeedbackMutationVariables = {
+  input: DeleteApsAppFeedbackInput,
+  condition?: ModelApsAppFeedbackConditionInput | null,
+};
+
+export type DeleteApsAppFeedbackMutation = {
+  deleteApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };
 
@@ -11155,6 +12071,10 @@ export type CreateAPSMutation = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     addOns?:  {
       __typename: "ModelApsAddOnConnection",
       nextToken?: string | null,
@@ -11346,6 +12266,10 @@ export type CreateApsRegistrantMutation = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -11481,6 +12405,10 @@ export type UpdateApsRegistrantMutation = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -11584,6 +12512,10 @@ export type UpdateApsAppUserMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -11747,6 +12679,10 @@ export type UpdateApsAppUserProfileMutation = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     notes?:  {
@@ -12474,6 +13410,10 @@ export type UpdateApsAppExhibitorProfileMutation = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     createdAt: string,
@@ -13211,6 +14151,10 @@ export type CreateRegistrantAddOnRequestMutation = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -13250,6 +14194,104 @@ export type CreateRegistrantAddOnRequestMutation = {
     },
     status: string,
     preferences?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateApsEmailCampaignMutationVariables = {
+  input: CreateApsEmailCampaignInput,
+  condition?: ModelApsEmailCampaignConditionInput | null,
+};
+
+export type CreateApsEmailCampaignMutation = {
+  createApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateApsEmailCampaignMutationVariables = {
+  input: UpdateApsEmailCampaignInput,
+  condition?: ModelApsEmailCampaignConditionInput | null,
+};
+
+export type UpdateApsEmailCampaignMutation = {
+  updateApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateApsEmailSendMutationVariables = {
+  input: CreateApsEmailSendInput,
+  condition?: ModelApsEmailSendConditionInput | null,
+};
+
+export type CreateApsEmailSendMutation = {
+  createApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateApsEmailSendMutationVariables = {
+  input: UpdateApsEmailSendInput,
+  condition?: ModelApsEmailSendConditionInput | null,
+};
+
+export type UpdateApsEmailSendMutation = {
+  updateApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -13546,6 +14588,10 @@ export type GetApsAppUserNoteQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -13642,6 +14688,112 @@ export type ListApsAppUserNotesQuery = {
       createdAt: string,
       updatedAt: string,
       apsAppUserNotesId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetApsAppUserExhibitorViewQueryVariables = {
+  id: string,
+};
+
+export type GetApsAppUserExhibitorViewQuery = {
+  getApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
+  } | null,
+};
+
+export type ListApsAppUserExhibitorViewsQueryVariables = {
+  filter?: ModelApsAppUserExhibitorViewFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsAppUserExhibitorViewsQuery = {
+  listApsAppUserExhibitorViews?:  {
+    __typename: "ModelApsAppUserExhibitorViewConnection",
+    items:  Array< {
+      __typename: "ApsAppUserExhibitorView",
+      id: string,
+      owner?: string | null,
+      userProfileId: string,
+      exhibitorId: string,
+      eventId: string,
+      viewKey: string,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorViewsId?: string | null,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -14633,6 +15785,48 @@ export type ListApsPushTokensQuery = {
   } | null,
 };
 
+export type GetApsAppFeedbackQueryVariables = {
+  id: string,
+};
+
+export type GetApsAppFeedbackQuery = {
+  getApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListApsAppFeedbacksQueryVariables = {
+  filter?: ModelApsAppFeedbackFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsAppFeedbacksQuery = {
+  listApsAppFeedbacks?:  {
+    __typename: "ModelApsAppFeedbackConnection",
+    items:  Array< {
+      __typename: "ApsAppFeedback",
+      id: string,
+      owner?: string | null,
+      userId: string,
+      eventId: string,
+      message: string,
+      imageKeys?: Array< string | null > | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type ApsTempCredentialsByApsIDAndCreatedAtQueryVariables = {
   apsID: string,
   createdAt?: ModelStringKeyConditionInput | null,
@@ -14866,6 +16060,117 @@ export type ApsAppUserNotesByCompanyIdQuery = {
       createdAt: string,
       updatedAt: string,
       apsAppUserNotesId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppUserExhibitorViewsByUserProfileIdAndCreatedAtQueryVariables = {
+  userProfileId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppUserExhibitorViewFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppUserExhibitorViewsByUserProfileIdAndCreatedAtQuery = {
+  apsAppUserExhibitorViewsByUserProfileIdAndCreatedAt?:  {
+    __typename: "ModelApsAppUserExhibitorViewConnection",
+    items:  Array< {
+      __typename: "ApsAppUserExhibitorView",
+      id: string,
+      owner?: string | null,
+      userProfileId: string,
+      exhibitorId: string,
+      eventId: string,
+      viewKey: string,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorViewsId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppUserExhibitorViewsByExhibitorIdAndCreatedAtQueryVariables = {
+  exhibitorId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppUserExhibitorViewFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppUserExhibitorViewsByExhibitorIdAndCreatedAtQuery = {
+  apsAppUserExhibitorViewsByExhibitorIdAndCreatedAt?:  {
+    __typename: "ModelApsAppUserExhibitorViewConnection",
+    items:  Array< {
+      __typename: "ApsAppUserExhibitorView",
+      id: string,
+      owner?: string | null,
+      userProfileId: string,
+      exhibitorId: string,
+      eventId: string,
+      viewKey: string,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorViewsId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppUserExhibitorViewsByEventIdAndCreatedAtQueryVariables = {
+  eventId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppUserExhibitorViewFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppUserExhibitorViewsByEventIdAndCreatedAtQuery = {
+  apsAppUserExhibitorViewsByEventIdAndCreatedAt?:  {
+    __typename: "ModelApsAppUserExhibitorViewConnection",
+    items:  Array< {
+      __typename: "ApsAppUserExhibitorView",
+      id: string,
+      owner?: string | null,
+      userProfileId: string,
+      exhibitorId: string,
+      eventId: string,
+      viewKey: string,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorViewsId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppUserExhibitorViewsByViewKeyQueryVariables = {
+  viewKey: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppUserExhibitorViewFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppUserExhibitorViewsByViewKeyQuery = {
+  apsAppUserExhibitorViewsByViewKey?:  {
+    __typename: "ModelApsAppUserExhibitorViewConnection",
+    items:  Array< {
+      __typename: "ApsAppUserExhibitorView",
+      id: string,
+      owner?: string | null,
+      userProfileId: string,
+      exhibitorId: string,
+      eventId: string,
+      viewKey: string,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorViewsId?: string | null,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -15866,6 +17171,60 @@ export type ApsPushTokensByUserIdAndUpdatedAtQuery = {
   } | null,
 };
 
+export type ApsAppFeedbacksByUserIdAndCreatedAtQueryVariables = {
+  userId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppFeedbackFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppFeedbacksByUserIdAndCreatedAtQuery = {
+  apsAppFeedbacksByUserIdAndCreatedAt?:  {
+    __typename: "ModelApsAppFeedbackConnection",
+    items:  Array< {
+      __typename: "ApsAppFeedback",
+      id: string,
+      owner?: string | null,
+      userId: string,
+      eventId: string,
+      message: string,
+      imageKeys?: Array< string | null > | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppFeedbacksByEventIdAndCreatedAtQueryVariables = {
+  eventId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppFeedbackFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppFeedbacksByEventIdAndCreatedAtQuery = {
+  apsAppFeedbacksByEventIdAndCreatedAt?:  {
+    __typename: "ModelApsAppFeedbackConnection",
+    items:  Array< {
+      __typename: "ApsAppFeedback",
+      id: string,
+      owner?: string | null,
+      userId: string,
+      eventId: string,
+      message: string,
+      imageKeys?: Array< string | null > | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type GetAPSQueryVariables = {
   id: string,
 };
@@ -15956,6 +17315,10 @@ export type GetAPSQuery = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     addOns?:  {
@@ -16285,6 +17648,10 @@ export type GetApsRegistrantQuery = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -16387,6 +17754,10 @@ export type ListApsRegistrantsQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -16460,6 +17831,10 @@ export type ApsRegistrantsByApsIDQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -16533,6 +17908,10 @@ export type ApsRegistrantsByEmailQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -16606,6 +17985,10 @@ export type ApsRegistrantsByCompanyIdQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -16677,6 +18060,10 @@ export type GetApsAppUserQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -17135,6 +18522,10 @@ export type GetApsAppUserProfileQuery = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     notes?:  {
@@ -18511,6 +19902,10 @@ export type GetApsAppExhibitorProfileQuery = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     createdAt: string,
     updatedAt: string,
     aPSExhibitorsId?: string | null,
@@ -19415,6 +20810,10 @@ export type GetRegistrantAddOnRequestQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -19633,6 +21032,10 @@ export type GetApsSeatingChartRegistrantQuery = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -19745,6 +21148,212 @@ export type ApsSeatingChartRegistrantsByRegistrantIDQuery = {
       createdAt: string,
       updatedAt: string,
       apsSeatingChartRegistrantsId?: string | null,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetApsEmailCampaignQueryVariables = {
+  id: string,
+};
+
+export type GetApsEmailCampaignQuery = {
+  getApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListApsEmailCampaignsQueryVariables = {
+  filter?: ModelApsEmailCampaignFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsEmailCampaignsQuery = {
+  listApsEmailCampaigns?:  {
+    __typename: "ModelApsEmailCampaignConnection",
+    items:  Array< {
+      __typename: "ApsEmailCampaign",
+      id: string,
+      eventId: string,
+      name: string,
+      templateKey: string,
+      subject: string,
+      audienceStatuses?: Array< RegistrantStatus | null > | null,
+      audienceTypes?: Array< RegistrantType | null > | null,
+      status: EmailCampaignStatus,
+      scheduledAt?: string | null,
+      startedAt?: string | null,
+      completedAt?: string | null,
+      totalRecipients?: number | null,
+      sentCount?: number | null,
+      failedCount?: number | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsEmailCampaignsByEventIdAndCreatedAtQueryVariables = {
+  eventId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsEmailCampaignFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsEmailCampaignsByEventIdAndCreatedAtQuery = {
+  apsEmailCampaignsByEventIdAndCreatedAt?:  {
+    __typename: "ModelApsEmailCampaignConnection",
+    items:  Array< {
+      __typename: "ApsEmailCampaign",
+      id: string,
+      eventId: string,
+      name: string,
+      templateKey: string,
+      subject: string,
+      audienceStatuses?: Array< RegistrantStatus | null > | null,
+      audienceTypes?: Array< RegistrantType | null > | null,
+      status: EmailCampaignStatus,
+      scheduledAt?: string | null,
+      startedAt?: string | null,
+      completedAt?: string | null,
+      totalRecipients?: number | null,
+      sentCount?: number | null,
+      failedCount?: number | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsEmailCampaignsByEventIdAndScheduledAtQueryVariables = {
+  eventId: string,
+  scheduledAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsEmailCampaignFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsEmailCampaignsByEventIdAndScheduledAtQuery = {
+  apsEmailCampaignsByEventIdAndScheduledAt?:  {
+    __typename: "ModelApsEmailCampaignConnection",
+    items:  Array< {
+      __typename: "ApsEmailCampaign",
+      id: string,
+      eventId: string,
+      name: string,
+      templateKey: string,
+      subject: string,
+      audienceStatuses?: Array< RegistrantStatus | null > | null,
+      audienceTypes?: Array< RegistrantType | null > | null,
+      status: EmailCampaignStatus,
+      scheduledAt?: string | null,
+      startedAt?: string | null,
+      completedAt?: string | null,
+      totalRecipients?: number | null,
+      sentCount?: number | null,
+      failedCount?: number | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetApsEmailSendQueryVariables = {
+  id: string,
+};
+
+export type GetApsEmailSendQuery = {
+  getApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListApsEmailSendsQueryVariables = {
+  filter?: ModelApsEmailSendFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsEmailSendsQuery = {
+  listApsEmailSends?:  {
+    __typename: "ModelApsEmailSendConnection",
+    items:  Array< {
+      __typename: "ApsEmailSend",
+      id: string,
+      campaignId: string,
+      eventId: string,
+      registrantId: string,
+      email: string,
+      status: EmailSendStatus,
+      sesMessageId?: string | null,
+      error?: string | null,
+      sentAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsEmailSendsByCampaignIdAndCreatedAtQueryVariables = {
+  campaignId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsEmailSendFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsEmailSendsByCampaignIdAndCreatedAtQuery = {
+  apsEmailSendsByCampaignIdAndCreatedAt?:  {
+    __typename: "ModelApsEmailSendConnection",
+    items:  Array< {
+      __typename: "ApsEmailSend",
+      id: string,
+      campaignId: string,
+      eventId: string,
+      registrantId: string,
+      email: string,
+      status: EmailSendStatus,
+      sesMessageId?: string | null,
+      error?: string | null,
+      sentAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -20244,6 +21853,10 @@ export type OnCreateApsAppUserNoteSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -20415,6 +22028,10 @@ export type OnUpdateApsAppUserNoteSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -20586,6 +22203,10 @@ export type OnDeleteApsAppUserNoteSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -20656,6 +22277,252 @@ export type OnDeleteApsAppUserNoteSubscription = {
     createdAt: string,
     updatedAt: string,
     apsAppUserNotesId?: string | null,
+  } | null,
+};
+
+export type OnCreateApsAppUserExhibitorViewSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppUserExhibitorViewFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnCreateApsAppUserExhibitorViewSubscription = {
+  onCreateApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
+  } | null,
+};
+
+export type OnUpdateApsAppUserExhibitorViewSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppUserExhibitorViewFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnUpdateApsAppUserExhibitorViewSubscription = {
+  onUpdateApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
+  } | null,
+};
+
+export type OnDeleteApsAppUserExhibitorViewSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppUserExhibitorViewFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnDeleteApsAppUserExhibitorViewSubscription = {
+  onDeleteApsAppUserExhibitorView?:  {
+    __typename: "ApsAppUserExhibitorView",
+    id: string,
+    owner?: string | null,
+    userProfileId: string,
+    userProfile:  {
+      __typename: "ApsAppUserProfile",
+      id: string,
+      userId: string,
+      firstName?: string | null,
+      lastName?: string | null,
+      email?: string | null,
+      phone?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      attendeeType?: RegistrantType | null,
+      quickTools?: Array< string | null > | null,
+      profilePicture?: string | null,
+      bio?: string | null,
+      linkedin?: string | null,
+      twitter?: string | null,
+      facebook?: string | null,
+      instagram?: string | null,
+      youtube?: string | null,
+      website?: Array< string | null > | null,
+      location?: string | null,
+      resume?: string | null,
+      thinkificId?: number | null,
+      apcProgress?: number | null,
+      speakerId?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    },
+    exhibitorId: string,
+    exhibitor:  {
+      __typename: "ApsAppExhibitorProfile",
+      id: string,
+      companyId: string,
+      sponsorId?: string | null,
+      eventId: string,
+      video?: string | null,
+      videoCaption?: string | null,
+      boothNumber?: string | null,
+      qrCode?: string | null,
+      passportQrPayload?: string | null,
+      visits?: number | null,
+      views?: number | null,
+      likes?: number | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSExhibitorsId?: string | null,
+    },
+    eventId: string,
+    event:  {
+      __typename: "APS",
+      id: string,
+      year: string,
+      startDate?: string | null,
+      endDate?: string | null,
+      location?: string | null,
+      address?: string | null,
+      city?: string | null,
+      state?: string | null,
+      zip?: string | null,
+      website?: string | null,
+      createdAt: string,
+      updatedAt: string,
+      aPSAgendaId?: string | null,
+    },
+    viewKey: string,
+    createdAt: string,
+    updatedAt: string,
+    aPSExhibitorViewsId?: string | null,
   } | null,
 };
 
@@ -22660,6 +24527,63 @@ export type OnDeleteApsPushTokenSubscription = {
   } | null,
 };
 
+export type OnCreateApsAppFeedbackSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppFeedbackFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnCreateApsAppFeedbackSubscription = {
+  onCreateApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateApsAppFeedbackSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppFeedbackFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnUpdateApsAppFeedbackSubscription = {
+  onUpdateApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteApsAppFeedbackSubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppFeedbackFilterInput | null,
+  owner?: string | null,
+};
+
+export type OnDeleteApsAppFeedbackSubscription = {
+  onDeleteApsAppFeedback?:  {
+    __typename: "ApsAppFeedback",
+    id: string,
+    owner?: string | null,
+    userId: string,
+    eventId: string,
+    message: string,
+    imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
 export type OnCreateAPSSubscriptionVariables = {
   filter?: ModelSubscriptionAPSFilterInput | null,
 };
@@ -22750,6 +24674,10 @@ export type OnCreateAPSSubscription = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     addOns?:  {
@@ -22854,6 +24782,10 @@ export type OnUpdateAPSSubscription = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     addOns?:  {
       __typename: "ModelApsAddOnConnection",
       nextToken?: string | null,
@@ -22954,6 +24886,10 @@ export type OnDeleteAPSSubscription = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     addOns?:  {
@@ -23312,6 +25248,10 @@ export type OnCreateApsRegistrantSubscription = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -23446,6 +25386,10 @@ export type OnUpdateApsRegistrantSubscription = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -23580,6 +25524,10 @@ export type OnDeleteApsRegistrantSubscription = {
     welcomeEmailSentDate?: string | null,
     welcomeEmailReceived?: boolean | null,
     welcomeEmailReceivedDate?: string | null,
+    appEmailSent?: boolean | null,
+    appEmailSentDate?: string | null,
+    appEmailReceived?: boolean | null,
+    appEmailReceivedDate?: string | null,
     paymentMethod?: string | null,
     paymentLast4?: string | null,
     approvedAt?: string | null,
@@ -23682,6 +25630,10 @@ export type OnCreateApsAppUserSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -23811,6 +25763,10 @@ export type OnUpdateApsAppUserSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -23940,6 +25896,10 @@ export type OnDeleteApsAppUserSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -24422,6 +26382,10 @@ export type OnCreateApsAppUserProfileSubscription = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     notes?:  {
       __typename: "ModelApsAppUserNoteConnection",
       nextToken?: string | null,
@@ -24528,6 +26492,10 @@ export type OnUpdateApsAppUserProfileSubscription = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     notes?:  {
       __typename: "ModelApsAppUserNoteConnection",
       nextToken?: string | null,
@@ -24632,6 +26600,10 @@ export type OnDeleteApsAppUserProfileSubscription = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    exhibitorViews?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     notes?:  {
@@ -26345,6 +28317,10 @@ export type OnCreateApsAppExhibitorProfileSubscription = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     createdAt: string,
     updatedAt: string,
     aPSExhibitorsId?: string | null,
@@ -26445,6 +28421,10 @@ export type OnUpdateApsAppExhibitorProfileSubscription = {
       __typename: "ModelApsAppUserPassportStampConnection",
       nextToken?: string | null,
     } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
+      nextToken?: string | null,
+    } | null,
     createdAt: string,
     updatedAt: string,
     aPSExhibitorsId?: string | null,
@@ -26543,6 +28523,10 @@ export type OnDeleteApsAppExhibitorProfileSubscription = {
     } | null,
     passportStamps?:  {
       __typename: "ModelApsAppUserPassportStampConnection",
+      nextToken?: string | null,
+    } | null,
+    viewedByUsers?:  {
+      __typename: "ModelApsAppUserExhibitorViewConnection",
       nextToken?: string | null,
     } | null,
     createdAt: string,
@@ -27405,6 +29389,10 @@ export type OnCreateRegistrantAddOnRequestSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27499,6 +29487,10 @@ export type OnUpdateRegistrantAddOnRequestSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27593,6 +29585,10 @@ export type OnDeleteRegistrantAddOnRequestSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27753,6 +29749,10 @@ export type OnCreateApsSeatingChartRegistrantSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27841,6 +29841,10 @@ export type OnUpdateApsSeatingChartRegistrantSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27929,6 +29933,10 @@ export type OnDeleteApsSeatingChartRegistrantSubscription = {
       welcomeEmailSentDate?: string | null,
       welcomeEmailReceived?: boolean | null,
       welcomeEmailReceivedDate?: string | null,
+      appEmailSent?: boolean | null,
+      appEmailSentDate?: string | null,
+      appEmailReceived?: boolean | null,
+      appEmailReceivedDate?: string | null,
       paymentMethod?: string | null,
       paymentLast4?: string | null,
       approvedAt?: string | null,
@@ -27949,6 +29957,147 @@ export type OnDeleteApsSeatingChartRegistrantSubscription = {
     createdAt: string,
     updatedAt: string,
     apsSeatingChartRegistrantsId?: string | null,
+  } | null,
+};
+
+export type OnCreateApsEmailCampaignSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailCampaignFilterInput | null,
+};
+
+export type OnCreateApsEmailCampaignSubscription = {
+  onCreateApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateApsEmailCampaignSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailCampaignFilterInput | null,
+};
+
+export type OnUpdateApsEmailCampaignSubscription = {
+  onUpdateApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteApsEmailCampaignSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailCampaignFilterInput | null,
+};
+
+export type OnDeleteApsEmailCampaignSubscription = {
+  onDeleteApsEmailCampaign?:  {
+    __typename: "ApsEmailCampaign",
+    id: string,
+    eventId: string,
+    name: string,
+    templateKey: string,
+    subject: string,
+    audienceStatuses?: Array< RegistrantStatus | null > | null,
+    audienceTypes?: Array< RegistrantType | null > | null,
+    status: EmailCampaignStatus,
+    scheduledAt?: string | null,
+    startedAt?: string | null,
+    completedAt?: string | null,
+    totalRecipients?: number | null,
+    sentCount?: number | null,
+    failedCount?: number | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateApsEmailSendSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailSendFilterInput | null,
+};
+
+export type OnCreateApsEmailSendSubscription = {
+  onCreateApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateApsEmailSendSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailSendFilterInput | null,
+};
+
+export type OnUpdateApsEmailSendSubscription = {
+  onUpdateApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteApsEmailSendSubscriptionVariables = {
+  filter?: ModelSubscriptionApsEmailSendFilterInput | null,
+};
+
+export type OnDeleteApsEmailSendSubscription = {
+  onDeleteApsEmailSend?:  {
+    __typename: "ApsEmailSend",
+    id: string,
+    campaignId: string,
+    eventId: string,
+    registrantId: string,
+    email: string,
+    status: EmailSendStatus,
+    sesMessageId?: string | null,
+    error?: string | null,
+    sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };
 

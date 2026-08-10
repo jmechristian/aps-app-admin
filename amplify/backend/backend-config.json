@@ -65,29 +65,6 @@
     }
   },
   "function": {
-    "adminRegistrantOps": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput",
-            "GraphQLAPIKeyOutput"
-          ],
-          "category": "api",
-          "resourceName": "autopacksummitapp"
-        },
-        {
-          "attributes": [
-            "UserPoolId"
-          ],
-          "category": "auth",
-          "resourceName": "autopacksummitappfefbe6f1"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
     "apsPushFanout": {
       "build": true,
       "dependsOn": [
@@ -114,6 +91,14 @@
   },
   "parameters": {
     "AMPLIFY_function_apsPushFanout_apcTotalCourses": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "apsPushFanout"
+        }
+      ]
+    },
+    "AMPLIFY_function_apsPushFanout_apsEventId": {
       "usedBy": [
         {
           "category": "function",

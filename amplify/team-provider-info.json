@@ -31,7 +31,8 @@
           "thinkificApiKey": "eyJraWQiOiI4MGQwZjQzMmQ2OGM3M2I5ODkxOWYyZjU5ZTI5ZTNiMDk4ZjViNDg0ZmY1ODRkNWQ5ZGYwODhjNWZhMGU3NWJiIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2NvdXJzZXMudGhpbmtpZmljLmNvbSIsImF1ZCI6ImFwaS50aGlua2lmaWMuY29tIiwiZXhwIjoxODA2MDc4MzM5LCJpYXQiOjE3NzQ1NDIzMzksImp0aSI6IjBhN2VjMmRiLTZmMDgtNGUzNi1hOTllLTk3NThhYzYxNDhhNSIsInN1YmRvbWFpbiI6InBhY2thZ2luZ3NjaG9vbCIsImNvbnN1bWVyIjoicGFja2FnaW5nc2Nob29sIiwidHlwZSI6ImFwaV9hY2Nlc3NfdG9rZW4iLCJzY29wZSI6IndyaXRlOmFsbCJ9.DFxDS58KGVPudu7wNkgxP6Hh8vBkp8igEApuA7zXpiJX5csmUM29ZJ99dFicpshMEWdB-6VyZkPQXLv3O-xMzNFl-qLmVv8RWQvZE9eKQg0C6K8ZJQTY5yzy59WpT5n5qjRGfk1y7GgIqPAu-5bQNsnlWkM55RSR46g946HdKY5XWJp5VNn4Gfc5z2suuHy6nhY54zp-Rd9lWo29sEtn0mctZJTS4FL0oojT59AJmfWclFpizzjQh7sIXgqyIEBjGZ_dnZOT0Eh88058M3nE-B82-aZssZeD5lL7AjPOHbQ7tblu7ne0jb4RpTsE_bkL3JxqrVVOzmbvA8CPdI01EQ",
           "thinkificSubdomain": "packagingschool",
           "thinkificEnrollmentsUrl": "https://api.thinkific.com/api/public/v1/enrollments",
-          "apcTotalCourses": "10"
+          "apcTotalCourses": "10",
+          "apsEventId": "d00b35f5-c45b-42eb-b306-fa3dfeee0251"
         }
       }
     }

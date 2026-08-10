@@ -27,12 +27,14 @@ import {
   AdminSetUserPasswordCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { render } from '@react-email/render';
 import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
+import { assertEmailTemplate } from '@/lib/email-templates';
+import { buildSesClient, getSesFromAddress, sendHtmlEmail } from '@/lib/ses';
 import { revalidatePath } from 'next/cache';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { getThinkificRegistrantSummaryByEmail } from '@/app/actions/thinkific';
+import { SendEmailCommand } from '@aws-sdk/client-ses';
 
 type CognitoAttr = { Name?: string; Value?: string };
 
@@ -42,41 +44,13 @@ function generateTempPassword() {
     .slice(2)}9Z`;
 }
 
-function buildSesClient(): SESClient {
-  const region =
-    process.env.AWS_REGION ||
-    process.env.AWS_DEFAULT_REGION ||
-    process.env.NEXT_PUBLIC_AWS_REGION ||
-    'us-east-1';
-
-  const accessKeyId =
-    process.env.AWSACCESSKEYID || process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey =
-    process.env.AWSSECRETACCESSKEY || process.env.AWS_SECRET_ACCESS_KEY;
-
-  if (accessKeyId && secretAccessKey) {
-    return new SESClient({
-      region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
-    });
-  }
-
-  return new SESClient({ region });
-}
-
 async function sendWelcomeEmailAndMarkSent(params: {
   registrant: RegistrantDetail;
   eventId: string;
   jwt?: string | null;
 }): Promise<{ ok: boolean; message: string }> {
   try {
-    const fromAddress =
-      process.env.APS_WELCOME_EMAIL_FROM ||
-      process.env.APS_EMAIL_FROM ||
-      'info@packagingschool.com';
+    const fromAddress = getSesFromAddress();
     const apsYear = process.env.APS_EVENT_YEAR || '2026';
 
     const emailHtml = await render(
@@ -575,6 +549,7 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
         status
         registrationEmailSent
         welcomeEmailSent
+        appEmailSent
         appUser {
           id
           profile {
@@ -611,6 +586,7 @@ const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
         status
         registrationEmailSent
         welcomeEmailSent
+        appEmailSent
         appUser {
           id
           profile {
@@ -676,6 +652,10 @@ const GET_REGISTRANT = /* GraphQL */ `
       welcomeEmailSentDate
       welcomeEmailReceived
       welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
       paymentMethod
       paymentLast4
       invoice
@@ -987,6 +967,7 @@ export type Registrant = {
   status: string;
   registrationEmailSent?: boolean | null;
   welcomeEmailSent?: boolean | null;
+  appEmailSent?: boolean | null;
   appUser?: {
     id: string;
     profile?: {
@@ -1099,6 +1080,10 @@ export type RegistrantDetail = Registrant & {
   welcomeEmailSentDate?: string | null;
   welcomeEmailReceived?: boolean | null;
   welcomeEmailReceivedDate?: string | null;
+  appEmailSent?: boolean | null;
+  appEmailSentDate?: string | null;
+  appEmailReceived?: boolean | null;
+  appEmailReceivedDate?: string | null;
   paymentMethod?: string | null;
   paymentLast4?: string | null;
   invoice?: string | null;
@@ -2310,6 +2295,119 @@ export async function sendWelcomeEmail(params: {
   }
 }
 
+async function sendAppAccessEmailAndMarkSent(params: {
+  registrant: RegistrantDetail;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<{ ok: boolean; message: string }> {
+  try {
+    const template = assertEmailTemplate('app-access-email');
+    const eventYear = process.env.APS_EVENT_YEAR || '2026';
+    const cred = await fetchLatestTempCredentialByRegistrantId(
+      params.registrant.id,
+    );
+    const subject = template.defaultSubject({ eventYear });
+    const recipient = {
+      id: params.registrant.id,
+      firstName: params.registrant.firstName,
+      lastName: params.registrant.lastName,
+      email: params.registrant.email,
+      phone: params.registrant.phone,
+      jobTitle: params.registrant.jobTitle,
+      attendeeType: params.registrant.attendeeType,
+      companyName: params.registrant.company?.name ?? null,
+      tempPassword: cred?.tempPassword ?? null,
+    };
+
+    const html = await template.renderHtml({
+      recipient,
+      eventYear,
+      subject,
+    });
+    const text = template.renderText?.({
+      recipient,
+      eventYear,
+      subject,
+    });
+
+    await sendHtmlEmail({
+      to: params.registrant.email,
+      subject,
+      html,
+      text,
+    });
+
+    const authOpts = params.jwt
+      ? { authMode: 'userPools' as const, jwt: params.jwt }
+      : undefined;
+
+    await requestGraphQL(
+      UPDATE_REGISTRANT,
+      {
+        input: {
+          id: params.registrant.id,
+          appEmailSent: true,
+          appEmailSentDate: new Date().toISOString(),
+        },
+      },
+      authOpts,
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(
+      `/aps/${params.eventId}/registrants/${params.registrant.id}`,
+    );
+    return { ok: true, message: 'App access email sent.' };
+  } catch (error) {
+    console.error('Failed to send app access email:', error);
+    return { ok: false, message: 'Failed to send app access email.' };
+  }
+}
+
+export async function sendAppAccessEmail(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<ActionState> {
+  try {
+    const registrant = await fetchRegistrantById(params.registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    return await sendAppAccessEmailAndMarkSent({
+      registrant,
+      eventId: params.eventId,
+      jwt: params.jwt ?? null,
+    });
+  } catch (error) {
+    console.error('Failed to send app access email action:', error);
+    return { ok: false, message: 'Failed to send app access email.' };
+  }
+}
+
+/** Marks registrant app-email tracking after a successful campaign send. */
+export async function markRegistrantAppEmailSent(params: {
+  registrantId: string;
+  jwt?: string | null;
+}): Promise<void> {
+  const authOpts = params.jwt
+    ? { authMode: 'userPools' as const, jwt: params.jwt }
+    : undefined;
+
+  await requestGraphQL(
+    UPDATE_REGISTRANT,
+    {
+      input: {
+        id: params.registrantId,
+        appEmailSent: true,
+        appEmailSentDate: new Date().toISOString(),
+      },
+    },
+    authOpts,
+  );
+}
+
 export async function updateRegistrantEmailSync(
   _prevState: ActionState,
   formData: FormData,
@@ -2678,6 +2776,54 @@ export async function fetchLatestTempCredentialByRegistrantId(
   }
 }
 
+/**
+ * Issues a Cognito temporary password for a registrant and stores the encrypted
+ * credential. Uses AdminSetUserPassword (no Cognito email) or AdminCreateUser
+ * with MessageAction SUPPRESS when the user does not exist yet.
+ */
+async function issueAndStoreTempPassword(params: {
+  registrant: RegistrantDetail;
+  jwt?: string | null;
+}): Promise<string> {
+  let tempPassword: string | null = null;
+
+  try {
+    tempPassword = await resetCognitoTempPasswordByEmail(
+      params.registrant.email,
+    );
+  } catch (error) {
+    const errName =
+      typeof error === 'object' && error && 'name' in error
+        ? String((error as { name?: unknown }).name)
+        : null;
+
+    if (errName !== 'UserNotFoundException') {
+      throw error;
+    }
+
+    const ensured = await ensureCognitoUserForRegistrantEmail(
+      params.registrant.email,
+    );
+    tempPassword =
+      ensured.tempPassword ??
+      (await resetCognitoTempPasswordByEmail(params.registrant.email));
+  }
+
+  if (!tempPassword) {
+    throw new Error('Failed to issue temporary password');
+  }
+
+  await storeTempPassword({
+    apsID: params.registrant.apsID,
+    registrantId: params.registrant.id,
+    email: params.registrant.email,
+    tempPassword,
+    jwt: params.jwt ?? undefined,
+  });
+
+  return tempPassword;
+}
+
 export async function regenerateRegistrantTempPassword(params: {
   registrantId: string;
   eventId: string;
@@ -2693,32 +2839,9 @@ export async function regenerateRegistrantTempPassword(params: {
       };
     }
 
-    let tempPassword: string | null = null;
-
-    try {
-      tempPassword = await resetCognitoTempPasswordByEmail(registrant.email);
-    } catch (error) {
-      const errName =
-        typeof error === 'object' && error && 'name' in error
-          ? String((error as { name?: unknown }).name)
-          : null;
-
-      if (errName !== 'UserNotFoundException') {
-        throw error;
-      }
-
-      const ensured = await ensureCognitoUserForRegistrantEmail(registrant.email);
-      tempPassword =
-        ensured.tempPassword ??
-        (await resetCognitoTempPasswordByEmail(registrant.email));
-    }
-
-    await storeTempPassword({
-      apsID: registrant.apsID,
-      registrantId: registrant.id,
-      email: registrant.email,
-      tempPassword,
-      jwt: params.jwt ?? undefined,
+    const tempPassword = await issueAndStoreTempPassword({
+      registrant,
+      jwt: params.jwt ?? null,
     });
 
     revalidatePath(`/aps/${params.eventId}`);
@@ -2736,6 +2859,118 @@ export async function regenerateRegistrantTempPassword(params: {
       ok: false,
       message: 'Failed to regenerate temporary password.',
       tempPassword: null,
+    };
+  }
+}
+
+const BULK_TEMP_PASSWORD_CONCURRENCY = 3;
+
+/**
+ * Reset Cognito temporary passwords for all APPROVED registrants on an event.
+ * Cognito does not email on AdminSetUserPassword; new users are created with
+ * MessageAction SUPPRESS. Progress is returned for UI reporting.
+ */
+export async function regenerateApprovedTempPasswords(params: {
+  eventId: string;
+  jwt?: string | null;
+}): Promise<{
+  ok: boolean;
+  message: string;
+  total: number;
+  succeeded: number;
+  failed: number;
+  errors: Array<{ registrantId: string; email: string; error: string }>;
+}> {
+  try {
+    const registrants = await fetchRegistrantsByApsId(params.eventId);
+    const approved = registrants.filter((r) => r.status === 'APPROVED');
+
+    if (approved.length === 0) {
+      return {
+        ok: true,
+        message: 'No APPROVED registrants found for this event.',
+        total: 0,
+        succeeded: 0,
+        failed: 0,
+        errors: [],
+      };
+    }
+
+    let succeeded = 0;
+    let failed = 0;
+    const errors: Array<{
+      registrantId: string;
+      email: string;
+      error: string;
+    }> = [];
+
+    let nextIndex = 0;
+    async function worker() {
+      while (nextIndex < approved.length) {
+        const current = nextIndex;
+        nextIndex += 1;
+        const row = approved[current];
+        try {
+          const detail = await fetchRegistrantById(row.id);
+          if (!detail) {
+            failed += 1;
+            errors.push({
+              registrantId: row.id,
+              email: row.email,
+              error: 'Registrant not found',
+            });
+            continue;
+          }
+
+          await issueAndStoreTempPassword({
+            registrant: detail,
+            jwt: params.jwt ?? null,
+          });
+          succeeded += 1;
+        } catch (error) {
+          failed += 1;
+          errors.push({
+            registrantId: row.id,
+            email: row.email,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to regenerate temporary password',
+          });
+        }
+      }
+    }
+
+    await Promise.all(
+      Array.from(
+        {
+          length: Math.min(BULK_TEMP_PASSWORD_CONCURRENCY, approved.length),
+        },
+        () => worker(),
+      ),
+    );
+
+    revalidatePath(`/aps/${params.eventId}`);
+
+    return {
+      ok: failed === 0,
+      message: `Reset ${succeeded} of ${approved.length} APPROVED temp passwords.${
+        failed ? ` ${failed} failed.` : ''
+      } Cognito does not send emails for this reset.`,
+      total: approved.length,
+      succeeded,
+      failed,
+      errors,
+    };
+  } catch (error) {
+    console.error('Failed to bulk regenerate temp passwords:', error);
+    return {
+      ok: false,
+      message: 'Failed to bulk regenerate temporary passwords.',
+      total: 0,
+      succeeded: 0,
+      failed: 0,
+      errors: [],
     };
   }
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   approveRegistrant,
   deleteRegistrantCascade,
+  sendAppAccessEmail,
   sendWelcomeEmail,
   updateRegistrantAttendeeType,
   type Registrant,
@@ -45,6 +46,7 @@ export default function RegistrantsTable({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
+  const [appEmailingId, setAppEmailingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [savingTypeId, setSavingTypeId] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<Record<string, string>>({});
@@ -203,6 +205,23 @@ export default function RegistrantsTable({
     });
   };
 
+  const handleAppEmailClick = (registrantId: string) => {
+    setAppEmailingId(registrantId);
+    startTransition(async () => {
+      const result = await sendAppAccessEmail({
+        registrantId,
+        eventId,
+      });
+      if (!result.ok) {
+        window.alert(result.message || 'Failed to send app access email.');
+      } else {
+        window.alert('App access email sent.');
+      }
+      setAppEmailingId(null);
+      router.refresh();
+    });
+  };
+
   const handleApprove = (registrantId: string) => {
     setApprovingId(registrantId);
     startTransition(async () => {
@@ -342,6 +361,12 @@ export default function RegistrantsTable({
                 <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Welcome Email
                 </th>
+                <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  App Email Sent
+                </th>
+                <th className='px-2 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-700'>
+                  App Email
+                </th>
                 <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   Actions
                 </th>
@@ -353,6 +378,7 @@ export default function RegistrantsTable({
                 const selectedType =
                   selectedTypes[registrant.id] ?? registrant.attendeeType;
                 const hasTypeChanged = selectedType !== registrant.attendeeType;
+                const isSendingAppEmail = appEmailingId === registrant.id;
                 return (
                   <tr
                     key={registrant.id}
@@ -451,6 +477,77 @@ export default function RegistrantsTable({
                           <rect x='3.5' y='5.5' width='17' height='13' rx='2' />
                           <path d='M4 7l8 6 8-6' />
                         </svg>
+                      </button>
+                    </td>
+                    <td className='px-2 py-3 text-center'>
+                      {getBooleanIndicator(registrant.appEmailSent)}
+                    </td>
+                    <td className='px-2 py-3 text-center'>
+                      <button
+                        type='button'
+                        onClick={() => handleAppEmailClick(registrant.id)}
+                        disabled={isSendingAppEmail}
+                        aria-busy={isSendingAppEmail}
+                        className={`inline-flex h-12 w-12 items-center justify-center rounded-lg border transition ${
+                          isSendingAppEmail
+                            ? 'cursor-wait border-slate-700 bg-slate-700 text-white ring-2 ring-slate-400 ring-offset-1'
+                            : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
+                        } disabled:opacity-90`}
+                        aria-label={
+                          isSendingAppEmail
+                            ? `Sending app access email to ${name}`
+                            : `Send app access email to ${name}`
+                        }
+                        title={
+                          isSendingAppEmail
+                            ? 'Sending app access email…'
+                            : registrant.appEmailSent
+                              ? 'Resend app access email'
+                              : 'Send app access email'
+                        }
+                      >
+                        {isSendingAppEmail ? (
+                          <svg
+                            className='h-6 w-6 animate-spin'
+                            xmlns='http://www.w3.org/2000/svg'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            aria-hidden='true'
+                          >
+                            <circle
+                              className='opacity-25'
+                              cx='12'
+                              cy='12'
+                              r='10'
+                              stroke='currentColor'
+                              strokeWidth='3'
+                            />
+                            <path
+                              className='opacity-90'
+                              fill='currentColor'
+                              d='M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z'
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            viewBox='0 0 24 24'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeWidth='1.8'
+                            className='h-7 w-7'
+                            aria-hidden='true'
+                          >
+                            <rect
+                              x='6'
+                              y='2.5'
+                              width='12'
+                              height='19'
+                              rx='2'
+                            />
+                            <path d='M10 18.5h4' />
+                          </svg>
+                        )}
                       </button>
                     </td>
                     <td className='px-2 py-3'>

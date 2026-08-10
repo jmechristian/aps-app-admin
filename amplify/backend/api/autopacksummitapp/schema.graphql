@@ -136,12 +136,12 @@ type Mutation {
   adminCreateRegistrant(
     input: AdminCreateRegistrantInput!
   ): AdminCreateRegistrantResult
-    @function(name: "adminRegistrantOps-${env}")
+    @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
   adminReissueRegistrantTempPassword(
     input: AdminReissueRegistrantTempPasswordInput!
   ): AdminReissueRegistrantTempPasswordResult
-    @function(name: "adminRegistrantOps-${env}")
+    @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
   adminCreateExhibitor(
     input: AdminCreateExhibitorInput!
@@ -154,7 +154,7 @@ type Mutation {
     @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
   deleteMyAccount: DeleteMyAccountResult
-    @function(name: "adminRegistrantOps-${env}")
+    @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
 }
 
@@ -165,7 +165,7 @@ type Query {
   adminGetLatestRegistrantTempCredential(
     registrantId: ID!
   ): AdminLatestTempCredentialResult
-    @function(name: "adminRegistrantOps-${env}")
+    @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
 }
 
@@ -311,6 +311,10 @@ type ApsRegistrant
   welcomeEmailSentDate: String
   welcomeEmailReceived: Boolean
   welcomeEmailReceivedDate: String
+  appEmailSent: Boolean
+  appEmailSentDate: String
+  appEmailReceived: Boolean
+  appEmailReceivedDate: String
   paymentMethod: String
   paymentLast4: String
   approvedAt: String
@@ -1255,6 +1259,83 @@ type ApsAdminAnnouncement
   deepLink: String # optional, e.g. "app://announcements/<id>"
   scheduledAt: AWSDateTime # optional future publish time
   publishedAt: AWSDateTime # set when visible + push is sent
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum EmailSendStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+# Admin email campaigns (mini ActiveCampaign). Templates live in code (React Email).
+# apiKey create/update/read allows the scheduled run-campaign route (no user JWT).
+type ApsEmailCampaign
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"], provider: userPools }
+      { allow: public, provider: apiKey, operations: [create, update, read] }
+    ]
+  ) {
+  id: ID!
+  eventId: ID!
+    @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
+    @index(name: "byEventScheduled", sortKeyFields: ["scheduledAt"])
+
+  name: String!
+  templateKey: String!
+  subject: String!
+
+  # Empty audienceStatuses defaults to APPROVED at send time in app logic.
+  audienceStatuses: [RegistrantStatus]
+  # Empty audienceTypes = all attendee types.
+  audienceTypes: [RegistrantType]
+
+  status: EmailCampaignStatus!
+  scheduledAt: AWSDateTime
+  startedAt: AWSDateTime
+  completedAt: AWSDateTime
+
+  totalRecipients: Int
+  sentCount: Int
+  failedCount: Int
+
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ApsEmailSend
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admin"], provider: userPools }
+      { allow: public, provider: apiKey, operations: [create, update, read] }
+    ]
+  ) {
+  id: ID!
+  campaignId: ID! @index(name: "byCampaign", sortKeyFields: ["createdAt"])
+  eventId: ID!
+  registrantId: ID!
+  email: String!
+
+  status: EmailSendStatus!
+  sesMessageId: String
+  error: String
+  sentAt: AWSDateTime
+
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
