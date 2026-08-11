@@ -92,16 +92,15 @@ export const AppAccessEmail = ({
   const name = firstName?.trim() || 'there';
   const hasTempPassword = Boolean(tempPassword && tempPassword.trim());
   const hasStoreLinks = Boolean(appStoreUrl || playStoreUrl);
-  const toursDashboardUrl =
-    dashboardUrl || 'https://www.autopacksummit.com';
+  const toursDashboardUrl = dashboardUrl || 'https://www.autopacksummit.com';
 
   return (
     <Html>
       <Tailwind>
         <Head />
         <Preview>
-          Your Automotive Packaging Summit {eventYear} event app access is
-          ready — sign in and explore.
+          Your Automotive Packaging Summit {eventYear} event app access is ready
+          — sign in and explore.
         </Preview>
         <Body
           style={{
@@ -121,8 +120,8 @@ export const AppAccessEmail = ({
             }}
           >
             <Img
-              src="https://packschool.s3.us-east-1.amazonaws.com/2026-email-header.png"
-              width="100%"
+              src='https://packschool.s3.us-east-1.amazonaws.com/2026-email-header.png'
+              width='100%'
               alt={`Automotive Packaging Summit ${eventYear}`}
               style={{
                 display: 'block',
@@ -170,8 +169,8 @@ export const AppAccessEmail = ({
               >
                 The Automotive Packaging Summit app is your invite-only
                 companion for Greenville — built for attendees to stay on
-                schedule, connect with the right people, and get more from
-                every session and conversation.
+                schedule, connect with the right people, and get more from every
+                session and conversation.
               </Text>
             </Section>
 
@@ -254,7 +253,8 @@ export const AppAccessEmail = ({
                       color: APS_BLUE,
                       margin: '0 0 12px',
                       letterSpacing: '0.02em',
-                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, Menlo, monospace',
                     }}
                   >
                     {tempPassword}
@@ -303,7 +303,7 @@ export const AppAccessEmail = ({
                   >
                     <Img
                       src={shot.src}
-                      width="100%"
+                      width='100%'
                       alt={shot.alt}
                       style={{
                         display: 'block',
@@ -393,10 +393,10 @@ export const AppAccessEmail = ({
                     }}
                   >
                     <Img
-                      src="https://packschool.s3.us-east-1.amazonaws.com/email-assets/apple-logo-white.png?v=2"
-                      width="18"
-                      height="18"
-                      alt=""
+                      src='https://packschool.s3.us-east-1.amazonaws.com/email-assets/apple-logo-white.png?v=2'
+                      width='18'
+                      height='18'
+                      alt=''
                       style={{
                         display: 'inline-block',
                         verticalAlign: 'middle',
@@ -425,10 +425,10 @@ export const AppAccessEmail = ({
                     }}
                   >
                     <Img
-                      src="https://packschool.s3.us-east-1.amazonaws.com/email-assets/android-logo-white.png?v=2"
-                      width="18"
-                      height="18"
-                      alt=""
+                      src='https://packschool.s3.us-east-1.amazonaws.com/email-assets/android-logo-white.png?v=2'
+                      width='18'
+                      height='18'
+                      alt=''
                       style={{
                         display: 'inline-block',
                         verticalAlign: 'middle',
@@ -537,8 +537,8 @@ export const AppAccessEmail = ({
                   ...font,
                 }}
               >
-                Want the full walkthrough? The official app guide covers sign-in,
-                networking, Passport, and more.
+                Want the full walkthrough? The official app guide covers
+                sign-in, networking, Passport, and more.
               </Text>
               <Button
                 href={APP_GUIDE_URL}
@@ -602,12 +602,12 @@ export const AppAccessEmail = ({
                       textAlign: 'center' as const,
                     }}
                   >
-                    <Link href="https://www.packagingschool.com">
+                    <Link href='https://www.packagingschool.com'>
                       <Img
-                        src="https://packschool.s3.us-east-1.amazonaws.com/ps-square150x.png"
+                        src='https://packschool.s3.us-east-1.amazonaws.com/ps-square150x.png'
                         width={120}
                         height={120}
-                        alt="Packaging School"
+                        alt='Packaging School'
                         style={{
                           display: 'block',
                           margin: '0 auto',
@@ -647,7 +647,7 @@ export const AppAccessEmail = ({
                     >
                       Thank you to our app sponsor,{' '}
                       <Link
-                        href="https://www.packagingschool.com"
+                        href='https://www.packagingschool.com'
                         style={{
                           color: APS_BLUE,
                           textDecoration: 'none',
@@ -669,7 +669,7 @@ export const AppAccessEmail = ({
                       decisions.
                     </Text>
                     <Button
-                      href="https://www.packagingschool.com"
+                      href='https://www.packagingschool.com'
                       style={{
                         backgroundColor: APS_YELLOW,
                         color: DARK_TEXT,
@@ -727,7 +727,7 @@ export const AppAccessEmail = ({
                     2.
                   </Text>
                   <Button
-                    href="https://www.hyatt.com/en-US/group-booking/GSPRG/G-APSM"
+                    href='https://www.hyatt.com/en-US/group-booking/GSPRG/G-APSM'
                     style={{
                       backgroundColor: APS_BLUE,
                       color: '#ffffff',
@@ -821,27 +821,13 @@ export const AppAccessEmail = ({
                 If your plans change and you can no longer attend the event,
                 please contact{' '}
                 <Link
-                  href="mailto:events@packagingschool.com"
+                  href='mailto:events@packagingschool.com'
                   style={{ color: APS_BLUE, textDecoration: 'underline' }}
                 >
                   events@packagingschool.com
                 </Link>{' '}
                 to notify us of your cancellation. This will help us plan our
                 space more accurately.
-              </Text>
-              <Text
-                style={{
-                  fontSize: '13px',
-                  color: MUTED_TEXT,
-                  margin: '0',
-                  lineHeight: '1.6',
-                  ...font,
-                }}
-              >
-                <strong style={{ color: DARK_TEXT }}>
-                  Registration Close Date:
-                </strong>{' '}
-                Sunday, October 27th 2026
               </Text>
             </Section>
 
@@ -876,7 +862,7 @@ export const AppAccessEmail = ({
               >
                 For event details, please visit the{' '}
                 <Link
-                  href="https://www.autopacksummit.com"
+                  href='https://www.autopacksummit.com'
                   style={{
                     color: APS_YELLOW,
                     fontWeight: 700,
@@ -898,7 +884,7 @@ export const AppAccessEmail = ({
               >
                 For additional questions, please contact{' '}
                 <Link
-                  href="mailto:info@packagingschool.com"
+                  href='mailto:info@packagingschool.com'
                   style={{
                     color: APS_YELLOW,
                     fontWeight: 700,
@@ -938,17 +924,17 @@ export const AppAccessEmail = ({
               <Row>
                 <Column style={{ verticalAlign: 'middle' }}>
                   <Img
-                    src="https://packschool.s3.amazonaws.com/aps-logo-email.png"
+                    src='https://packschool.s3.amazonaws.com/aps-logo-email.png'
                     width={100}
                     height={26}
-                    alt="AutoPack Summit"
+                    alt='AutoPack Summit'
                     style={{ display: 'inline-block', marginRight: '12px' }}
                   />
                   <Img
-                    src="https://packschool.s3.us-east-1.amazonaws.com/ps-square150x.png"
+                    src='https://packschool.s3.us-east-1.amazonaws.com/ps-square150x.png'
                     width={26}
                     height={26}
-                    alt="Packaging School"
+                    alt='Packaging School'
                     style={{ display: 'inline-block' }}
                   />
                 </Column>
@@ -959,7 +945,7 @@ export const AppAccessEmail = ({
                   }}
                 >
                   <Link
-                    href="https://www.packagingschool.com"
+                    href='https://www.packagingschool.com'
                     style={{ textDecoration: 'none' }}
                   >
                     <Text
