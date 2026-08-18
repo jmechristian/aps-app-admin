@@ -166,6 +166,12 @@ export default async function RegistrantProfile({ params }: PageProps) {
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>{fullName}</h1>
             <p className='text-slate-600'>{registrant.email}</p>
+            <div className='flex flex-col gap-1 pt-1 font-mono text-xs text-slate-600'>
+              <span>Registrant ID: {registrant.id}</span>
+              <span>
+                Profile ID: {registrant.appUser?.profile?.id ?? '—'}
+              </span>
+            </div>
           </div>
           <Link
             href={`/aps/${eventId}`}
