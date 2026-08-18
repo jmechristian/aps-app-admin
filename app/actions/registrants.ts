@@ -702,6 +702,45 @@ const GET_REGISTRANT = /* GraphQL */ `
   }
 `;
 
+const GET_REGISTRANT_LOOKUP = /* GraphQL */ `
+  query GetApsRegistrantLookup($id: ID!) {
+    getApsRegistrant(id: $id) {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      jobTitle
+      company {
+        name
+      }
+      appUser {
+        id
+      }
+    }
+  }
+`;
+
+const GET_APP_USER_LOOKUP = /* GraphQL */ `
+  query GetApsAppUserLookup($id: ID!) {
+    getApsAppUser(id: $id) {
+      id
+      registrantId
+      registrant {
+        id
+        apsID
+        firstName
+        lastName
+        email
+        jobTitle
+        company {
+          name
+        }
+      }
+    }
+  }
+`;
+
 const LIST_PROFILE_AFFILIATES = /* GraphQL */ `
   query ListProfileAffiliates(
     $filter: ModelProfileAffiliateFilterInput
@@ -1689,6 +1728,84 @@ export async function fetchRegistrantById(
     console.error(`Failed to fetch registrant ${id}:`, error);
     return null;
   }
+}
+
+export type RegistrantLookupResult = {
+  id: string;
+  eventId: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  jobTitle?: string | null;
+  companyName?: string | null;
+  appUserId?: string | null;
+};
+
+type LookupRegistrantRecord = {
+  id: string;
+  apsID: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  jobTitle?: string | null;
+  company?: { name: string } | null;
+  appUser?: { id: string } | null;
+};
+
+function mapRegistrantLookupResult(
+  registrant: LookupRegistrantRecord,
+  appUserId?: string | null,
+): RegistrantLookupResult {
+  return {
+    id: registrant.id,
+    eventId: registrant.apsID,
+    firstName: registrant.firstName,
+    lastName: registrant.lastName,
+    email: registrant.email,
+    jobTitle: registrant.jobTitle,
+    companyName: registrant.company?.name ?? null,
+    appUserId: appUserId ?? registrant.appUser?.id ?? null,
+  };
+}
+
+/**
+ * Resolve a registrant by ApsRegistrant id or ApsAppUser id.
+ */
+export async function lookupRegistrantById(
+  id: string,
+): Promise<RegistrantLookupResult | null> {
+  const trimmed = id.trim();
+  if (!trimmed) return null;
+
+  try {
+    const registrantResponse = await requestGraphQL<{
+      getApsRegistrant?: LookupRegistrantRecord | null;
+    }>(GET_REGISTRANT_LOOKUP, { id: trimmed });
+    const registrant = registrantResponse.getApsRegistrant;
+    if (registrant?.id) {
+      return mapRegistrantLookupResult(registrant);
+    }
+  } catch (error) {
+    console.error(`Failed registrant lookup for id ${trimmed}:`, error);
+  }
+
+  try {
+    const appUserResponse = await requestGraphQL<{
+      getApsAppUser?: {
+        id: string;
+        registrantId: string;
+        registrant?: LookupRegistrantRecord | null;
+      } | null;
+    }>(GET_APP_USER_LOOKUP, { id: trimmed });
+    const appUser = appUserResponse.getApsAppUser;
+    if (appUser?.registrant?.id) {
+      return mapRegistrantLookupResult(appUser.registrant, appUser.id);
+    }
+  } catch (error) {
+    console.error(`Failed app user lookup for id ${trimmed}:`, error);
+  }
+
+  return null;
 }
 
 type ActionState = {

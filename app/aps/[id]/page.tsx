@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
 import BulkResetTempPasswordsButton from './bulk-reset-temp-passwords-button';
+import RegistrantLookup from './registrant-lookup';
 import RegistrantsTable from './registrants-table';
 import {
   fetchRegistrantsByApsId,
@@ -346,6 +347,10 @@ function ApsDetailClient({
               </Link>
             </div>
           </div>
+        </section>
+
+        <section>
+          <RegistrantLookup eventId={eventId} registrants={allRegistrants} />
         </section>
 
         <section>
