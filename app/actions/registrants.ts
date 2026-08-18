@@ -716,13 +716,20 @@ const GET_REGISTRANT_LOOKUP = /* GraphQL */ `
       }
       appUser {
         id
+        profile {
+          firstName
+          lastName
+          email
+          company
+          jobTitle
+        }
       }
     }
   }
 `;
 
-const GET_APP_USER_LOOKUP = /* GraphQL */ `
-  query GetApsAppUserLookup($id: ID!) {
+const GET_APP_USER_LOOKUP_SLIM = /* GraphQL */ `
+  query GetApsAppUserLookupSlim($id: ID!) {
     getApsAppUser(id: $id) {
       id
       registrantId
@@ -733,9 +740,36 @@ const GET_APP_USER_LOOKUP = /* GraphQL */ `
         lastName
         email
         jobTitle
-        company {
-          name
-        }
+      }
+    }
+  }
+`;
+
+const GET_PROFILE_LOOKUP = /* GraphQL */ `
+  query GetApsAppUserProfileLookup($id: ID!) {
+    getApsAppUserProfile(id: $id) {
+      id
+      userId
+      firstName
+      lastName
+      email
+      company
+      jobTitle
+    }
+  }
+`;
+
+const PROFILES_BY_USER_LOOKUP = /* GraphQL */ `
+  query ApsAppUserProfilesByUserIdLookup($userId: ID!) {
+    apsAppUserProfilesByUserId(userId: $userId, limit: 1) {
+      items {
+        id
+        userId
+        firstName
+        lastName
+        email
+        company
+        jobTitle
       }
     }
   }
@@ -1741,6 +1775,14 @@ export type RegistrantLookupResult = {
   appUserId?: string | null;
 };
 
+type LookupProfile = {
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  company?: string | null;
+  jobTitle?: string | null;
+};
+
 type LookupRegistrantRecord = {
   id: string;
   apsID: string;
@@ -1749,27 +1791,132 @@ type LookupRegistrantRecord = {
   email: string;
   jobTitle?: string | null;
   company?: { name: string } | null;
-  appUser?: { id: string } | null;
+  appUser?: { id: string; profile?: LookupProfile | null } | null;
 };
+
+const LOOKUP_UUID_RE =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+const LOOKUP_UUID_EXACT_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function mapRegistrantLookupResult(
   registrant: LookupRegistrantRecord,
-  appUserId?: string | null,
+  extras?: { appUserId?: string | null; profile?: LookupProfile | null },
 ): RegistrantLookupResult {
+  const profile = extras?.profile ?? registrant.appUser?.profile ?? null;
   return {
     id: registrant.id,
     eventId: registrant.apsID,
-    firstName: registrant.firstName,
-    lastName: registrant.lastName,
-    email: registrant.email,
-    jobTitle: registrant.jobTitle,
-    companyName: registrant.company?.name ?? null,
-    appUserId: appUserId ?? registrant.appUser?.id ?? null,
+    firstName: registrant.firstName ?? profile?.firstName ?? null,
+    lastName: registrant.lastName ?? profile?.lastName ?? null,
+    email: registrant.email || profile?.email || '',
+    jobTitle: registrant.jobTitle ?? profile?.jobTitle ?? null,
+    companyName: registrant.company?.name ?? profile?.company ?? null,
+    appUserId: extras?.appUserId ?? registrant.appUser?.id ?? null,
   };
 }
 
+function extractLookupIds(query: string): string[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      const preferred: string[] = [];
+      for (const key of ['userAId', 'userBId', 'requestedByUserId']) {
+        const value = parsed[key];
+        if (typeof value === 'string' && LOOKUP_UUID_EXACT_RE.test(value)) {
+          preferred.push(value);
+        }
+      }
+      if (Array.isArray(parsed.owners)) {
+        for (const owner of parsed.owners) {
+          if (typeof owner === 'string' && LOOKUP_UUID_EXACT_RE.test(owner)) {
+            preferred.push(owner);
+          }
+        }
+      }
+      if (preferred.length > 0) {
+        return [...new Set(preferred)];
+      }
+    }
+  } catch {
+    // Not JSON; fall through to UUID extraction.
+  }
+
+  if (LOOKUP_UUID_EXACT_RE.test(trimmed)) return [trimmed];
+  return [...new Set(trimmed.match(LOOKUP_UUID_RE) ?? [])];
+}
+
+async function lookupByAppUserIdDirect(
+  appUserId: string,
+  profile?: LookupProfile | null,
+): Promise<RegistrantLookupResult | null> {
+  try {
+    const slimResponse = await requestGraphQL<{
+      getApsAppUser?: {
+        id: string;
+        registrant?: LookupRegistrantRecord | null;
+      } | null;
+    }>(GET_APP_USER_LOOKUP_SLIM, { id: appUserId });
+    const appUser = slimResponse.getApsAppUser;
+    if (appUser?.registrant?.id) {
+      let resolvedProfile = profile ?? null;
+      if (!resolvedProfile) {
+        try {
+          const profileByUser = await requestGraphQL<{
+            apsAppUserProfilesByUserId?: {
+              items?: LookupProfile[] | null;
+            } | null;
+          }>(PROFILES_BY_USER_LOOKUP, { userId: appUser.id });
+          resolvedProfile =
+            profileByUser.apsAppUserProfilesByUserId?.items?.[0] ?? null;
+        } catch (error) {
+          console.error(
+            `Failed profile lookup while resolving app user ${appUserId}:`,
+            error,
+          );
+        }
+      }
+      return mapRegistrantLookupResult(appUser.registrant, {
+        appUserId: appUser.id,
+        profile: resolvedProfile,
+      });
+    }
+  } catch (error) {
+    console.error(`Failed slim app user lookup for id ${appUserId}:`, error);
+  }
+
+  return null;
+}
+
+async function lookupByAppUserId(
+  id: string,
+): Promise<RegistrantLookupResult | null> {
+  const direct = await lookupByAppUserIdDirect(id);
+  if (direct) return direct;
+
+  try {
+    const profileByUser = await requestGraphQL<{
+      apsAppUserProfilesByUserId?: {
+        items?: Array<LookupProfile & { userId?: string | null }> | null;
+      } | null;
+    }>(PROFILES_BY_USER_LOOKUP, { userId: id });
+    const profile = profileByUser.apsAppUserProfilesByUserId?.items?.[0];
+    if (profile?.userId) {
+      return lookupByAppUserIdDirect(profile.userId, profile);
+    }
+  } catch (error) {
+    console.error(`Failed profile-by-user lookup for id ${id}:`, error);
+  }
+
+  return null;
+}
+
 /**
- * Resolve a registrant by ApsRegistrant id or ApsAppUser id.
+ * Resolve a registrant by ApsRegistrant id, ApsAppUser id (Cognito sub),
+ * or profile id.
  */
 export async function lookupRegistrantById(
   id: string,
@@ -1789,23 +1936,46 @@ export async function lookupRegistrantById(
     console.error(`Failed registrant lookup for id ${trimmed}:`, error);
   }
 
+  const byAppUser = await lookupByAppUserId(trimmed);
+  if (byAppUser) return byAppUser;
+
   try {
-    const appUserResponse = await requestGraphQL<{
-      getApsAppUser?: {
-        id: string;
-        registrantId: string;
-        registrant?: LookupRegistrantRecord | null;
-      } | null;
-    }>(GET_APP_USER_LOOKUP, { id: trimmed });
-    const appUser = appUserResponse.getApsAppUser;
-    if (appUser?.registrant?.id) {
-      return mapRegistrantLookupResult(appUser.registrant, appUser.id);
+    const profileResponse = await requestGraphQL<{
+      getApsAppUserProfile?: (LookupProfile & { userId?: string | null }) | null;
+    }>(GET_PROFILE_LOOKUP, { id: trimmed });
+    const profile = profileResponse.getApsAppUserProfile;
+    if (profile?.userId) {
+      const viaUser = await lookupByAppUserIdDirect(profile.userId, profile);
+      if (viaUser) return viaUser;
     }
   } catch (error) {
-    console.error(`Failed app user lookup for id ${trimmed}:`, error);
+    console.error(`Failed profile lookup for id ${trimmed}:`, error);
   }
 
   return null;
+}
+
+/**
+ * Resolve one or more registrants from a pasted ID, Cognito sub, or JSON
+ * blob such as an ApsContactRequest.
+ */
+export async function lookupRegistrantsByQuery(
+  query: string,
+): Promise<RegistrantLookupResult[]> {
+  const ids = extractLookupIds(query);
+  if (ids.length === 0) return [];
+
+  const results: RegistrantLookupResult[] = [];
+  const seen = new Set<string>();
+
+  for (const id of ids) {
+    const match = await lookupRegistrantById(id);
+    if (!match || seen.has(match.id)) continue;
+    seen.add(match.id);
+    results.push(match);
+  }
+
+  return results;
 }
 
 type ActionState = {
