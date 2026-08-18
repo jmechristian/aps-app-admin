@@ -170,24 +170,6 @@ export default function RegistrantEditForm({
           Registration record fields used for the QR code and event roster. Update
           these when a ticket is transferred to a new attendee.
         </p>
-        <div className='mb-6 grid gap-4 md:grid-cols-2'>
-          <div>
-            <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-              Registrant ID
-            </p>
-            <p className='mt-1 break-all font-mono text-sm text-slate-900'>
-              {registrant.id}
-            </p>
-          </div>
-          <div>
-            <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-              Profile ID
-            </p>
-            <p className='mt-1 break-all font-mono text-sm text-slate-900'>
-              {profile?.id ?? '—'}
-            </p>
-          </div>
-        </div>
         <form action={registrantInfoAction} className='space-y-6'>
           <input type='hidden' name='registrantId' value={registrant.id} />
           <input type='hidden' name='eventId' value={eventId} />
@@ -561,10 +543,6 @@ export default function RegistrantEditForm({
             <input type='hidden' name='profileId' value={profile.id} />
             <input type='hidden' name='eventId' value={eventId} />
             <input type='hidden' name='registrantId' value={registrant.id} />
-            <p className='text-xs text-slate-600'>
-              Profile ID:{' '}
-              <span className='font-mono text-slate-800'>{profile.id}</span>
-            </p>
 
             <div className='rounded-2xl border border-slate-100 bg-slate-50 p-5'>
               <h3 className='mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
