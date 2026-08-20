@@ -21,6 +21,28 @@ type RegistrantsTableProps = {
   pageSize?: number;
 };
 
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='M10 13a5 5 0 0 0 7.54.54l1.42-1.42a5 5 0 0 0-7.07-7.07l-1.72 1.71' />
+      <path d='M14 11a5 5 0 0 0-7.54-.54L5.04 11.89a5 5 0 0 0 7.07 7.07l1.71-1.71' />
+    </svg>
+  );
+}
+
+function registrantPublicUrl(registrantId: string) {
+  return `https://autopacksummit.com/registrants/${registrantId}`;
+}
+
 export default function RegistrantsTable({
   registrants,
   allRegistrants,
@@ -50,6 +72,7 @@ export default function RegistrantsTable({
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [savingTypeId, setSavingTypeId] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<Record<string, string>>({});
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const computedTotalPages = Math.max(
@@ -249,6 +272,19 @@ export default function RegistrantsTable({
     });
   };
 
+  const handleCopyPublicLink = async (registrantId: string) => {
+    const url = registrantPublicUrl(registrantId);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLinkId(registrantId);
+      window.setTimeout(() => {
+        setCopiedLinkId((current) => (current === registrantId ? null : current));
+      }, 1200);
+    } catch {
+      window.alert(`Could not copy link. ${url}`);
+    }
+  };
+
   const handleApprove = (registrantId: string) => {
     setApprovingId(registrantId);
     startTransition(async () => {
@@ -368,6 +404,10 @@ export default function RegistrantsTable({
           <table className='w-full'>
             <thead>
               <tr className='border-b border-slate-200'>
+                <th className='w-10 px-2 py-3 text-center text-slate-500'>
+                  <span className='sr-only'>Public profile link</span>
+                  <LinkIcon className='mx-auto h-4 w-4' />
+                </th>
                 <th className='px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   <button
                     type='button'
@@ -429,6 +469,29 @@ export default function RegistrantsTable({
                     key={registrant.id}
                     className='transition hover:bg-slate-50'
                   >
+                    <td className='px-2 py-3 text-center'>
+                      <button
+                        type='button'
+                        onClick={() => handleCopyPublicLink(registrant.id)}
+                        title={
+                          copiedLinkId === registrant.id
+                            ? 'Copied'
+                            : `Copy ${registrantPublicUrl(registrant.id)}`
+                        }
+                        aria-label={
+                          copiedLinkId === registrant.id
+                            ? `Copied public link for ${name}`
+                            : `Copy public link for ${name}`
+                        }
+                        className={`inline-flex rounded-md p-1.5 transition ${
+                          copiedLinkId === registrant.id
+                            ? 'text-green-600'
+                            : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+                        }`}
+                      >
+                        <LinkIcon className='h-4 w-4' />
+                      </button>
+                    </td>
                     <td className='px-2 py-3'>
                       <div className='flex flex-col gap-0.5'>
                         <Link
