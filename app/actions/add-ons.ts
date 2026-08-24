@@ -332,6 +332,12 @@ export async function deleteAddOn(addOnId: string, eventId: string) {
   revalidatePath(`/aps/${eventId}/add-ons`);
 }
 
+/** AppSync AWSJSON scalars must be JSON strings, not objects. */
+function toAwsJson(value: Record<string, unknown> | null | undefined): string | null {
+  if (!value) return null;
+  return JSON.stringify(value);
+}
+
 export async function requestAddOn(
   addOnId: string,
   registrantId: string,
@@ -351,7 +357,7 @@ export async function requestAddOn(
       addOnId,
       registrantId,
       status: 'PENDING',
-      preferences: preferences ?? null,
+      preferences: toAwsJson(preferences),
     },
   });
   revalidatePath(`/aps/${eventId}/add-ons`);
@@ -389,7 +395,7 @@ export async function updateAddOnRequestPreferences(
   await requestGraphQL(UPDATE_ADDON_REQUEST, {
     input: {
       id: requestId,
-      preferences: preferences ?? null,
+      preferences: toAwsJson(preferences),
     },
   });
   revalidatePath(`/aps/${eventId}/add-ons`);

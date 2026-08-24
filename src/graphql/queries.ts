@@ -2815,6 +2815,92 @@ export const apsContactRequestsByRequestKey = /* GraphQL */ `query ApsContactReq
   APITypes.ApsContactRequestsByRequestKeyQueryVariables,
   APITypes.ApsContactRequestsByRequestKeyQuery
 >;
+export const apsContactRequestsByUserAIdAndCreatedAt = /* GraphQL */ `query ApsContactRequestsByUserAIdAndCreatedAt(
+  $userAId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsContactRequestFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsContactRequestsByUserAIdAndCreatedAt(
+    userAId: $userAId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      eventId
+      requestKey
+      userAId
+      userBId
+      owners
+      requestedByUserId
+      status
+      introMessage
+      introSentAt
+      introDeliveredAt
+      acceptedAt
+      declinedAt
+      blockedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsContactRequestsByUserAIdAndCreatedAtQueryVariables,
+  APITypes.ApsContactRequestsByUserAIdAndCreatedAtQuery
+>;
+export const apsContactRequestsByUserBIdAndCreatedAt = /* GraphQL */ `query ApsContactRequestsByUserBIdAndCreatedAt(
+  $userBId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsContactRequestFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsContactRequestsByUserBIdAndCreatedAt(
+    userBId: $userBId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      eventId
+      requestKey
+      userAId
+      userBId
+      owners
+      requestedByUserId
+      status
+      introMessage
+      introSentAt
+      introDeliveredAt
+      acceptedAt
+      declinedAt
+      blockedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsContactRequestsByUserBIdAndCreatedAtQueryVariables,
+  APITypes.ApsContactRequestsByUserBIdAndCreatedAtQuery
+>;
 export const apsContactRequestsByRequestedByUserIdAndCreatedAt = /* GraphQL */ `query ApsContactRequestsByRequestedByUserIdAndCreatedAt(
   $requestedByUserId: ID!
   $createdAt: ModelStringKeyConditionInput

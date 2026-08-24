@@ -16880,6 +16880,76 @@ export type ApsContactRequestsByRequestKeyQuery = {
   } | null,
 };
 
+export type ApsContactRequestsByUserAIdAndCreatedAtQueryVariables = {
+  userAId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsContactRequestFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsContactRequestsByUserAIdAndCreatedAtQuery = {
+  apsContactRequestsByUserAIdAndCreatedAt?:  {
+    __typename: "ModelApsContactRequestConnection",
+    items:  Array< {
+      __typename: "ApsContactRequest",
+      id: string,
+      eventId: string,
+      requestKey: string,
+      userAId: string,
+      userBId: string,
+      owners: Array< string >,
+      requestedByUserId: string,
+      status: string,
+      introMessage?: string | null,
+      introSentAt?: string | null,
+      introDeliveredAt?: string | null,
+      acceptedAt?: string | null,
+      declinedAt?: string | null,
+      blockedAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsContactRequestsByUserBIdAndCreatedAtQueryVariables = {
+  userBId: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsContactRequestFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsContactRequestsByUserBIdAndCreatedAtQuery = {
+  apsContactRequestsByUserBIdAndCreatedAt?:  {
+    __typename: "ModelApsContactRequestConnection",
+    items:  Array< {
+      __typename: "ApsContactRequest",
+      id: string,
+      eventId: string,
+      requestKey: string,
+      userAId: string,
+      userBId: string,
+      owners: Array< string >,
+      requestedByUserId: string,
+      status: string,
+      introMessage?: string | null,
+      introSentAt?: string | null,
+      introDeliveredAt?: string | null,
+      acceptedAt?: string | null,
+      declinedAt?: string | null,
+      blockedAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type ApsContactRequestsByRequestedByUserIdAndCreatedAtQueryVariables = {
   requestedByUserId: string,
   createdAt?: ModelStringKeyConditionInput | null,

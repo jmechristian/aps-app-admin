@@ -136,12 +136,12 @@ type Mutation {
   adminCreateRegistrant(
     input: AdminCreateRegistrantInput!
   ): AdminCreateRegistrantResult
-    @function(name: "apsPushFanout-${env}")
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
   adminReissueRegistrantTempPassword(
     input: AdminReissueRegistrantTempPasswordInput!
   ): AdminReissueRegistrantTempPasswordResult
-    @function(name: "apsPushFanout-${env}")
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
   adminCreateExhibitor(
     input: AdminCreateExhibitorInput!
@@ -154,7 +154,7 @@ type Mutation {
     @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
   deleteMyAccount: DeleteMyAccountResult
-    @function(name: "apsPushFanout-${env}")
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
 }
 
@@ -165,7 +165,7 @@ type Query {
   adminGetLatestRegistrantTempCredential(
     registrantId: ID!
   ): AdminLatestTempCredentialResult
-    @function(name: "apsPushFanout-${env}")
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
 }
 
@@ -1126,8 +1126,8 @@ type ApsContactRequest
   # unique: e:<eventId>|u:<a>|u:<b> where a/b are sorted Cognito subs
   requestKey: String! @index(name: "byRequestKey")
 
-  userAId: ID! # Cognito sub (sorted)
-  userBId: ID! # Cognito sub (sorted)
+  userAId: ID! @index(name: "byUserAId", sortKeyFields: ["createdAt"]) # Cognito sub (sorted)
+  userBId: ID! @index(name: "byUserBId", sortKeyFields: ["createdAt"]) # Cognito sub (sorted)
   owners: [String!]! # [userAId, userBId] for @auth multi-owner access
   # who initiated this request (must be either userAId or userBId)
   requestedByUserId: ID!
