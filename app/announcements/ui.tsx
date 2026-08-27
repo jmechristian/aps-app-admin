@@ -5,6 +5,8 @@ import { graphqlClient as client } from '@/src/amplify-client';
 import AnnouncementDeepLinkField, {
   type AgendaSessionOption,
 } from './announcement-deep-link-field';
+import { previewAnnouncementAudience } from '@/app/actions/announcements';
+import type { RegistrantTypeFilter } from '@/app/actions/emails';
 import {
   formatAnnouncementListMeta,
   getAnnouncementStatus,
@@ -19,9 +21,32 @@ type Announcement = {
   title?: string | null;
   body: string;
   deepLink?: string | null;
+  audienceTypes?: Array<string | null> | null;
   scheduledAt?: string | null;
   publishedAt?: string | null;
+  sentCount?: number | null;
+  sentAt?: string | null;
   createdAt: string;
+};
+
+const TYPE_OPTIONS: RegistrantTypeFilter[] = [
+  'OEM',
+  'TIER1',
+  'SOLUTIONPROVIDER',
+  'SPONSOR',
+  'SPEAKER',
+  'STAFF',
+  'EXHIBITOR',
+];
+
+const TYPE_LABELS: Record<RegistrantTypeFilter, string> = {
+  OEM: 'OEM',
+  TIER1: 'Tier 1',
+  SOLUTIONPROVIDER: 'Solution Provider',
+  SPONSOR: 'Sponsor',
+  SPEAKER: 'Speaker',
+  STAFF: 'Staff',
+  EXHIBITOR: 'Exhibitor',
 };
 
 function getGraphQLData<T>(res: unknown): T {
@@ -88,8 +113,11 @@ const LIST_ANNOUNCEMENTS = /* GraphQL */ `
         title
         body
         deepLink
+        audienceTypes
         scheduledAt
         publishedAt
+        sentCount
+        sentAt
         createdAt
       }
       nextToken
@@ -145,10 +173,31 @@ const DELETE_ANNOUNCEMENT = /* GraphQL */ `
   }
 `;
 
+const LIST_ANNOUNCEMENT_OPENS = /* GraphQL */ `
+  query ApsAnnouncementOpensByEventIdAndCreatedAt(
+    $eventId: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    apsAnnouncementOpensByEventIdAndCreatedAt(
+      eventId: $eventId
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        announcementId
+        userId
+      }
+      nextToken
+    }
+  }
+`;
+
 export default function AnnouncementsClient() {
   const [events, setEvents] = useState<APS[]>([]);
   const [eventId, setEventId] = useState<string>('');
   const [items, setItems] = useState<Announcement[]>([]);
+  const [openCounts, setOpenCounts] = useState<Record<string, number>>({});
   const [sessions, setSessions] = useState<AgendaSessionOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -156,6 +205,14 @@ export default function AnnouncementsClient() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [deepLink, setDeepLink] = useState('');
+  const [audienceTypes, setAudienceTypes] = useState<RegistrantTypeFilter[]>(
+    [],
+  );
+  const [audienceCount, setAudienceCount] = useState<number | null>(null);
+  const [audienceBroadcast, setAudienceBroadcast] = useState(true);
+  const [audienceSample, setAudienceSample] = useState<
+    Array<{ id: string; email: string; name: string }>
+  >([]);
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -217,35 +274,89 @@ export default function AnnouncementsClient() {
     setLoading(true);
     setError(null);
     try {
-      const rows: Announcement[] = [];
+      const rows = await fetchAnnouncementRows(selectedEventId, LIST_ANNOUNCEMENTS);
+      setItems(rows);
+      setOpenCounts(await fetchOpenCounts(selectedEventId));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to load announcements';
+      if (/audienceTypes|sentCount|sentAt/i.test(message)) {
+        try {
+          const legacyQuery = LIST_ANNOUNCEMENTS
+            .replace('\n        audienceTypes', '')
+            .replace('\n        sentCount', '')
+            .replace('\n        sentAt', '');
+          setItems(await fetchAnnouncementRows(selectedEventId, legacyQuery));
+          setOpenCounts({});
+          return;
+        } catch {
+          // fall through to original error
+        }
+      }
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchAnnouncementRows(selectedEventId: string, query: string) {
+    const rows: Announcement[] = [];
+    let nextToken: string | null | undefined = null;
+    do {
+      const res: unknown = await client.graphql({
+        query,
+        variables: {
+          eventId: selectedEventId,
+          sortDirection: 'DESC',
+          limit: 200,
+          nextToken: nextToken || undefined,
+        },
+        authMode: 'userPool',
+      });
+      const data = getGraphQLData<{
+        apsAdminAnnouncementsByEventIdAndCreatedAt?: {
+          items?: Announcement[];
+          nextToken?: string | null;
+        } | null;
+      }>(res);
+      const page = data.apsAdminAnnouncementsByEventIdAndCreatedAt;
+      rows.push(...(page?.items ?? []).filter(Boolean));
+      nextToken = page?.nextToken;
+    } while (nextToken);
+    return rows;
+  }
+
+  async function fetchOpenCounts(selectedEventId: string) {
+    const counts: Record<string, number> = {};
+    try {
       let nextToken: string | null | undefined = null;
       do {
         const res: unknown = await client.graphql({
-          query: LIST_ANNOUNCEMENTS,
+          query: LIST_ANNOUNCEMENT_OPENS,
           variables: {
             eventId: selectedEventId,
-            sortDirection: 'DESC',
-            limit: 200,
+            limit: 1000,
             nextToken: nextToken || undefined,
           },
           authMode: 'userPool',
         });
         const data = getGraphQLData<{
-          apsAdminAnnouncementsByEventIdAndCreatedAt?: {
-            items?: Announcement[];
+          apsAnnouncementOpensByEventIdAndCreatedAt?: {
+            items?: Array<{ announcementId?: string | null } | null>;
             nextToken?: string | null;
           } | null;
         }>(res);
-        const page = data.apsAdminAnnouncementsByEventIdAndCreatedAt;
-        rows.push(...(page?.items ?? []).filter(Boolean));
+        const page = data.apsAnnouncementOpensByEventIdAndCreatedAt;
+        for (const item of page?.items ?? []) {
+          const announcementId = item?.announcementId;
+          if (!announcementId) continue;
+          counts[announcementId] = (counts[announcementId] ?? 0) + 1;
+        }
         nextToken = page?.nextToken;
       } while (nextToken);
-      setItems(rows);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load announcements');
-    } finally {
-      setLoading(false);
+    } catch {
+      return {};
     }
+    return counts;
   }
 
   async function refreshSessions(selectedEventId: string) {
@@ -303,6 +414,53 @@ export default function AnnouncementsClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
+  useEffect(() => {
+    if (!eventId) {
+      setAudienceCount(null);
+      setAudienceBroadcast(true);
+      setAudienceSample([]);
+      return;
+    }
+
+    let cancelled = false;
+    async function preview() {
+      try {
+        const result = await previewAnnouncementAudience({
+          eventId,
+          audienceTypes,
+        });
+        if (!cancelled) {
+          setAudienceCount(result.count);
+          setAudienceBroadcast(result.broadcast);
+          setAudienceSample(result.sample);
+        }
+      } catch {
+        if (!cancelled) {
+          setAudienceCount(null);
+          setAudienceSample([]);
+        }
+      }
+    }
+    void preview();
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId, audienceTypes]);
+
+  function toggleType(type: RegistrantTypeFilter) {
+    setAudienceTypes((prev) =>
+      prev.includes(type) ? prev.filter((item) => item !== type) : [...prev, type],
+    );
+  }
+
+  function audienceLabel(types: Array<string | null> | null | undefined) {
+    const selected = (types ?? []).filter(Boolean) as string[];
+    if (!selected.length) return 'All registration types';
+    return selected
+      .map((type) => TYPE_LABELS[type as RegistrantTypeFilter] ?? type)
+      .join(', ');
+  }
+
   async function createAnnouncement() {
     if (!eventId) return;
 
@@ -332,6 +490,7 @@ export default function AnnouncementsClient() {
       title: trimmedTitle || null,
       body: trimmedBody,
       deepLink: trimmedDeepLink || null,
+      ...(audienceTypes.length ? { audienceTypes } : {}),
       ...(scheduleEnabled
         ? { scheduledAt: new Date(scheduledAt).toISOString() }
         : { publishedAt: new Date().toISOString() }),
@@ -352,6 +511,7 @@ export default function AnnouncementsClient() {
     setTitle('');
     setBody('');
     setDeepLink('');
+    setAudienceTypes([]);
     setScheduledAt('');
     setScheduleEnabled(false);
     await refreshAnnouncements(eventId);
@@ -367,9 +527,9 @@ export default function AnnouncementsClient() {
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>Announcements</h1>
             <p className='max-w-2xl text-slate-600'>
-              Send push notifications to everyone with notifications enabled.
-              Scheduled announcements publish automatically in the background at
-              the scheduled time.
+              Send push notifications to everyone with notifications enabled, or
+              limit them to selected registration types. Scheduled announcements
+              publish automatically in the background at the scheduled time.
             </p>
           </div>
 
@@ -440,7 +600,9 @@ export default function AnnouncementsClient() {
               }
 
               const confirmed = window.confirm(
-                'Publish immediately? This will go live right away and send a push notification to all users with notifications enabled. This cannot be undone.',
+                audienceTypes.length
+                  ? `Publish immediately to ${audienceLabel(audienceTypes)} only? This will go live right away and send a push to those registration types with notifications enabled. This cannot be undone.`
+                  : 'Publish immediately? This will go live right away and send a push notification to all users with notifications enabled. This cannot be undone.',
               );
               if (confirmed) {
                 void runCreate();
@@ -486,6 +648,56 @@ export default function AnnouncementsClient() {
             />
 
             <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+              <div className='text-sm font-semibold text-slate-900'>
+                Registration types
+              </div>
+              <p className='mt-1 text-xs text-slate-600'>
+                Leave all unchecked to notify everyone with push enabled. Check
+                one or more types to send only to those registrants for this
+                event.
+              </p>
+              <div className='mt-3 flex flex-wrap gap-3'>
+                {TYPE_OPTIONS.map((type) => (
+                  <label
+                    key={type}
+                    className='inline-flex items-center gap-2 text-sm text-slate-700'
+                  >
+                    <input
+                      type='checkbox'
+                      checked={audienceTypes.includes(type)}
+                      onChange={() => toggleType(type)}
+                    />
+                    {TYPE_LABELS[type]}
+                  </label>
+                ))}
+              </div>
+              <div className='mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700'>
+                {audienceBroadcast ? (
+                  'Everyone with notifications enabled'
+                ) : (
+                  <>
+                    <span className='font-semibold'>
+                      {audienceCount == null ? '…' : audienceCount}
+                    </span>{' '}
+                    app user{audienceCount === 1 ? '' : 's'} match
+                    {audienceSample.length ? (
+                      <span className='mt-1 block text-xs text-slate-500'>
+                        Sample:{' '}
+                        {audienceSample
+                          .map((row) => row.name || row.email)
+                          .join(', ')}
+                        {audienceCount != null &&
+                        audienceCount > audienceSample.length
+                          ? '…'
+                          : ''}
+                      </span>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
               <label className='flex items-start gap-3'>
                 <input
                   type='checkbox'
@@ -510,8 +722,11 @@ export default function AnnouncementsClient() {
 
               {!scheduleEnabled ? (
                 <div className='mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-900'>
-                  Publish now will go live instantly and notify all users with
-                  push notifications enabled.
+                  Publish now will go live instantly and notify{' '}
+                  {audienceTypes.length
+                    ? `${audienceLabel(audienceTypes)} only`
+                    : 'all users with push notifications enabled'}
+                  .
                 </div>
               ) : null}
 
@@ -628,6 +843,10 @@ export default function AnnouncementsClient() {
                           {a.deepLink ? (
                             <div className='font-mono break-all'>{a.deepLink}</div>
                           ) : null}
+                          <div>{audienceLabel(a.audienceTypes)}</div>
+                          <div>
+                            Sent {a.sentCount ?? 0} · Opened {openCounts[a.id] ?? 0}
+                          </div>
                           <div className='font-mono'>{a.id}</div>
                         </div>
                       </div>

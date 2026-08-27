@@ -1,0 +1,22 @@
+{
+  "typeName": "Mutation",
+  "fieldName": "adminCreateRegistrant",
+  "arguments": {
+    "input": {
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@example.com",
+      "attendeeType": "OEM",
+      "status": "PENDING"
+    }
+  },
+  "identity": {
+    "sub": "example-sub",
+    "claims": {
+      "cognito:groups": [
+        "Admin"
+      ]
+    }
+  }
+}
+

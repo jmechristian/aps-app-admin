@@ -1257,9 +1257,38 @@ type ApsAdminAnnouncement
 
   title: String
   body: String!
-  deepLink: String # optional, e.g. "app://announcements/<id>"
+  deepLink: String # optional Expo Router path, e.g. "/(main)/agenda/<id>" or "/(main)/profile"
+  # Empty audienceTypes = all registration types (broadcast).
+  audienceTypes: [RegistrantType]
   scheduledAt: AWSDateTime # optional future publish time
   publishedAt: AWSDateTime # set when visible + push is sent
+  sentCount: Int
+  sentAt: AWSDateTime
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+# Unique announcement open per user. id should be o:<announcementId>|u:<userId>
+type ApsAnnouncementOpen
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "userId"
+        identityClaim: "sub"
+        operations: [create, read]
+        provider: userPools
+      }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  announcementId: ID! @index(name: "byAnnouncement", sortKeyFields: ["createdAt"])
+  eventId: ID! @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
+  userId: ID!
+  source: String
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }

@@ -2756,8 +2756,11 @@ export const onCreateApsAdminAnnouncement = /* GraphQL */ `subscription OnCreate
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -2776,8 +2779,11 @@ export const onUpdateApsAdminAnnouncement = /* GraphQL */ `subscription OnUpdate
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -2796,8 +2802,11 @@ export const onDeleteApsAdminAnnouncement = /* GraphQL */ `subscription OnDelete
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -2806,6 +2815,63 @@ export const onDeleteApsAdminAnnouncement = /* GraphQL */ `subscription OnDelete
 ` as GeneratedSubscription<
   APITypes.OnDeleteApsAdminAnnouncementSubscriptionVariables,
   APITypes.OnDeleteApsAdminAnnouncementSubscription
+>;
+export const onCreateApsAnnouncementOpen = /* GraphQL */ `subscription OnCreateApsAnnouncementOpen(
+  $filter: ModelSubscriptionApsAnnouncementOpenFilterInput
+  $userId: String
+) {
+  onCreateApsAnnouncementOpen(filter: $filter, userId: $userId) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAnnouncementOpenSubscriptionVariables,
+  APITypes.OnCreateApsAnnouncementOpenSubscription
+>;
+export const onUpdateApsAnnouncementOpen = /* GraphQL */ `subscription OnUpdateApsAnnouncementOpen(
+  $filter: ModelSubscriptionApsAnnouncementOpenFilterInput
+  $userId: String
+) {
+  onUpdateApsAnnouncementOpen(filter: $filter, userId: $userId) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAnnouncementOpenSubscriptionVariables,
+  APITypes.OnUpdateApsAnnouncementOpenSubscription
+>;
+export const onDeleteApsAnnouncementOpen = /* GraphQL */ `subscription OnDeleteApsAnnouncementOpen(
+  $filter: ModelSubscriptionApsAnnouncementOpenFilterInput
+  $userId: String
+) {
+  onDeleteApsAnnouncementOpen(filter: $filter, userId: $userId) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAnnouncementOpenSubscriptionVariables,
+  APITypes.OnDeleteApsAnnouncementOpenSubscription
 >;
 export const onCreateApsUserEngageState = /* GraphQL */ `subscription OnCreateApsUserEngageState(
   $filter: ModelSubscriptionApsUserEngageStateFilterInput

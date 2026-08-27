@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ANNOUNCEMENT_SCREEN_LINKS,
   buildSessionDeepLink,
   extractSessionIdFromDeepLink,
   isNotificationsDeepLink,
+  matchAnnouncementScreen,
 } from '@/lib/announcement-deep-links';
 
 export type AgendaSessionOption = {
@@ -15,6 +17,8 @@ export type AgendaSessionOption = {
   endTime?: string | null;
   location?: string | null;
 };
+
+type DestinationMode = 'screen' | 'session' | 'custom';
 
 type AnnouncementDeepLinkFieldProps = {
   sessions: AgendaSessionOption[];
@@ -34,6 +38,13 @@ function formatSessionMeta(session: AgendaSessionOption) {
   );
 }
 
+function inferMode(value: string): DestinationMode {
+  if (extractSessionIdFromDeepLink(value)) return 'session';
+  if (matchAnnouncementScreen(value)) return 'screen';
+  if (value.trim()) return 'custom';
+  return 'screen';
+}
+
 export default function AnnouncementDeepLinkField({
   sessions,
   sessionsLoading = false,
@@ -41,8 +52,8 @@ export default function AnnouncementDeepLinkField({
   value,
   onChange,
 }: AnnouncementDeepLinkFieldProps) {
+  const [mode, setMode] = useState<DestinationMode>(() => inferMode(value));
   const [showPicker, setShowPicker] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [search, setSearch] = useState('');
 
   const selectedSessionId = extractSessionIdFromDeepLink(value);
@@ -50,6 +61,7 @@ export default function AnnouncementDeepLinkField({
     () => sessions.find((session) => session.id === selectedSessionId) ?? null,
     [selectedSessionId, sessions],
   );
+  const selectedScreen = matchAnnouncementScreen(value);
 
   const filteredSessions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -66,71 +78,133 @@ export default function AnnouncementDeepLinkField({
     if (!showPicker) setSearch('');
   }, [showPicker]);
 
+  function setDestinationMode(next: DestinationMode) {
+    setMode(next);
+    if (next === 'screen') {
+      onChange('');
+      return;
+    }
+    if (next === 'session') {
+      if (!extractSessionIdFromDeepLink(value)) onChange('');
+      return;
+    }
+  }
+
   return (
     <div className='space-y-3'>
       <div>
         <span className='text-sm font-semibold text-slate-700'>Tap destination</span>
         <p className='mt-1 text-xs text-slate-500'>
-          Choose a session to open when someone taps the push notification. Leave unset
-          to open Notifications.
+          Choose where the app opens when someone taps the push. Screens use Expo
+          Router paths like <span className='font-mono'>/(main)/profile</span>.
         </p>
       </div>
 
-      <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
-        {selectedSession ? (
-          <>
-            <p className='text-sm font-semibold text-slate-900'>
-              {selectedSession.title || 'Untitled session'}
-            </p>
-            <p className='mt-1 text-xs text-slate-600'>
-              {formatSessionMeta(selectedSession)}
-            </p>
-            <p className='mt-2 font-mono text-xs text-slate-500'>
-              {buildSessionDeepLink(selectedSession.id)}
-            </p>
-          </>
-        ) : (
-          <p className='text-sm text-slate-600'>Opens Notifications when tapped</p>
-        )}
-
-        <div className='mt-4 flex flex-wrap items-center gap-3'>
+      <div className='flex flex-wrap gap-2'>
+        {(
+          [
+            ['screen', 'App screen'],
+            ['session', 'Session'],
+            ['custom', 'Custom link'],
+          ] as const
+        ).map(([id, label]) => (
           <button
+            key={id}
             type='button'
-            onClick={() => setShowPicker(true)}
-            className='rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50'
+            onClick={() => setDestinationMode(id)}
+            className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+              mode === id
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+            }`}
           >
-            {selectedSession ? 'Change session' : 'Choose session'}
+            {label}
           </button>
-          {selectedSession || (!isNotificationsDeepLink(value) && value.trim()) ? (
-            <button
-              type='button'
-              onClick={() => {
-                onChange('');
-                setShowAdvanced(false);
-              }}
-              className='text-sm font-semibold text-rose-700 hover:text-rose-800'
-            >
-              Clear
-            </button>
-          ) : null}
-        </div>
+        ))}
       </div>
 
-      <button
-        type='button'
-        onClick={() => setShowAdvanced((current) => !current)}
-        className='text-sm font-semibold text-slate-700 hover:text-slate-900'
-      >
-        {showAdvanced ? 'Hide custom link' : 'Use custom link instead'}
-      </button>
+      {mode === 'screen' ? (
+        <div className='grid gap-2 sm:grid-cols-2'>
+          {ANNOUNCEMENT_SCREEN_LINKS.map((screen) => {
+            const selected =
+              (screen.id === 'notifications' &&
+                (!value.trim() || isNotificationsDeepLink(value))) ||
+              (screen.path !== '' && selectedScreen?.id === screen.id);
+            return (
+              <button
+                key={screen.id}
+                type='button'
+                onClick={() => onChange(screen.path)}
+                className={`rounded-2xl border px-4 py-3 text-left transition ${
+                  selected
+                    ? 'border-slate-900 bg-slate-50'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}
+              >
+                <p className='text-sm font-semibold text-slate-900'>{screen.label}</p>
+                <p className='mt-1 font-mono text-xs text-slate-500'>
+                  {screen.path || 'Notifications inbox'}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
-      {showAdvanced ? (
-        <input
-          value={isNotificationsDeepLink(value) ? '' : value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder='Custom deep link (optional)'
-          className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
-        />
+      {mode === 'session' ? (
+        <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+          {selectedSession ? (
+            <>
+              <p className='text-sm font-semibold text-slate-900'>
+                {selectedSession.title || 'Untitled session'}
+              </p>
+              <p className='mt-1 text-xs text-slate-600'>
+                {formatSessionMeta(selectedSession)}
+              </p>
+              <p className='mt-2 font-mono text-xs text-slate-500'>
+                {buildSessionDeepLink(selectedSession.id)}
+              </p>
+            </>
+          ) : (
+            <p className='text-sm text-slate-600'>Choose a session to open</p>
+          )}
+
+          <div className='mt-4 flex flex-wrap items-center gap-3'>
+            <button
+              type='button'
+              onClick={() => setShowPicker(true)}
+              className='rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50'
+            >
+              {selectedSession ? 'Change session' : 'Choose session'}
+            </button>
+            {selectedSession ? (
+              <button
+                type='button'
+                onClick={() => onChange('')}
+                className='text-sm font-semibold text-rose-700 hover:text-rose-800'
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {mode === 'custom' ? (
+        <div className='space-y-2'>
+          <input
+            value={isNotificationsDeepLink(value) ? '' : value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder='/(main)/profile'
+            className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400'
+          />
+          <p className='text-xs text-slate-500'>
+            Use an in-app path starting with <span className='font-mono'>/(main)/</span>
+            . Examples: <span className='font-mono'>/(main)/profile</span>,{' '}
+            <span className='font-mono'>/(main)/hub/passport</span>,{' '}
+            <span className='font-mono'>/(main)/agenda/SESSION_ID</span>.
+          </p>
+        </div>
       ) : null}
 
       {sessionsError ? (

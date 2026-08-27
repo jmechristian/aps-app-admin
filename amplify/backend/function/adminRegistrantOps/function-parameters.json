@@ -1,0 +1,20 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [],
+  "permissions": {
+    "api": {
+      "autopacksummitapp": [
+        "Query",
+        "Mutation"
+      ]
+    },
+    "storage": {
+      "apsapp": [
+        "create",
+        "read",
+        "update"
+      ]
+    }
+  }
+}
+

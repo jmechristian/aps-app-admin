@@ -6187,8 +6187,11 @@ export const createApsAdminAnnouncement = /* GraphQL */ `mutation CreateApsAdmin
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -6208,8 +6211,11 @@ export const updateApsAdminAnnouncement = /* GraphQL */ `mutation UpdateApsAdmin
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -6229,8 +6235,11 @@ export const deleteApsAdminAnnouncement = /* GraphQL */ `mutation DeleteApsAdmin
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -6239,6 +6248,63 @@ export const deleteApsAdminAnnouncement = /* GraphQL */ `mutation DeleteApsAdmin
 ` as GeneratedMutation<
   APITypes.DeleteApsAdminAnnouncementMutationVariables,
   APITypes.DeleteApsAdminAnnouncementMutation
+>;
+export const createApsAnnouncementOpen = /* GraphQL */ `mutation CreateApsAnnouncementOpen(
+  $input: CreateApsAnnouncementOpenInput!
+  $condition: ModelApsAnnouncementOpenConditionInput
+) {
+  createApsAnnouncementOpen(input: $input, condition: $condition) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateApsAnnouncementOpenMutationVariables,
+  APITypes.CreateApsAnnouncementOpenMutation
+>;
+export const updateApsAnnouncementOpen = /* GraphQL */ `mutation UpdateApsAnnouncementOpen(
+  $input: UpdateApsAnnouncementOpenInput!
+  $condition: ModelApsAnnouncementOpenConditionInput
+) {
+  updateApsAnnouncementOpen(input: $input, condition: $condition) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateApsAnnouncementOpenMutationVariables,
+  APITypes.UpdateApsAnnouncementOpenMutation
+>;
+export const deleteApsAnnouncementOpen = /* GraphQL */ `mutation DeleteApsAnnouncementOpen(
+  $input: DeleteApsAnnouncementOpenInput!
+  $condition: ModelApsAnnouncementOpenConditionInput
+) {
+  deleteApsAnnouncementOpen(input: $input, condition: $condition) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteApsAnnouncementOpenMutationVariables,
+  APITypes.DeleteApsAnnouncementOpenMutation
 >;
 export const deleteApsEmailCampaign = /* GraphQL */ `mutation DeleteApsEmailCampaign(
   $input: DeleteApsEmailCampaignInput!

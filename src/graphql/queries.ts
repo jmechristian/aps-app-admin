@@ -1326,8 +1326,11 @@ export const getApsAdminAnnouncement = /* GraphQL */ `query GetApsAdminAnnouncem
     title
     body
     deepLink
+    audienceTypes
     scheduledAt
     publishedAt
+    sentCount
+    sentAt
     createdAt
     updatedAt
     __typename
@@ -1353,8 +1356,11 @@ export const listApsAdminAnnouncements = /* GraphQL */ `query ListApsAdminAnnoun
       title
       body
       deepLink
+      audienceTypes
       scheduledAt
       publishedAt
+      sentCount
+      sentAt
       createdAt
       updatedAt
       __typename
@@ -1366,6 +1372,50 @@ export const listApsAdminAnnouncements = /* GraphQL */ `query ListApsAdminAnnoun
 ` as GeneratedQuery<
   APITypes.ListApsAdminAnnouncementsQueryVariables,
   APITypes.ListApsAdminAnnouncementsQuery
+>;
+export const getApsAnnouncementOpen = /* GraphQL */ `query GetApsAnnouncementOpen($id: ID!) {
+  getApsAnnouncementOpen(id: $id) {
+    id
+    announcementId
+    eventId
+    userId
+    source
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApsAnnouncementOpenQueryVariables,
+  APITypes.GetApsAnnouncementOpenQuery
+>;
+export const listApsAnnouncementOpens = /* GraphQL */ `query ListApsAnnouncementOpens(
+  $filter: ModelApsAnnouncementOpenFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApsAnnouncementOpens(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      announcementId
+      eventId
+      userId
+      source
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApsAnnouncementOpensQueryVariables,
+  APITypes.ListApsAnnouncementOpensQuery
 >;
 export const getApsUserEngageState = /* GraphQL */ `query GetApsUserEngageState($id: ID!) {
   getApsUserEngageState(id: $id) {
@@ -3197,8 +3247,11 @@ export const apsAdminAnnouncementsByEventIdAndCreatedAt = /* GraphQL */ `query A
       title
       body
       deepLink
+      audienceTypes
       scheduledAt
       publishedAt
+      sentCount
+      sentAt
       createdAt
       updatedAt
       __typename
@@ -3233,8 +3286,11 @@ export const apsAdminAnnouncementsByEventIdAndScheduledAt = /* GraphQL */ `query
       title
       body
       deepLink
+      audienceTypes
       scheduledAt
       publishedAt
+      sentCount
+      sentAt
       createdAt
       updatedAt
       __typename
@@ -3246,6 +3302,74 @@ export const apsAdminAnnouncementsByEventIdAndScheduledAt = /* GraphQL */ `query
 ` as GeneratedQuery<
   APITypes.ApsAdminAnnouncementsByEventIdAndScheduledAtQueryVariables,
   APITypes.ApsAdminAnnouncementsByEventIdAndScheduledAtQuery
+>;
+export const apsAnnouncementOpensByAnnouncementIdAndCreatedAt = /* GraphQL */ `query ApsAnnouncementOpensByAnnouncementIdAndCreatedAt(
+  $announcementId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAnnouncementOpenFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAnnouncementOpensByAnnouncementIdAndCreatedAt(
+    announcementId: $announcementId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      announcementId
+      eventId
+      userId
+      source
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAnnouncementOpensByAnnouncementIdAndCreatedAtQueryVariables,
+  APITypes.ApsAnnouncementOpensByAnnouncementIdAndCreatedAtQuery
+>;
+export const apsAnnouncementOpensByEventIdAndCreatedAt = /* GraphQL */ `query ApsAnnouncementOpensByEventIdAndCreatedAt(
+  $eventId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAnnouncementOpenFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAnnouncementOpensByEventIdAndCreatedAt(
+    eventId: $eventId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      announcementId
+      eventId
+      userId
+      source
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAnnouncementOpensByEventIdAndCreatedAtQueryVariables,
+  APITypes.ApsAnnouncementOpensByEventIdAndCreatedAtQuery
 >;
 export const apsPushTokensByUserIdAndUpdatedAt = /* GraphQL */ `query ApsPushTokensByUserIdAndUpdatedAt(
   $userId: ID!
