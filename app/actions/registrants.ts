@@ -1810,6 +1810,13 @@ export async function fetchRegistrantsByApsId(
   });
 }
 
+type FullRegistrantDetailsPage = {
+  apsRegistrantsByApsID?: {
+    items?: Array<FullRegistrantDetails | null> | null;
+    nextToken?: string | null;
+  } | null;
+};
+
 export async function fetchFullRegistrantDetailsByApsId(
   apsId: string,
 ): Promise<FullRegistrantDetails[]> {
@@ -1817,16 +1824,15 @@ export async function fetchFullRegistrantDetailsByApsId(
   let nextToken: string | null | undefined = null;
 
   do {
-    const response = await requestGraphQL<{
-      apsRegistrantsByApsID?: {
-        items?: Array<FullRegistrantDetails | null> | null;
-        nextToken?: string | null;
-      } | null;
-    }>(LIST_FULL_REGISTRANT_DETAILS_BY_APS, {
-      apsID: apsId,
-      limit: 1000,
-      nextToken: nextToken || undefined,
-    });
+    const response: FullRegistrantDetailsPage =
+      await requestGraphQL<FullRegistrantDetailsPage>(
+        LIST_FULL_REGISTRANT_DETAILS_BY_APS,
+        {
+          apsID: apsId,
+          limit: 1000,
+          nextToken: nextToken || undefined,
+        },
+      );
 
     const items = (response.apsRegistrantsByApsID?.items ?? []).filter(
       (item): item is FullRegistrantDetails => Boolean(item),
