@@ -94,6 +94,13 @@ export default function WysiwygEditor({
         <ToolbarButton label='B' onClick={() => exec('bold')} disabled={disabled} />
         <ToolbarButton label='I' onClick={() => exec('italic')} disabled={disabled} />
         <ToolbarButton label='U' onClick={() => exec('underline')} disabled={disabled} />
+        <ToolbarButton
+          label='P'
+          onClick={() => {
+            document.execCommand('formatBlock', false, 'p');
+          }}
+          disabled={disabled}
+        />
         <ToolbarButton label='S' onClick={() => exec('strikeThrough')} disabled={disabled} />
         <div className='mx-1 h-6 w-px bg-slate-200' />
         <ToolbarButton

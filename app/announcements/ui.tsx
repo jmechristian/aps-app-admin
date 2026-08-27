@@ -12,6 +12,8 @@ import {
   getAnnouncementStatus,
   type AnnouncementStatus,
 } from '@/lib/announcements';
+import { isHtmlBodyEmpty, stripDangerousHtml } from '@/lib/html-text';
+import WysiwygEditor from '@/app/components/wysiwyg-editor';
 
 type APS = { id: string; year: string };
 
@@ -468,7 +470,7 @@ export default function AnnouncementsClient() {
     const trimmedBody = body.trim();
     const trimmedDeepLink = deepLink.trim();
 
-    if (!trimmedBody) {
+    if (isHtmlBodyEmpty(trimmedBody)) {
       throw new Error('Body is required.');
     }
 
@@ -622,19 +624,19 @@ export default function AnnouncementsClient() {
               />
             </label>
 
-            <label className='block'>
+            <div className='block'>
               <span className='text-sm font-semibold text-slate-700'>Body</span>
-              <textarea
-                className='mt-2 min-h-28 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-slate-400'
-                value={body}
-                onChange={(e) => {
-                  setBody(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder='Required'
-                required
-              />
-            </label>
+              <div className='mt-2'>
+                <WysiwygEditor
+                  value={body}
+                  onChange={(html) => {
+                    setBody(html);
+                    if (error) setError(null);
+                  }}
+                  placeholder='Required. Use B / I / U for formatting, P or Return for paragraphs.'
+                />
+              </div>
+            </div>
 
             <AnnouncementDeepLinkField
               sessions={sessions}
@@ -828,9 +830,12 @@ export default function AnnouncementsClient() {
                             {statusLabel}
                           </span>
                         </div>
-                        <div className='mt-1 whitespace-pre-wrap text-sm text-slate-700'>
-                          {a.body}
-                        </div>
+                        <div
+                          className='announcement-body-preview mt-1 line-clamp-6 text-sm text-slate-700 [&_a]:underline [&_em]:italic [&_i]:italic [&_li]:my-0.5 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_strong]:font-semibold [&_u]:underline [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5'
+                          dangerouslySetInnerHTML={{
+                            __html: stripDangerousHtml(a.body),
+                          }}
+                        />
                         <div className='mt-2 space-y-1 text-xs text-slate-500'>
                           <div>
                             {formatAnnouncementListMeta({

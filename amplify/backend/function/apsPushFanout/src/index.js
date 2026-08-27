@@ -106,6 +106,27 @@ function safeSlice(str, n) {
   return String(str ?? '').slice(0, n);
 }
 
+function htmlToPlainText(input) {
+  return String(input ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
 function normalizePercentageToPercent(value) {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return 0;
@@ -383,7 +404,7 @@ function shouldSendAnnouncementPush(img, oldImg, eventName) {
 function buildAnnouncementPushMessages(announcement, tokens) {
   const announcementId = getString(announcement?.id);
   const title = getString(announcement?.title) || 'New announcement';
-  const body = getString(announcement?.body) || '';
+  const body = htmlToPlainText(getString(announcement?.body) || '') || title;
   const deepLink = getString(announcement?.deepLink);
   const defaultDeepLink = 'app://notifications';
 

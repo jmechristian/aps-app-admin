@@ -25,7 +25,7 @@
         "adminRegistrantOps": {},
         "apsPushFanout": {
           "deploymentBucketName": "amplify-autopacksummitapp-dev-99bc6-deployment",
-          "s3Key": "amplify-builds/apsPushFanout-5431543247577179557a-build.zip",
+          "s3Key": "amplify-builds/apsPushFanout-75584b4b3335776f524a-build.zip",
           "expoAccessToken": "Q1LUAfW7AsaL43RmTssDtPRkxagdP59OVjMrsHCY",
           "pushTokenGsiName": "byUserUpdated",
           "pushTokenTableName": "ApsPushToken-lkbfurpd5bhvtewpiqr5xhye6u-dev",

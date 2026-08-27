@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requestGraphQL } from '@/lib/appsync';
+import { htmlToPlainText } from '@/lib/html-text';
 import { computeUnreadAnnouncements } from '@/lib/push-unread';
 
 type PushTokenItem = {
@@ -231,7 +232,7 @@ export async function POST(req: Request) {
     announcementId?: string | null;
   } | null;
   const title = body?.title?.trim() || 'New announcement';
-  const msg = body?.body?.trim();
+  const msg = htmlToPlainText(body?.body || '');
   const eventId = body?.eventId?.trim();
   const deepLink = body?.deepLink ?? null;
   const announcementId = body?.announcementId?.trim() || null;
