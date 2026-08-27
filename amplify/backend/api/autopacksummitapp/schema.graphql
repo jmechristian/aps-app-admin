@@ -462,6 +462,7 @@ type ApsAppUserProfile
   company: String
   jobTitle: String
   attendeeType: RegistrantType
+  expertise: [String]
   # User-scoped UI prefs (e.g., hub quick tools order)
   quickTools: [String]
   affiliates: [ProfileAffiliate] @hasMany(indexName: "byUser")

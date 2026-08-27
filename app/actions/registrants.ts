@@ -603,6 +603,96 @@ const APS_REGISTRANTS_BY_APS_ID = /* GraphQL */ `
   }
 `;
 
+const LIST_FULL_REGISTRANT_DETAILS_BY_APS = /* GraphQL */ `
+  query ListFullRegistrantDetailsByApsID(
+    $apsID: ID!
+    $limit: Int
+    $nextToken: String
+  ) {
+    apsRegistrantsByApsID(apsID: $apsID, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        apsID
+        firstName
+        lastName
+        email
+        phone
+        companyId
+        company {
+          id
+          name
+        }
+        jobTitle
+        attendeeType
+        termsAccepted
+        interests
+        otherInterest
+        buyerQuestion
+        packagingChallenge
+        certification
+        billingAddressFirstName
+        billingAddressLastName
+        billingAddressEmail
+        billingAddressPhone
+        billingAddressStreet
+        billingAddressCity
+        billingAddressState
+        billingAddressZip
+        billingAddressCountry
+        sameAsAttendee
+        speakerTopic
+        learningObjectives
+        totalAmount
+        discountCode
+        status
+        paymentConfirmation
+        registrationEmailSent
+        registrationEmailSentDate
+        registrationEmailReceived
+        registrationEmailReceivedDate
+        welcomeEmailSent
+        welcomeEmailSentDate
+        welcomeEmailReceived
+        welcomeEmailReceivedDate
+        appEmailSent
+        appEmailSentDate
+        appEmailReceived
+        appEmailReceivedDate
+        paymentMethod
+        paymentLast4
+        approvedAt
+        headshot
+        presentation
+        presentationTitle
+        presentationSummary
+        bio
+        invoice
+        appUserId
+        qrCode
+        createdAt
+        updatedAt
+        aPSRegistrantsId
+        aPSCompanyRegistrantsId
+        apsRegistrantSeatingChartRegistrantId
+        seatingChartRegistrant {
+          id
+          tableNumber
+          seatingChartID
+        }
+        addOnRequests {
+          items {
+            id
+            addOnId
+            status
+            preferences
+          }
+        }
+      }
+      nextToken
+    }
+  }
+`;
+
 const GET_REGISTRANT = /* GraphQL */ `
   query GetApsRegistrant($id: ID!) {
     getApsRegistrant(id: $id) {
@@ -1056,6 +1146,85 @@ export type Registrant = {
   } | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type FullRegistrantDetails = {
+  id: string;
+  apsID: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  companyId?: string | null;
+  company?: {
+    id: string;
+    name: string;
+  } | null;
+  jobTitle?: string | null;
+  attendeeType: string;
+  termsAccepted?: boolean | null;
+  interests?: Array<string | null> | null;
+  otherInterest?: string | null;
+  buyerQuestion?: string | null;
+  packagingChallenge?: string | null;
+  certification?: string | null;
+  billingAddressFirstName?: string | null;
+  billingAddressLastName?: string | null;
+  billingAddressEmail?: string | null;
+  billingAddressPhone?: string | null;
+  billingAddressStreet?: string | null;
+  billingAddressCity?: string | null;
+  billingAddressState?: string | null;
+  billingAddressZip?: string | null;
+  billingAddressCountry?: string | null;
+  sameAsAttendee?: boolean | null;
+  speakerTopic?: string | null;
+  learningObjectives?: string | null;
+  totalAmount?: number | null;
+  discountCode?: string | null;
+  status: string;
+  paymentConfirmation?: string | null;
+  registrationEmailSent?: boolean | null;
+  registrationEmailSentDate?: string | null;
+  registrationEmailReceived?: boolean | null;
+  registrationEmailReceivedDate?: string | null;
+  welcomeEmailSent?: boolean | null;
+  welcomeEmailSentDate?: string | null;
+  welcomeEmailReceived?: boolean | null;
+  welcomeEmailReceivedDate?: string | null;
+  appEmailSent?: boolean | null;
+  appEmailSentDate?: string | null;
+  appEmailReceived?: boolean | null;
+  appEmailReceivedDate?: string | null;
+  paymentMethod?: string | null;
+  paymentLast4?: string | null;
+  approvedAt?: string | null;
+  headshot?: string | null;
+  presentation?: string | null;
+  presentationTitle?: string | null;
+  presentationSummary?: string | null;
+  bio?: string | null;
+  invoice?: string | null;
+  appUserId?: string | null;
+  qrCode?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  aPSRegistrantsId?: string | null;
+  aPSCompanyRegistrantsId?: string | null;
+  apsRegistrantSeatingChartRegistrantId?: string | null;
+  seatingChartRegistrant?: {
+    id: string;
+    tableNumber?: number | null;
+    seatingChartID: string;
+  } | null;
+  addOnRequests?: {
+    items?: Array<{
+      id: string;
+      addOnId: string;
+      status: string;
+      preferences?: string | null;
+    } | null> | null;
+  } | null;
 };
 
 export type ProfileAffiliate = {
@@ -1634,6 +1803,42 @@ export async function fetchRegistrantsByApsId(
   } while (nextToken);
 
   // Sort by createdAt descending (latest first)
+  return allRegistrants.sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA;
+  });
+}
+
+export async function fetchFullRegistrantDetailsByApsId(
+  apsId: string,
+): Promise<FullRegistrantDetails[]> {
+  const allRegistrants: FullRegistrantDetails[] = [];
+  let nextToken: string | null | undefined = null;
+
+  do {
+    const response = await requestGraphQL<{
+      apsRegistrantsByApsID?: {
+        items?: Array<FullRegistrantDetails | null> | null;
+        nextToken?: string | null;
+      } | null;
+    }>(LIST_FULL_REGISTRANT_DETAILS_BY_APS, {
+      apsID: apsId,
+      limit: 1000,
+      nextToken: nextToken || undefined,
+    });
+
+    const items = (response.apsRegistrantsByApsID?.items ?? []).filter(
+      (item): item is FullRegistrantDetails => Boolean(item),
+    );
+    allRegistrants.push(...items);
+    nextToken = response.apsRegistrantsByApsID?.nextToken;
+
+    if (nextToken) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  } while (nextToken);
+
   return allRegistrants.sort((a, b) => {
     const dateA = new Date(a.createdAt).getTime();
     const dateB = new Date(b.createdAt).getTime();

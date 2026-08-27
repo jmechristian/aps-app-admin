@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
-import BulkResetTempPasswordsButton from './bulk-reset-temp-passwords-button';
 import RegistrantLookup from './registrant-lookup';
 import RegistrantsTable from './registrants-table';
 import {
@@ -115,9 +114,6 @@ function ApsDetailClient({
   totalPages: number;
   pageSize: number;
 }) {
-  const approvedCount = allRegistrants.filter((r) => r.status === 'APPROVED')
-    .length;
-
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
       <main className='page-container flex flex-col gap-10'>
@@ -147,10 +143,12 @@ function ApsDetailClient({
             >
               Download temp passwords CSV
             </a>
-            <BulkResetTempPasswordsButton
-              eventId={eventId}
-              approvedCount={approvedCount}
-            />
+            <a
+              href={`/aps/${eventId}/registrants/full-details.csv`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              Download Full Registrant Details
+            </a>
             <Link
               href='/'
               className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'

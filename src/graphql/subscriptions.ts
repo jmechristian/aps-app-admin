@@ -198,6 +198,7 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -374,6 +375,7 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -550,6 +552,7 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -617,6 +620,7 @@ export const onCreateApsAppUserExhibitorView = /* GraphQL */ `subscription OnCre
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -700,6 +704,7 @@ export const onUpdateApsAppUserExhibitorView = /* GraphQL */ `subscription OnUpd
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -783,6 +788,7 @@ export const onDeleteApsAppUserExhibitorView = /* GraphQL */ `subscription OnDel
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -866,6 +872,7 @@ export const onCreateApsAppUserPassportStamp = /* GraphQL */ `subscription OnCre
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -950,6 +957,7 @@ export const onUpdateApsAppUserPassportStamp = /* GraphQL */ `subscription OnUpd
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1034,6 +1042,7 @@ export const onDeleteApsAppUserPassportStamp = /* GraphQL */ `subscription OnDel
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1118,6 +1127,7 @@ export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1201,6 +1211,7 @@ export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1284,6 +1295,7 @@ export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1367,6 +1379,7 @@ export const onCreateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1443,6 +1456,7 @@ export const onUpdateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnU
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1519,6 +1533,7 @@ export const onDeleteApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnD
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1595,6 +1610,7 @@ export const onCreateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1671,6 +1687,7 @@ export const onUpdateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnU
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1747,6 +1764,7 @@ export const onDeleteApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnD
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1823,6 +1841,7 @@ export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1904,6 +1923,7 @@ export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnU
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1985,6 +2005,7 @@ export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnD
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2066,6 +2087,7 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2095,6 +2117,7 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2159,6 +2182,7 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2188,6 +2212,7 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2252,6 +2277,7 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2281,6 +2307,7 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4042,6 +4069,7 @@ export const onCreateApsAppUser = /* GraphQL */ `subscription OnCreateApsAppUser
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4176,6 +4204,7 @@ export const onUpdateApsAppUser = /* GraphQL */ `subscription OnUpdateApsAppUser
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4310,6 +4339,7 @@ export const onDeleteApsAppUser = /* GraphQL */ `subscription OnDeleteApsAppUser
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4362,6 +4392,7 @@ export const onCreateApsAppUserContact = /* GraphQL */ `subscription OnCreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4416,6 +4447,7 @@ export const onUpdateApsAppUserContact = /* GraphQL */ `subscription OnUpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4470,6 +4502,7 @@ export const onDeleteApsAppUserContact = /* GraphQL */ `subscription OnDeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4524,6 +4557,7 @@ export const onCreateApsAppUserLead = /* GraphQL */ `subscription OnCreateApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4578,6 +4612,7 @@ export const onUpdateApsAppUserLead = /* GraphQL */ `subscription OnUpdateApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4632,6 +4667,7 @@ export const onDeleteApsAppUserLead = /* GraphQL */ `subscription OnDeleteApsApp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4682,6 +4718,7 @@ export const onCreateApsAppUserProfile = /* GraphQL */ `subscription OnCreateAps
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -4793,6 +4830,7 @@ export const onUpdateApsAppUserProfile = /* GraphQL */ `subscription OnUpdateAps
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -4904,6 +4942,7 @@ export const onDeleteApsAppUserProfile = /* GraphQL */ `subscription OnDeleteAps
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -5010,6 +5049,7 @@ export const onCreateProfileAffiliate = /* GraphQL */ `subscription OnCreateProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5058,6 +5098,7 @@ export const onUpdateProfileAffiliate = /* GraphQL */ `subscription OnUpdateProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5106,6 +5147,7 @@ export const onDeleteProfileAffiliate = /* GraphQL */ `subscription OnDeleteProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5154,6 +5196,7 @@ export const onCreateProfileEducation = /* GraphQL */ `subscription OnCreateProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5201,6 +5244,7 @@ export const onUpdateProfileEducation = /* GraphQL */ `subscription OnUpdateProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5248,6 +5292,7 @@ export const onDeleteProfileEducation = /* GraphQL */ `subscription OnDeleteProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5295,6 +5340,7 @@ export const onCreateProfileInterest = /* GraphQL */ `subscription OnCreateProfi
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5340,6 +5386,7 @@ export const onUpdateProfileInterest = /* GraphQL */ `subscription OnUpdateProfi
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5385,6 +5432,7 @@ export const onDeleteProfileInterest = /* GraphQL */ `subscription OnDeleteProfi
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5846,6 +5894,7 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5917,6 +5966,7 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5988,6 +6038,7 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio

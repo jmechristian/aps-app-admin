@@ -835,6 +835,7 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -970,6 +971,7 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1023,6 +1025,7 @@ export const createApsAppUserContact = /* GraphQL */ `mutation CreateApsAppUserC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1078,6 +1081,7 @@ export const updateApsAppUserContact = /* GraphQL */ `mutation UpdateApsAppUserC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1133,6 +1137,7 @@ export const deleteApsAppUserContact = /* GraphQL */ `mutation DeleteApsAppUserC
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1289,6 +1294,7 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1465,6 +1471,7 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1641,6 +1648,7 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1716,6 +1724,7 @@ export const createApsAppUserLead = /* GraphQL */ `mutation CreateApsAppUserLead
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1771,6 +1780,7 @@ export const updateApsAppUserLead = /* GraphQL */ `mutation UpdateApsAppUserLead
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1826,6 +1836,7 @@ export const deleteApsAppUserLead = /* GraphQL */ `mutation DeleteApsAppUserLead
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -1877,6 +1888,7 @@ export const createApsAppUserProfile = /* GraphQL */ `mutation CreateApsAppUserP
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -1989,6 +2001,7 @@ export const deleteApsAppUserProfile = /* GraphQL */ `mutation DeleteApsAppUserP
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -2475,6 +2488,7 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2547,6 +2561,7 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -2619,6 +2634,7 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3342,6 +3358,7 @@ export const createApsAppUserExhibitorView = /* GraphQL */ `mutation CreateApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3425,6 +3442,7 @@ export const updateApsAppUserExhibitorView = /* GraphQL */ `mutation UpdateApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3508,6 +3526,7 @@ export const deleteApsAppUserExhibitorView = /* GraphQL */ `mutation DeleteApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3591,6 +3610,7 @@ export const createApsAppUserPassportStamp = /* GraphQL */ `mutation CreateApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3675,6 +3695,7 @@ export const updateApsAppUserPassportStamp = /* GraphQL */ `mutation UpdateApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3759,6 +3780,7 @@ export const deleteApsAppUserPassportStamp = /* GraphQL */ `mutation DeleteApsAp
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3843,6 +3865,7 @@ export const createApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation CreateA
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -3926,6 +3949,7 @@ export const updateApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation UpdateA
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4009,6 +4033,7 @@ export const deleteApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation DeleteA
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4092,6 +4117,7 @@ export const createApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation CreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4168,6 +4194,7 @@ export const updateApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation UpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4244,6 +4271,7 @@ export const deleteApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation DeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4320,6 +4348,7 @@ export const createApsAppUserFavoriteSponsor = /* GraphQL */ `mutation CreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4396,6 +4425,7 @@ export const updateApsAppUserFavoriteSponsor = /* GraphQL */ `mutation UpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4472,6 +4502,7 @@ export const deleteApsAppUserFavoriteSponsor = /* GraphQL */ `mutation DeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4548,6 +4579,7 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4629,6 +4661,7 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4710,6 +4743,7 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4791,6 +4825,7 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4820,6 +4855,7 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4884,6 +4920,7 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4913,6 +4950,7 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4977,6 +5015,7 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5006,6 +5045,7 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7334,6 +7374,7 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7383,6 +7424,7 @@ export const updateApsAppUserProfile = /* GraphQL */ `mutation UpdateApsAppUserP
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -7490,6 +7532,7 @@ export const createProfileAffiliate = /* GraphQL */ `mutation CreateProfileAffil
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7539,6 +7582,7 @@ export const updateProfileAffiliate = /* GraphQL */ `mutation UpdateProfileAffil
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7588,6 +7632,7 @@ export const deleteProfileAffiliate = /* GraphQL */ `mutation DeleteProfileAffil
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7637,6 +7682,7 @@ export const createProfileEducation = /* GraphQL */ `mutation CreateProfileEduca
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7685,6 +7731,7 @@ export const updateProfileEducation = /* GraphQL */ `mutation UpdateProfileEduca
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7733,6 +7780,7 @@ export const deleteProfileEducation = /* GraphQL */ `mutation DeleteProfileEduca
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7781,6 +7829,7 @@ export const createProfileInterest = /* GraphQL */ `mutation CreateProfileIntere
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7827,6 +7876,7 @@ export const updateProfileInterest = /* GraphQL */ `mutation UpdateProfileIntere
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -7873,6 +7923,7 @@ export const deleteProfileInterest = /* GraphQL */ `mutation DeleteProfileIntere
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio

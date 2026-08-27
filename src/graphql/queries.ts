@@ -224,6 +224,7 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -317,6 +318,7 @@ export const getApsAppUserExhibitorView = /* GraphQL */ `query GetApsAppUserExhi
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -427,6 +429,7 @@ export const getApsAppUserPassportStamp = /* GraphQL */ `query GetApsAppUserPass
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -539,6 +542,7 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -649,6 +653,7 @@ export const getApsAppUserFavoriteSpeaker = /* GraphQL */ `query GetApsAppUserFa
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -752,6 +757,7 @@ export const getApsAppUserFavoriteSponsor = /* GraphQL */ `query GetApsAppUserFa
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -855,6 +861,7 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -963,6 +970,7 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -992,6 +1000,7 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4256,6 +4265,7 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4358,6 +4368,7 @@ export const getApsAppUserContact = /* GraphQL */ `query GetApsAppUserContact($i
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4502,6 +4513,7 @@ export const getApsAppUserLead = /* GraphQL */ `query GetApsAppUserLead($id: ID!
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4638,6 +4650,7 @@ export const getApsAppUserProfile = /* GraphQL */ `query GetApsAppUserProfile($i
     company
     jobTitle
     attendeeType
+    expertise
     quickTools
     affiliates {
       nextToken
@@ -4748,6 +4761,7 @@ export const listApsAppUserProfiles = /* GraphQL */ `query ListApsAppUserProfile
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4798,6 +4812,7 @@ export const apsAppUserProfilesByUserId = /* GraphQL */ `query ApsAppUserProfile
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4848,6 +4863,7 @@ export const apsAppUserProfilesBySpeakerId = /* GraphQL */ `query ApsAppUserProf
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4888,6 +4904,7 @@ export const getProfileAffiliate = /* GraphQL */ `query GetProfileAffiliate($id:
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -4994,6 +5011,7 @@ export const getProfileEducation = /* GraphQL */ `query GetProfileEducation($id:
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5097,6 +5115,7 @@ export const getProfileInterest = /* GraphQL */ `query GetProfileInterest($id: I
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
@@ -5585,6 +5604,7 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
       company
       jobTitle
       attendeeType
+      expertise
       quickTools
       profilePicture
       bio
