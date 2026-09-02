@@ -2,6 +2,7 @@
 
 import QRCode from 'qrcode';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { generateVCard } from '@/lib/vcard';
 
 function loadS3ConfigFromAwsExports(): {
   bucket: string;
@@ -57,55 +58,6 @@ function getBucketConfig() {
 // S3 client will use default credentials from environment or IAM role
 function createS3Client(region: string) {
   return new S3Client({ region });
-}
-
-/**
- * Generate vCard string from registrant data
- */
-function generateVCard(data: {
-  firstName?: string | null;
-  lastName?: string | null;
-  email: string;
-  phone?: string | null;
-  company?: string | null;
-  jobTitle?: string | null;
-  website?: string | null;
-}): string {
-  const lines: string[] = ['BEGIN:VCARD', 'VERSION:3.0'];
-
-  // Name
-  const fullName =
-    [data.firstName, data.lastName].filter(Boolean).join(' ') || data.email;
-  lines.push(`FN:${fullName}`);
-  if (data.firstName || data.lastName) {
-    lines.push(`N:${data.lastName || ''};${data.firstName || ''};;;`);
-  }
-
-  // Email
-  lines.push(`EMAIL:${data.email}`);
-
-  // Phone
-  if (data.phone) {
-    lines.push(`TEL:${data.phone}`);
-  }
-
-  // Organization
-  if (data.company) {
-    lines.push(`ORG:${data.company}`);
-  }
-
-  // Title
-  if (data.jobTitle) {
-    lines.push(`TITLE:${data.jobTitle}`);
-  }
-
-  // Website
-  if (data.website) {
-    lines.push(`URL:${data.website}`);
-  }
-
-  lines.push('END:VCARD');
-  return lines.join('\n');
 }
 
 /**
