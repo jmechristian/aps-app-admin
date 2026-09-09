@@ -11,6 +11,9 @@ import ThinkificRegistrantsTable, {
   type ThinkificSortField,
 } from './thinkific-registrants-table';
 
+const DEFAULT_THINKIFIC_SORT: ThinkificSortField = 'progress';
+const DEFAULT_THINKIFIC_DIR: ThinkificSortDirection = 'desc';
+
 type APS = {
   id: string;
   year: string;
@@ -53,11 +56,11 @@ type ThinkificRowSummary = {
 };
 
 function parseSortField(value?: string): ThinkificSortField {
-  return value === 'thinkificId' ? 'thinkificId' : 'progress';
+  return value === 'thinkificId' ? 'thinkificId' : DEFAULT_THINKIFIC_SORT;
 }
 
 function parseSortDirection(value?: string): ThinkificSortDirection {
-  return value === 'asc' ? 'asc' : 'desc';
+  return value === 'asc' ? 'asc' : DEFAULT_THINKIFIC_DIR;
 }
 
 function registrantName(registrant: {
@@ -83,8 +86,10 @@ function compareThinkificRegistrants<T extends { id: string; firstName?: string 
   const summaryB = summariesByRegistrantId[b.id];
 
   if (sortField === 'thinkificId') {
-    const hasA = summaryA?.thinkificUserId != null ? 1 : 0;
-    const hasB = summaryB?.thinkificUserId != null ? 1 : 0;
+    const hasA =
+      summaryA?.isThinkificUser || summaryA?.thinkificUserId != null ? 1 : 0;
+    const hasB =
+      summaryB?.isThinkificUser || summaryB?.thinkificUserId != null ? 1 : 0;
     if (hasA !== hasB) {
       return sortDirection === 'desc' ? hasB - hasA : hasA - hasB;
     }
@@ -185,9 +190,16 @@ export default async function ApsThinkificPage({
     }
 
     revalidatePath(`/aps/${eventId}/thinkific`);
-    redirect(
-      `/aps/${eventId}/thinkific?sync=1&updated=${updated}&unchanged=${unchanged}&skipped=${skipped}&errors=${errors}`,
-    );
+    const syncParams = new URLSearchParams({
+      sort: sortField,
+      dir: sortDirection,
+      sync: '1',
+      updated: String(updated),
+      unchanged: String(unchanged),
+      skipped: String(skipped),
+      errors: String(errors),
+    });
+    redirect(`/aps/${eventId}/thinkific?${syncParams.toString()}`);
   }
 
   const [aps, allRegistrants] = await Promise.all([

@@ -7,6 +7,9 @@ import type { Registrant } from '@/app/actions/registrants';
 export type ThinkificSortField = 'progress' | 'thinkificId';
 export type ThinkificSortDirection = 'asc' | 'desc';
 
+export const DEFAULT_THINKIFIC_SORT: ThinkificSortField = 'progress';
+export const DEFAULT_THINKIFIC_DIR: ThinkificSortDirection = 'desc';
+
 type ThinkificRegistrantSnapshot = {
   isThinkificUser: boolean;
   thinkificUserId: number | null;
@@ -51,8 +54,10 @@ function compareThinkificRegistrants(
   const summaryB = summariesByRegistrantId[b.id];
 
   if (sortField === 'thinkificId') {
-    const hasA = summaryA?.thinkificUserId != null ? 1 : 0;
-    const hasB = summaryB?.thinkificUserId != null ? 1 : 0;
+    const hasA =
+      summaryA?.isThinkificUser || summaryA?.thinkificUserId != null ? 1 : 0;
+    const hasB =
+      summaryB?.isThinkificUser || summaryB?.thinkificUserId != null ? 1 : 0;
     if (hasA !== hasB) {
       return sortDirection === 'desc' ? hasB - hasA : hasA - hasB;
     }
@@ -84,16 +89,15 @@ export function buildThinkificListHref(
   } = {},
 ) {
   const params = new URLSearchParams();
-  const sort = options.sort ?? 'progress';
-  const dir = options.dir ?? 'desc';
+  const sort = options.sort ?? DEFAULT_THINKIFIC_SORT;
+  const dir = options.dir ?? DEFAULT_THINKIFIC_DIR;
   const page = options.page ?? 1;
 
-  if (sort !== 'progress') params.set('sort', sort);
-  if (dir !== 'desc') params.set('dir', dir);
+  params.set('sort', sort);
+  params.set('dir', dir);
   if (page > 1) params.set('page', String(page));
 
-  const query = params.toString();
-  return query ? `/aps/${eventId}/thinkific?${query}` : `/aps/${eventId}/thinkific`;
+  return `/aps/${eventId}/thinkific?${params.toString()}`;
 }
 
 export default function ThinkificRegistrantsTable({
@@ -104,8 +108,8 @@ export default function ThinkificRegistrantsTable({
   currentPage = 1,
   totalPages,
   pageSize = 50,
-  sortField = 'progress',
-  sortDirection = 'desc',
+  sortField = DEFAULT_THINKIFIC_SORT,
+  sortDirection = DEFAULT_THINKIFIC_DIR,
 }: ThinkificRegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const computedTotalPages = Math.max(
