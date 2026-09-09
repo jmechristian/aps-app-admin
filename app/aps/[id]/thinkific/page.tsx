@@ -6,7 +6,10 @@ import {
   fetchRegistrantsByApsId,
 } from '@/app/actions/registrants';
 import { getThinkificRegistrantSummariesByEmails } from '@/app/actions/thinkific';
-import ThinkificRegistrantsTable from './thinkific-registrants-table';
+import ThinkificRegistrantsTable, {
+  type ThinkificSortDirection,
+  type ThinkificSortField,
+} from './thinkific-registrants-table';
 
 type APS = {
   id: string;
@@ -41,6 +44,69 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
 
+type ThinkificRowSummary = {
+  isThinkificUser: boolean;
+  thinkificUserId: number | null;
+  enrollmentCount: number | null;
+  apcEnrollmentCount: number | null;
+  apcProgramProgress: number;
+};
+
+function parseSortField(value?: string): ThinkificSortField {
+  return value === 'thinkificId' ? 'thinkificId' : 'progress';
+}
+
+function parseSortDirection(value?: string): ThinkificSortDirection {
+  return value === 'asc' ? 'asc' : 'desc';
+}
+
+function registrantName(registrant: {
+  firstName?: string | null;
+  lastName?: string | null;
+}) {
+  return `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim();
+}
+
+function compareThinkificRegistrants<T extends { id: string; firstName?: string | null; lastName?: string | null }>(
+  a: T,
+  b: T,
+  summariesByRegistrantId: Record<string, ThinkificRowSummary>,
+  sortField: ThinkificSortField,
+  sortDirection: ThinkificSortDirection,
+) {
+  const nameCompare = registrantName(a).localeCompare(
+    registrantName(b),
+    undefined,
+    { sensitivity: 'base' },
+  );
+  const summaryA = summariesByRegistrantId[a.id];
+  const summaryB = summariesByRegistrantId[b.id];
+
+  if (sortField === 'thinkificId') {
+    const hasA = summaryA?.thinkificUserId != null ? 1 : 0;
+    const hasB = summaryB?.thinkificUserId != null ? 1 : 0;
+    if (hasA !== hasB) {
+      return sortDirection === 'desc' ? hasB - hasA : hasA - hasB;
+    }
+
+    const idA = summaryA?.thinkificUserId ?? 0;
+    const idB = summaryB?.thinkificUserId ?? 0;
+    if (idA !== idB) {
+      return sortDirection === 'desc' ? idB - idA : idA - idB;
+    }
+
+    return nameCompare;
+  }
+
+  const progressA = summaryA?.apcProgramProgress ?? 0;
+  const progressB = summaryB?.apcProgramProgress ?? 0;
+  if (progressA !== progressB) {
+    return sortDirection === 'desc' ? progressB - progressA : progressA - progressB;
+  }
+
+  return nameCompare;
+}
+
 export default async function ApsThinkificPage({
   params,
   searchParams,
@@ -48,6 +114,8 @@ export default async function ApsThinkificPage({
   params: Promise<{ id: string }>;
   searchParams?: Promise<{
     page?: string | string[];
+    sort?: string | string[];
+    dir?: string | string[];
     sync?: string | string[];
     updated?: string | string[];
     unchanged?: string | string[];
@@ -58,6 +126,8 @@ export default async function ApsThinkificPage({
   const { id: eventId } = await params;
   const sp = searchParams ? await searchParams : undefined;
   const incomingPage = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
+  const sortField = parseSortField(Array.isArray(sp?.sort) ? sp.sort[0] : sp?.sort);
+  const sortDirection = parseSortDirection(Array.isArray(sp?.dir) ? sp.dir[0] : sp?.dir);
   const syncFlag = Array.isArray(sp?.sync) ? sp.sync[0] : sp?.sync;
   const syncUpdated = Array.isArray(sp?.updated) ? sp.updated[0] : sp?.updated;
   const syncUnchanged = Array.isArray(sp?.unchanged) ? sp.unchanged[0] : sp?.unchanged;
@@ -129,44 +199,33 @@ export default async function ApsThinkificPage({
     notFound();
   }
 
-  const thinkificSummariesByEmail = await getThinkificRegistrantSummariesByEmails(
-    allRegistrants.map((registrant) => registrant.email),
+  const storedSummariesByRegistrantId: Record<string, ThinkificRowSummary> =
+    Object.fromEntries(
+      allRegistrants.map((registrant) => {
+        const storedThinkificId = registrant.appUser?.profile?.thinkificId ?? null;
+        const storedProgress = registrant.appUser?.profile?.apcProgress ?? 0;
+        return [
+          registrant.id,
+          {
+            isThinkificUser: Boolean(storedThinkificId),
+            thinkificUserId: storedThinkificId,
+            enrollmentCount: null,
+            apcEnrollmentCount: null,
+            apcProgramProgress: storedProgress,
+          },
+        ];
+      }),
+    );
+
+  const orderedRegistrants = [...allRegistrants].sort((a, b) =>
+    compareThinkificRegistrants(
+      a,
+      b,
+      storedSummariesByRegistrantId,
+      sortField,
+      sortDirection,
+    ),
   );
-
-  const summariesByRegistrantId = Object.fromEntries(
-    allRegistrants.map((registrant) => [
-      registrant.id,
-      {
-        isThinkificUser: Boolean(
-          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.thinkificUserId ??
-            registrant.appUser?.profile?.thinkificId,
-        ),
-        thinkificUserId:
-          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.thinkificUserId ??
-          registrant.appUser?.profile?.thinkificId ??
-          null,
-        enrollmentCount:
-          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.enrollmentCount ??
-          0,
-        apcEnrollmentCount:
-          thinkificSummariesByEmail[registrant.email.toLowerCase()]
-            ?.apcEnrollmentCount ?? 0,
-        apcProgramProgress:
-          thinkificSummariesByEmail[registrant.email.toLowerCase()]?.apcProgramProgress ??
-          0,
-      },
-    ]),
-  );
-
-  const orderedRegistrants = [...allRegistrants].sort((a, b) => {
-    const progressA = summariesByRegistrantId[a.id]?.apcProgramProgress ?? 0;
-    const progressB = summariesByRegistrantId[b.id]?.apcProgramProgress ?? 0;
-    if (progressB !== progressA) return progressB - progressA;
-
-    const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim();
-    const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim();
-    return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
-  });
 
   const totalPages = Math.max(1, Math.ceil(orderedRegistrants.length / pageSize));
   const currentPage = Number.isFinite(parsedPage)
@@ -175,12 +234,35 @@ export default async function ApsThinkificPage({
   const start = (currentPage - 1) * pageSize;
   const pageRegistrants = orderedRegistrants.slice(start, start + pageSize);
 
+  const liveSummariesByEmail = await getThinkificRegistrantSummariesByEmails(
+    pageRegistrants.map((registrant) => registrant.email),
+  );
+
+  const summariesByRegistrantId: Record<string, ThinkificRowSummary> = {
+    ...storedSummariesByRegistrantId,
+  };
+
+  for (const registrant of pageRegistrants) {
+    const live = liveSummariesByEmail[registrant.email.toLowerCase()];
+    if (!live || live.error) continue;
+
+    const stored = storedSummariesByRegistrantId[registrant.id];
+    const thinkificUserId = live.thinkificUserId ?? stored?.thinkificUserId ?? null;
+    summariesByRegistrantId[registrant.id] = {
+      isThinkificUser: Boolean(thinkificUserId),
+      thinkificUserId,
+      enrollmentCount: live.enrollmentCount,
+      apcEnrollmentCount: live.apcEnrollmentCount,
+      apcProgramProgress: live.apcProgramProgress,
+    };
+  }
+
   const totalRegistrants = allRegistrants.length;
   const thinkificUserCount = allRegistrants.filter((registrant) =>
-    Boolean(summariesByRegistrantId[registrant.id]?.isThinkificUser),
+    Boolean(storedSummariesByRegistrantId[registrant.id]?.isThinkificUser),
   ).length;
   const apcCompleteCount = allRegistrants.filter((registrant) => {
-    const progress = summariesByRegistrantId[registrant.id]?.apcProgramProgress ?? 0;
+    const progress = storedSummariesByRegistrantId[registrant.id]?.apcProgramProgress ?? 0;
     return progress >= 100;
   }).length;
   const thinkificUserPercent =
@@ -230,7 +312,7 @@ export default async function ApsThinkificPage({
               {thinkificUserCount}
             </p>
             <p className='mt-1 text-sm text-slate-600'>
-              {formatPercent(thinkificUserPercent)} of {totalRegistrants} registrants
+              {formatPercent(thinkificUserPercent)} of all {totalRegistrants} registrants
             </p>
           </div>
 
@@ -242,7 +324,7 @@ export default async function ApsThinkificPage({
               {apcCompleteCount}
             </p>
             <p className='mt-1 text-sm text-slate-600'>
-              {formatPercent(apcCompletePercent)} of {totalRegistrants} registrants
+              {formatPercent(apcCompletePercent)} of all {totalRegistrants} registrants
             </p>
           </div>
         </section>
@@ -262,6 +344,8 @@ export default async function ApsThinkificPage({
           currentPage={currentPage}
           totalPages={totalPages}
           pageSize={pageSize}
+          sortField={sortField}
+          sortDirection={sortDirection}
         />
       </main>
     </div>

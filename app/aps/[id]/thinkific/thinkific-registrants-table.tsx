@@ -4,6 +4,9 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Registrant } from '@/app/actions/registrants';
 
+export type ThinkificSortField = 'progress' | 'thinkificId';
+export type ThinkificSortDirection = 'asc' | 'desc';
+
 type ThinkificRegistrantSnapshot = {
   isThinkificUser: boolean;
   thinkificUserId: number | null;
@@ -20,10 +23,77 @@ type ThinkificRegistrantsTableProps = {
   currentPage?: number;
   totalPages?: number;
   pageSize?: number;
+  sortField?: ThinkificSortField;
+  sortDirection?: ThinkificSortDirection;
 };
 
 function formatProgress(value: number) {
   return `${value.toFixed(1)}%`;
+}
+
+function registrantName(registrant: Registrant) {
+  return `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim();
+}
+
+function compareThinkificRegistrants(
+  a: Registrant,
+  b: Registrant,
+  summariesByRegistrantId: Record<string, ThinkificRegistrantSnapshot>,
+  sortField: ThinkificSortField,
+  sortDirection: ThinkificSortDirection,
+) {
+  const nameCompare = registrantName(a).localeCompare(
+    registrantName(b),
+    undefined,
+    { sensitivity: 'base' },
+  );
+  const summaryA = summariesByRegistrantId[a.id];
+  const summaryB = summariesByRegistrantId[b.id];
+
+  if (sortField === 'thinkificId') {
+    const hasA = summaryA?.thinkificUserId != null ? 1 : 0;
+    const hasB = summaryB?.thinkificUserId != null ? 1 : 0;
+    if (hasA !== hasB) {
+      return sortDirection === 'desc' ? hasB - hasA : hasA - hasB;
+    }
+
+    const idA = summaryA?.thinkificUserId ?? 0;
+    const idB = summaryB?.thinkificUserId ?? 0;
+    if (idA !== idB) {
+      return sortDirection === 'desc' ? idB - idA : idA - idB;
+    }
+
+    return nameCompare;
+  }
+
+  const progressA = summaryA?.apcProgramProgress ?? 0;
+  const progressB = summaryB?.apcProgramProgress ?? 0;
+  if (progressA !== progressB) {
+    return sortDirection === 'desc' ? progressB - progressA : progressA - progressB;
+  }
+
+  return nameCompare;
+}
+
+export function buildThinkificListHref(
+  eventId: string,
+  options: {
+    page?: number;
+    sort?: ThinkificSortField;
+    dir?: ThinkificSortDirection;
+  } = {},
+) {
+  const params = new URLSearchParams();
+  const sort = options.sort ?? 'progress';
+  const dir = options.dir ?? 'desc';
+  const page = options.page ?? 1;
+
+  if (sort !== 'progress') params.set('sort', sort);
+  if (dir !== 'desc') params.set('dir', dir);
+  if (page > 1) params.set('page', String(page));
+
+  const query = params.toString();
+  return query ? `/aps/${eventId}/thinkific?${query}` : `/aps/${eventId}/thinkific`;
 }
 
 export default function ThinkificRegistrantsTable({
@@ -34,6 +104,8 @@ export default function ThinkificRegistrantsTable({
   currentPage = 1,
   totalPages,
   pageSize = 50,
+  sortField = 'progress',
+  sortDirection = 'desc',
 }: ThinkificRegistrantsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const computedTotalPages = Math.max(
@@ -43,21 +115,6 @@ export default function ThinkificRegistrantsTable({
   const effectiveTotalPages = totalPages ?? computedTotalPages;
 
   const filteredRegistrants = useMemo(() => {
-    const sortByApcProgressDesc = (a: Registrant, b: Registrant) => {
-      const summaryA = summariesByRegistrantId[a.id];
-      const summaryB = summariesByRegistrantId[b.id];
-      const progressA = summaryA?.apcProgramProgress ?? 0;
-      const progressB = summaryB?.apcProgramProgress ?? 0;
-
-      if (progressB !== progressA) {
-        return progressB - progressA;
-      }
-
-      const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim();
-      const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim();
-      return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
-    };
-
     if (!searchQuery.trim()) {
       return registrants;
     }
@@ -65,8 +122,7 @@ export default function ThinkificRegistrantsTable({
     const query = searchQuery.toLowerCase();
     return allRegistrants
       .filter((registrant) => {
-        const name =
-          `${registrant.firstName || ''} ${registrant.lastName || ''}`.toLowerCase();
+        const name = registrantName(registrant).toLowerCase();
         const email = registrant.email.toLowerCase();
         const company = registrant.company?.name.toLowerCase() || '';
         const jobTitle = registrant.jobTitle?.toLowerCase() || '';
@@ -77,8 +133,35 @@ export default function ThinkificRegistrantsTable({
           jobTitle.includes(query)
         );
       })
-      .sort(sortByApcProgressDesc);
-  }, [allRegistrants, registrants, searchQuery, summariesByRegistrantId]);
+      .sort((a, b) =>
+        compareThinkificRegistrants(
+          a,
+          b,
+          summariesByRegistrantId,
+          sortField,
+          sortDirection,
+        ),
+      );
+  }, [
+    allRegistrants,
+    registrants,
+    searchQuery,
+    sortDirection,
+    sortField,
+    summariesByRegistrantId,
+  ]);
+
+  const nextSortDirection = (field: ThinkificSortField): ThinkificSortDirection => {
+    if (sortField === field) {
+      return sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+    return 'desc';
+  };
+
+  const getSortIndicator = (field: ThinkificSortField) => {
+    if (sortField !== field) return '↕';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
 
   return (
     <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg'>
@@ -88,7 +171,9 @@ export default function ThinkificRegistrantsTable({
           <p className='mt-1 text-sm text-slate-600'>
             Showing {filteredRegistrants.length} registrant
             {filteredRegistrants.length === 1 ? '' : 's'}
-            {searchQuery.trim() ? ' (filtered across all registrants)' : ''}
+            {searchQuery.trim()
+              ? ' (filtered across all registrants)'
+              : ` of ${allRegistrants.length} total`}
           </p>
         </div>
         <div className='w-72'>
@@ -123,10 +208,28 @@ export default function ThinkificRegistrantsTable({
                   Company / Title
                 </th>
                 <th className='px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Thinkific User
+                  <Link
+                    href={buildThinkificListHref(eventId, {
+                      sort: 'thinkificId',
+                      dir: nextSortDirection('thinkificId'),
+                    })}
+                    className='inline-flex items-center gap-1 hover:text-slate-900'
+                  >
+                    Thinkific User
+                    <span className='text-[10px]'>{getSortIndicator('thinkificId')}</span>
+                  </Link>
                 </th>
                 <th className='px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  Thinkific ID
+                  <Link
+                    href={buildThinkificListHref(eventId, {
+                      sort: 'thinkificId',
+                      dir: nextSortDirection('thinkificId'),
+                    })}
+                    className='inline-flex items-center gap-1 hover:text-slate-900'
+                  >
+                    Thinkific ID
+                    <span className='text-[10px]'>{getSortIndicator('thinkificId')}</span>
+                  </Link>
                 </th>
                 <th className='px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
                   # of Enrollments
@@ -135,15 +238,22 @@ export default function ThinkificRegistrantsTable({
                   # APC Enrollments
                 </th>
                 <th className='px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700'>
-                  APC Progress
+                  <Link
+                    href={buildThinkificListHref(eventId, {
+                      sort: 'progress',
+                      dir: nextSortDirection('progress'),
+                    })}
+                    className='inline-flex items-center gap-1 hover:text-slate-900'
+                  >
+                    APC Progress
+                    <span className='text-[10px]'>{getSortIndicator('progress')}</span>
+                  </Link>
                 </th>
               </tr>
             </thead>
             <tbody className='divide-y divide-slate-100'>
               {filteredRegistrants.map((registrant) => {
-                const name =
-                  `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() ||
-                  'N/A';
+                const name = registrantName(registrant) || 'N/A';
                 const summary = summariesByRegistrantId[registrant.id] ?? {
                   isThinkificUser: false,
                   thinkificUserId: null,
@@ -210,7 +320,10 @@ export default function ThinkificRegistrantsTable({
           <div className='flex items-center gap-2'>
             {currentPage > 1 ? (
               <Link
-                href={`/aps/${eventId}/thinkific`}
+                href={buildThinkificListHref(eventId, {
+                  sort: sortField,
+                  dir: sortDirection,
+                })}
                 className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
               >
                 ← First page
@@ -219,11 +332,11 @@ export default function ThinkificRegistrantsTable({
 
             {currentPage > 1 ? (
               <Link
-                href={
-                  currentPage - 1 === 1
-                    ? `/aps/${eventId}/thinkific`
-                    : `/aps/${eventId}/thinkific?page=${currentPage - 1}`
-                }
+                href={buildThinkificListHref(eventId, {
+                  page: currentPage - 1,
+                  sort: sortField,
+                  dir: sortDirection,
+                })}
                 className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
               >
                 ← Prev
@@ -232,7 +345,11 @@ export default function ThinkificRegistrantsTable({
 
             {currentPage < effectiveTotalPages ? (
               <Link
-                href={`/aps/${eventId}/thinkific?page=${currentPage + 1}`}
+                href={buildThinkificListHref(eventId, {
+                  page: currentPage + 1,
+                  sort: sortField,
+                  dir: sortDirection,
+                })}
                 className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md'
               >
                 Next {pageSize ?? 50} →

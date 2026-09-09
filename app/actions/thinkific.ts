@@ -13,14 +13,17 @@ type ThinkificUser = {
   id: number;
 };
 
+type ThinkificPagination = {
+  current_page?: number | null;
+  next_page?: number | null;
+  total_pages?: number | null;
+  total_items?: number | null;
+};
+
 type ThinkificEnrollmentResponse = {
   items?: ThinkificEnrollment[];
   meta?: {
-    pagination?: {
-      current_page?: number | null;
-      next_page?: number | null;
-      total_pages?: number | null;
-    } | null;
+    pagination?: ThinkificPagination | null;
   } | null;
 };
 
@@ -45,6 +48,8 @@ export type ThinkificEnrollmentCounts = {
 
 const THINKIFIC_BASE_URL = 'https://api.thinkific.com/api/public/v1/enrollments';
 const THINKIFIC_USERS_URL = 'https://api.thinkific.com/api/public/v1/users';
+const THINKIFIC_PAGE_LIMIT = 250;
+const THINKIFIC_MAX_PAGES = 100;
 const APC_TOTAL_COURSES = 10;
 const APC_PRIORITY_PROGRESS_COURSE_ID = 699298;
 const APC_COMPLETION_COURSE_IDS = new Set([591574]);
@@ -73,9 +78,35 @@ function normalizePercentageToPercent(value: string): number {
   return numeric <= 1 ? numeric * 100 : numeric;
 }
 
+function getEnrollmentCourseId(enrollment: ThinkificEnrollment): number {
+  return Number(enrollment.course_id);
+}
+
+function getEnrollmentUserId(enrollment: ThinkificEnrollment): number | null {
+  const userId = Number(enrollment.user_id);
+  return Number.isFinite(userId) ? userId : null;
+}
+
+function getNextThinkificPage(pagination?: ThinkificPagination | null): number | null {
+  const currentPage = Number(pagination?.current_page ?? 1);
+  const explicitNext = Number(pagination?.next_page);
+  if (Number.isFinite(explicitNext) && explicitNext > currentPage) {
+    return explicitNext;
+  }
+
+  const totalPages = Number(pagination?.total_pages ?? 1);
+  if (Number.isFinite(totalPages) && currentPage < totalPages) {
+    return currentPage + 1;
+  }
+
+  return null;
+}
+
 function isApcCompletionEnrollment(enrollment: ThinkificEnrollment): boolean {
-  const normalizedCourseName = enrollment.course_name.toUpperCase();
-  const matchesCourseId = APC_COMPLETION_COURSE_IDS.has(enrollment.course_id);
+  const normalizedCourseName = (enrollment.course_name || '').toUpperCase();
+  const matchesCourseId = APC_COMPLETION_COURSE_IDS.has(
+    getEnrollmentCourseId(enrollment),
+  );
   const matchesCourseNamePattern = APC_COMPLETION_COURSE_NAME_PATTERNS.some((pattern) =>
     normalizedCourseName.includes(pattern),
   );
@@ -153,7 +184,7 @@ export async function getThinkificEnrollmentsByEmail(
   const buildUrl = (page: number) => {
     const url = new URL(THINKIFIC_BASE_URL);
     url.searchParams.set('page', String(page));
-    url.searchParams.set('limit', '500');
+    url.searchParams.set('limit', String(THINKIFIC_PAGE_LIMIT));
     url.searchParams.set('query[email]', email);
     return url.toString();
   };
@@ -169,9 +200,17 @@ export async function getThinkificEnrollmentsByEmail(
 
   const firstPageData = (await res.json()) as ThinkificEnrollmentResponse;
   const allItems = [...(firstPageData.items ?? [])];
+  const seenPages = new Set<number>([
+    Number(firstPageData.meta?.pagination?.current_page ?? 1),
+  ]);
 
-  let nextPage = firstPageData.meta?.pagination?.next_page ?? null;
-  while (nextPage) {
+  let nextPage = getNextThinkificPage(firstPageData.meta?.pagination);
+  while (
+    nextPage &&
+    !seenPages.has(nextPage) &&
+    seenPages.size < THINKIFIC_MAX_PAGES
+  ) {
+    seenPages.add(nextPage);
     const { res: pageRes } = await fetchThinkificWithAuth(
       buildUrl(nextPage),
       credentials,
@@ -186,7 +225,7 @@ export async function getThinkificEnrollmentsByEmail(
 
     const pageData = (await pageRes.json()) as ThinkificEnrollmentResponse;
     allItems.push(...(pageData.items ?? []));
-    nextPage = pageData.meta?.pagination?.next_page ?? null;
+    nextPage = getNextThinkificPage(pageData.meta?.pagination);
   }
 
   return allItems;
@@ -215,7 +254,8 @@ export async function getThinkificUserIdByEmail(
   }
 
   const data = (await res.json()) as ThinkificUserResponse;
-  return data.items?.[0]?.id ?? null;
+  const userId = Number(data.items?.[0]?.id);
+  return Number.isFinite(userId) ? userId : null;
 }
 
 export async function getThinkificRegistrantSummaryByEmail(
@@ -234,7 +274,8 @@ export async function getThinkificRegistrantSummaryByEmail(
   try {
     const enrollments = await getThinkificEnrollmentsByEmail(email);
     const priorityProgressEnrollment = enrollments.find(
-      (enrollment) => enrollment.course_id === APC_PRIORITY_PROGRESS_COURSE_ID,
+      (enrollment) =>
+        getEnrollmentCourseId(enrollment) === APC_PRIORITY_PROGRESS_COURSE_ID,
     );
     const priorityProgressPercent = priorityProgressEnrollment
       ? Math.min(
@@ -258,13 +299,15 @@ export async function getThinkificRegistrantSummaryByEmail(
     );
     const bestProgressByApcCourse = new Map<number, number>();
     for (const enrollment of apcEnrollments) {
+      const courseId = getEnrollmentCourseId(enrollment);
+      if (!Number.isFinite(courseId)) continue;
       const courseProgress = Math.min(
         100,
         Math.max(0, normalizePercentageToPercent(enrollment.percentage_completed)),
       );
-      const existing = bestProgressByApcCourse.get(enrollment.course_id) ?? 0;
+      const existing = bestProgressByApcCourse.get(courseId) ?? 0;
       if (courseProgress > existing) {
-        bestProgressByApcCourse.set(enrollment.course_id, courseProgress);
+        bestProgressByApcCourse.set(courseId, courseProgress);
       }
     }
 
@@ -277,7 +320,8 @@ export async function getThinkificRegistrantSummaryByEmail(
       apcProgressTotal / APC_TOTAL_COURSES,
     );
 
-    let thinkificUserId = enrollments[0]?.user_id ?? null;
+    let thinkificUserId =
+      enrollments.map(getEnrollmentUserId).find((id) => id != null) ?? null;
     if (!thinkificUserId) {
       thinkificUserId = await getThinkificUserIdByEmail(email);
     }
