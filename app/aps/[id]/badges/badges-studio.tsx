@@ -156,8 +156,8 @@ export default function BadgesStudio({
         </div>
         <p className='mt-4 text-xs text-slate-500'>
           Click a badge to enlarge. Dashed inner box is the trim. Circle at the
-          top is the lanyard punch zone. Table numbers show # until seating is
-          assigned. The PDF ends with one blank write-in badge per attendee
+          top is the lanyard punch zone. Table numbers print only when seating
+          is assigned. The PDF ends with one blank write-in badge per attendee
           type.
         </p>
       </section>

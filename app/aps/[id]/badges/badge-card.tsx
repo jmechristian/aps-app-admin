@@ -155,7 +155,7 @@ function ClassicCard({
               {person.company}
             </p>
           ) : null}
-          {blank ? null : (
+          {person.tableNumber == null ? null : (
             <p
               className='mt-2 font-bold tracking-[0.16em] text-slate-500'
               style={{ fontSize: px(8) }}
@@ -250,7 +250,7 @@ function RailCard({
               {person.company}
             </p>
           ) : null}
-          {blank ? null : (
+          {person.tableNumber == null ? null : (
             <p
               className='mt-3 font-bold tracking-[0.16em] text-slate-500'
               style={{ fontSize: px(14) }}
@@ -341,14 +341,16 @@ function SignalCard({
             <div className='bg-white p-1.5'>
               <QrImage url={person.qrCodeUrl} size={px(62)} />
             </div>
-            <div className='min-w-[3.2rem] border-[1.5px] border-white px-2.5 py-1.5 text-center'>
-              <p className='font-bold tracking-[0.18em]' style={{ fontSize: px(7) }}>
-                TABLE
-              </p>
-              <p className='font-bold leading-none' style={{ fontSize: px(20) }}>
-                {formatTableLabel(person.tableNumber)}
-              </p>
-            </div>
+            {person.tableNumber == null ? null : (
+              <div className='min-w-[3.2rem] border-[1.5px] border-white px-2.5 py-1.5 text-center'>
+                <p className='font-bold tracking-[0.18em]' style={{ fontSize: px(7) }}>
+                  TABLE
+                </p>
+                <p className='font-bold leading-none' style={{ fontSize: px(20) }}>
+                  {formatTableLabel(person.tableNumber)}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

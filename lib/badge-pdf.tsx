@@ -322,7 +322,7 @@ function ClassicBadge({
           {person.company ? (
             <Text style={styles.company}>{person.company}</Text>
           ) : null}
-          {blank ? null : (
+          {person.tableNumber == null ? null : (
             <Text style={styles.tableCaption}>
               TABLE  {formatTableLabel(person.tableNumber)}
             </Text>
@@ -380,7 +380,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
               {person.company}
             </Text>
           ) : null}
-          {blank ? null : (
+          {person.tableNumber == null ? null : (
             <Text
               style={{
                 fontSize: 14,
@@ -445,28 +445,30 @@ function SignalBadge({ person }: { person: BadgePdfPerson }) {
           <View style={styles.qrPlate}>
             <QrSlot src={person.qrDataUrl} width={62} height={62} />
           </View>
-          <View style={styles.tableBox}>
-            <Text
-              style={{
-                color: '#ffffff',
-                fontSize: 7,
-                letterSpacing: 1.6,
-                fontFamily: 'Helvetica-Bold',
-              }}
-            >
-              TABLE
-            </Text>
-            <Text
-              style={{
-                color: '#ffffff',
-                fontSize: 20,
-                marginTop: 2,
-                fontFamily: 'Helvetica-Bold',
-              }}
-            >
-              {formatTableLabel(person.tableNumber)}
-            </Text>
-          </View>
+          {person.tableNumber == null ? null : (
+            <View style={styles.tableBox}>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontSize: 7,
+                  letterSpacing: 1.6,
+                  fontFamily: 'Helvetica-Bold',
+                }}
+              >
+                TABLE
+              </Text>
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontSize: 20,
+                  marginTop: 2,
+                  fontFamily: 'Helvetica-Bold',
+                }}
+              >
+                {formatTableLabel(person.tableNumber)}
+              </Text>
+            </View>
+          )}
         </View>
       )}
     </Page>

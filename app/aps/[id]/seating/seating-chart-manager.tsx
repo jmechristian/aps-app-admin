@@ -6,6 +6,7 @@ import {
   clearRegistrantTableAssignment,
 } from '@/app/actions/seating';
 import RegistrantPicker from '../registrant-picker';
+import { getTypeLabel } from '@/lib/badges';
 import {
   APS_SEATING_CHART_ID,
   type SeatingAssignment,
@@ -77,8 +78,22 @@ export default function SeatingChartManager({
   }, [assignments, tableNumbers]);
 
   const unassignedRegistrants = useMemo(
-    () => registrants.filter((registrant) => !assignmentByRegistrant.has(registrant.id)),
+    () =>
+      registrants.filter((registrant) => {
+        const assignment = assignmentByRegistrant.get(registrant.id);
+        return assignment?.tableNumber == null;
+      }),
     [registrants, assignmentByRegistrant]
+  );
+
+  const unassignedNeedingTables = useMemo(
+    () =>
+      unassignedRegistrants
+        .filter((registrant) => registrant.attendeeType !== 'EXHIBITOR')
+        .sort((a, b) =>
+          fullName(a).localeCompare(fullName(b), undefined, { sensitivity: 'base' })
+        ),
+    [unassignedRegistrants]
   );
 
   function parseTableNumber(input: string) {
@@ -253,6 +268,47 @@ export default function SeatingChartManager({
 
         {message ? <p className='mt-3 text-sm text-emerald-700'>{message}</p> : null}
         {error ? <p className='mt-3 text-sm text-rose-700'>{error}</p> : null}
+      </section>
+
+      <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div>
+            <h2 className='text-xl font-bold text-slate-900'>
+              Unassigned ({unassignedNeedingTables.length})
+            </h2>
+            <p className='mt-1 text-sm text-slate-600'>
+              Registrants without a table number. Exhibitor staff are excluded.
+            </p>
+          </div>
+        </div>
+
+        {unassignedNeedingTables.length === 0 ? (
+          <div className='mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700'>
+            Everyone except exhibitor staff has a table assignment.
+          </div>
+        ) : (
+          <ul className='mt-6 max-h-112 space-y-2 overflow-y-auto'>
+            {unassignedNeedingTables.map((registrant) => (
+              <li
+                key={registrant.id}
+                className='flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2'
+              >
+                <div className='min-w-0'>
+                  <p className='truncate text-sm font-semibold text-slate-900'>
+                    {fullName(registrant)}
+                  </p>
+                  <p className='truncate text-xs text-slate-600'>
+                    {registrant.email}
+                    {registrant.companyName ? ` · ${registrant.companyName}` : ''}
+                  </p>
+                </div>
+                <span className='shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700'>
+                  {getTypeLabel(registrant.attendeeType ?? '')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
