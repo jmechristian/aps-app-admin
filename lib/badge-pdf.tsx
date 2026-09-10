@@ -19,6 +19,7 @@ import {
   getPackIqVariant,
   getTypeColor,
   getTypeLabel,
+  isBlankBadge,
   typeLabelFontSizePt,
   type BadgeDesign,
   type BadgePerson,
@@ -298,13 +299,16 @@ function ClassicBadge({
   const typeLabel = getTypeLabel(person.attendeeType);
   const { first, last } = displayName(person);
   const packiq = getPackIqSrc(getPackIqVariant(person.attendeeType));
+  const blank = isBlankBadge(person);
 
   return (
     <Page size={[PAGE_W, PAGE_H]} style={styles.page}>
       <View style={styles.classicWhite}>
         <View style={styles.classicHeader}>
           <ApsLogoPdf />
-          <QrSlot src={person.qrDataUrl} width={50} height={50} />
+          {blank ? null : (
+            <QrSlot src={person.qrDataUrl} width={50} height={50} />
+          )}
         </View>
         <View style={styles.classicBody}>
           {first ? (
@@ -318,9 +322,11 @@ function ClassicBadge({
           {person.company ? (
             <Text style={styles.company}>{person.company}</Text>
           ) : null}
-          <Text style={styles.tableCaption}>
-            TABLE  {formatTableLabel(person.tableNumber)}
-          </Text>
+          {blank ? null : (
+            <Text style={styles.tableCaption}>
+              TABLE  {formatTableLabel(person.tableNumber)}
+            </Text>
+          )}
         </View>
       </View>
       <View style={[styles.classicFooter, { backgroundColor: color }]}>
@@ -339,6 +345,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
   const color = getTypeColor(person.attendeeType);
   const typeLabel = getTypeLabel(person.attendeeType).toUpperCase();
   const { first, last } = displayName(person);
+  const blank = isBlankBadge(person);
 
   return (
     <Page size={[PAGE_W, PAGE_H]} style={[styles.page, { backgroundColor: '#ffffff' }]}>
@@ -373,17 +380,19 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
               {person.company}
             </Text>
           ) : null}
-          <Text
-            style={{
-              fontSize: 14,
-              marginTop: 12,
-              letterSpacing: 1.4,
-              color: '#333333',
-              fontFamily: 'Helvetica-Bold',
-            }}
-          >
-            TABLE  {formatTableLabel(person.tableNumber)}
-          </Text>
+          {blank ? null : (
+            <Text
+              style={{
+                fontSize: 14,
+                marginTop: 12,
+                letterSpacing: 1.4,
+                color: '#555555',
+                fontFamily: 'Helvetica-Bold',
+              }}
+            >
+              TABLE  {formatTableLabel(person.tableNumber)}
+            </Text>
+          )}
         </View>
         <View
           style={{
@@ -393,7 +402,9 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
           }}
         >
           <Image src={getPackIqSrc('black')} style={{ width: 88, height: 36 }} />
-          <QrSlot src={person.qrDataUrl} width={58} height={58} />
+          {blank ? null : (
+            <QrSlot src={person.qrDataUrl} width={58} height={58} />
+          )}
         </View>
       </View>
     </Page>
@@ -405,6 +416,7 @@ function SignalBadge({ person }: { person: BadgePdfPerson }) {
   const typeLabel = getTypeLabel(person.attendeeType).toUpperCase();
   const { first, last } = displayName(person);
   const packiq = getPackIqSrc(getPackIqVariant(person.attendeeType));
+  const blank = isBlankBadge(person);
 
   return (
     <Page size={[PAGE_W, PAGE_H]} style={[styles.signalPage, { backgroundColor: color }]}>
@@ -422,39 +434,41 @@ function SignalBadge({ person }: { person: BadgePdfPerson }) {
         <Text style={styles.signalType}>{typeLabel}</Text>
       </View>
       <Image src={packiq} style={{ width: 92, height: 38, marginBottom: 10 }} />
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-        }}
-      >
-        <View style={styles.qrPlate}>
-          <QrSlot src={person.qrDataUrl} width={62} height={62} />
+      {blank ? null : (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+          }}
+        >
+          <View style={styles.qrPlate}>
+            <QrSlot src={person.qrDataUrl} width={62} height={62} />
+          </View>
+          <View style={styles.tableBox}>
+            <Text
+              style={{
+                color: '#ffffff',
+                fontSize: 7,
+                letterSpacing: 1.6,
+                fontFamily: 'Helvetica-Bold',
+              }}
+            >
+              TABLE
+            </Text>
+            <Text
+              style={{
+                color: '#ffffff',
+                fontSize: 20,
+                marginTop: 2,
+                fontFamily: 'Helvetica-Bold',
+              }}
+            >
+              {formatTableLabel(person.tableNumber)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.tableBox}>
-          <Text
-            style={{
-              color: '#ffffff',
-              fontSize: 7,
-              letterSpacing: 1.6,
-              fontFamily: 'Helvetica-Bold',
-            }}
-          >
-            TABLE
-          </Text>
-          <Text
-            style={{
-              color: '#ffffff',
-              fontSize: 20,
-              marginTop: 2,
-              fontFamily: 'Helvetica-Bold',
-            }}
-          >
-            {formatTableLabel(person.tableNumber)}
-          </Text>
-        </View>
-      </View>
+      )}
     </Page>
   );
 }

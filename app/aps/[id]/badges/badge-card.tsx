@@ -7,6 +7,7 @@ import {
   getPackIqVariant,
   getTypeColor,
   getTypeLabel,
+  isBlankBadge,
   previewPx,
   typeLabelFontSizePt,
   type BadgeDesign,
@@ -119,6 +120,7 @@ function ClassicCard({
       BADGE_PAGE.pagePt.h) *
     100;
   const px = (pt: number) => previewPx(pt, cardWidth);
+  const blank = isBlankBadge(person);
 
   return (
     <div
@@ -131,7 +133,7 @@ function ClassicCard({
       >
         <div className='flex items-start justify-between gap-2'>
           <ApsLogo width={px(118)} />
-          <QrImage url={person.qrCodeUrl} size={px(50)} />
+          {blank ? null : <QrImage url={person.qrCodeUrl} size={px(50)} />}
         </div>
         <div className='flex flex-1 flex-col items-center justify-center pb-2 text-center'>
           <p
@@ -153,12 +155,14 @@ function ClassicCard({
               {person.company}
             </p>
           ) : null}
-          <p
-            className='mt-2 font-bold tracking-[0.16em] text-slate-500'
-            style={{ fontSize: px(8) }}
-          >
-            TABLE  {formatTableLabel(person.tableNumber)}
-          </p>
+          {blank ? null : (
+            <p
+              className='mt-2 font-bold tracking-[0.16em] text-slate-500'
+              style={{ fontSize: px(8) }}
+            >
+              TABLE  {formatTableLabel(person.tableNumber)}
+            </p>
+          )}
         </div>
       </div>
       <div
@@ -196,6 +200,7 @@ function RailCard({
   const first = person.firstName || 'Guest';
   const railPct = ((BADGE_PAGE.bleedPt + 52) / BADGE_PAGE.pagePt.w) * 100;
   const px = (pt: number) => previewPx(pt, cardWidth);
+  const blank = isBlankBadge(person);
 
   return (
     <div
@@ -245,12 +250,14 @@ function RailCard({
               {person.company}
             </p>
           ) : null}
-          <p
-            className='mt-3 font-bold tracking-[0.16em] text-slate-700'
-            style={{ fontSize: px(14) }}
-          >
-            TABLE  {formatTableLabel(person.tableNumber)}
-          </p>
+          {blank ? null : (
+            <p
+              className='mt-3 font-bold tracking-[0.16em] text-slate-500'
+              style={{ fontSize: px(14) }}
+            >
+              TABLE  {formatTableLabel(person.tableNumber)}
+            </p>
+          )}
         </div>
         <div className='flex items-end justify-between gap-2'>
           <img
@@ -259,7 +266,7 @@ function RailCard({
             className='object-contain'
             style={{ height: px(28) }}
           />
-          <QrImage url={person.qrCodeUrl} size={px(58)} />
+          {blank ? null : <QrImage url={person.qrCodeUrl} size={px(58)} />}
         </div>
       </div>
       <PunchGuide cardWidth={cardWidth} />
@@ -283,6 +290,7 @@ function SignalCard({
       ? '/images/PackIQ_white.png'
       : '/images/PackIQ_black.png';
   const px = (pt: number) => previewPx(pt, cardWidth);
+  const blank = isBlankBadge(person);
 
   return (
     <div
@@ -328,19 +336,21 @@ function SignalCard({
           className='mb-2.5 self-start object-contain'
           style={{ height: px(30) }}
         />
-        <div className='flex items-end justify-between gap-2'>
-          <div className='bg-white p-1.5'>
-            <QrImage url={person.qrCodeUrl} size={px(62)} />
+        {blank ? null : (
+          <div className='flex items-end justify-between gap-2'>
+            <div className='bg-white p-1.5'>
+              <QrImage url={person.qrCodeUrl} size={px(62)} />
+            </div>
+            <div className='min-w-[3.2rem] border-[1.5px] border-white px-2.5 py-1.5 text-center'>
+              <p className='font-bold tracking-[0.18em]' style={{ fontSize: px(7) }}>
+                TABLE
+              </p>
+              <p className='font-bold leading-none' style={{ fontSize: px(20) }}>
+                {formatTableLabel(person.tableNumber)}
+              </p>
+            </div>
           </div>
-          <div className='min-w-[3.2rem] border-[1.5px] border-white px-2.5 py-1.5 text-center'>
-            <p className='font-bold tracking-[0.18em]' style={{ fontSize: px(7) }}>
-              TABLE
-            </p>
-            <p className='font-bold leading-none' style={{ fontSize: px(20) }}>
-              {formatTableLabel(person.tableNumber)}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
       <PunchGuide onDark cardWidth={cardWidth} />
       <TrimGuide />

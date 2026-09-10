@@ -72,7 +72,12 @@ export type BadgePerson = {
   email: string;
   phone?: string | null;
   jobTitle?: string | null;
+  isBlank?: boolean;
 };
+
+export function isBlankBadge(person: BadgePerson): boolean {
+  return person.isBlank === true;
+}
 
 export function isBadgeDesign(value: string | null | undefined): value is BadgeDesign {
   return BADGE_DESIGNS.includes(value as BadgeDesign);
@@ -157,6 +162,7 @@ export function createBlankBadgePeople(): BadgePerson[] {
     tableNumber: null,
     qrCodeUrl: null,
     email: '',
+    isBlank: true,
   }));
 }
 
