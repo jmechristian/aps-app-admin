@@ -1,10 +1,13 @@
 import CategoryPageShell from '../category-page-shell';
 import SeatingChartManager from './seating-chart-manager';
+import SeatingCsvImport from './seating-csv-import';
 import {
   fetchSeatingAssignments,
   fetchSeatingRegistrantOptions,
 } from '@/app/actions/seating';
 import { APS_SEATING_CHART_ID } from '@/lib/seating-chart';
+
+export const maxDuration = 300;
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -30,6 +33,8 @@ export default async function SeatingPage({ params }: PageProps) {
           <span className='font-mono text-slate-800'>{APS_SEATING_CHART_ID}</span>
         </p>
       </section>
+
+      <SeatingCsvImport eventId={eventId} />
 
       <SeatingChartManager
         eventId={eventId}

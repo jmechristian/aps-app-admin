@@ -1,0 +1,586 @@
+AttendeeType,First Name,Last Name,Company,TABLE NUMBER
+SPONSOR,Jason,Amatangelo,Amatech Inc.,1
+OEM,Michael,Bailen,General Motors,1
+SPONSOR,Shannon,Chaney,Monoflo International,1
+OEM,Gabrielle,Lin,Zoox Inc,1
+OEM,Brad,Meredith,BMW Manufacturing,1
+SOLUTIONPROVIDER,Harry,Moulopoulos,Packaging Solutions Inc.,1
+SOLUTIONPROVIDER,Michael,Taylor,Phil Mauer & Associates,1
+TIER1,Katia,Vinhas Galhote Toledo,OPmobility,1
+SPONSOR,Mike,Weller,Bradford Company,1
+Sponsors,,,Guardian Container,1
+TIER1,Trevor,Allen,R&E Automated,2
+SPONSOR,Jeff,Bishop,Amatech Inc.,2
+SPONSOR,Tina,Bolden,IPS Packaging & Automation,2
+SPONSOR,Vito,Ciaramellano,Monoflo International,2
+SOLUTIONPROVIDER,Mike,Costello,Palmetto Racks & Packs,2
+OEM,Keesha,Jones,General Motors,2
+OEM,Michael,Marples,Zoox Inc,2
+OEM,Tecorrie,Singleton,BMW Manufacturing,2
+Sponsors,,,Fortus One,2
+SPONSOR,Richard,Bittner,Amatech Inc.,3
+SOLUTIONPROVIDER,Matt,Henderson,Pratt Industries,3
+SPONSOR,Scott,Huddas,Pack Studio,3
+SPONSOR,Judy,Jackson,IPS Packaging & Automation,3
+OEM,Nathan,Klamerus,General Motors,3
+TIER1,Anastasia,Koslofsky,OPmobility,3
+OEM,Aastha,Sood,BMW,3
+OEM,Bryan,Wade,Caterpillar Inc.,3
+Sponsors,,,Fortus One,3
+SPONSOR,Josh,Carniewski,Amatech Inc.,4
+TIER1,Robert,Gabis,OPmobility,4
+SOLUTIONPROVIDER,Tobias,Hoefl,PMG Labels LP,4
+OEM,Michael,Kulis,General Motors,4
+SPONSOR,javier,ramos,Pack Studio,4
+OEM,Joy,Vaughan,BMW Manufacturing,4
+OEM,Robert,Wiggins,Caterpillar Inc.,4
+SPONSOR,Jerry,Willard,IPS Packaging and Automation,4
+Sponsors,,,Fortus One,4
+OEM,Gary,Ash,Kubota Manufacturing of America,5
+SPONSOR,Tommy,Bradford,Bradford Company,5
+SPONSOR,Eckhard,Laible,MTS Systems NA,5
+SPONSOR,Andrew,Lestor,Fortus One,5
+OEM,Amy,Lubeski,General Motors,5
+TIER1,Damien,McCrory,"Robert Bosch, LLC",5
+OEM,mitch,white,BMW Manufacturing,5
+SOLUTIONPROVIDER,Karen,Wright,Pratt Industries,5
+Sponsors,,,PackAssistant,5
+SPONSOR,Jerry,Dostal,Amatech Inc.,6
+SPONSOR,Shane,Felix,ORBIS Corporation,6
+SOLUTIONPROVIDER,Gabriel,Fernandez,Racksa,6
+OEM,Preston,Hawkes,Kubota Manufacturing of America,6
+OEM,Preston,Hawkes,Kubota Manufacturing of America,6
+OEM,David,Meller,General Motors,6
+SPONSOR,Robert,Priebe,MTS Systems NA,6
+TIER1,Blake,Watkins,"Robert Bosch, LLC",6
+OEM,Amy-Catherine,White,BMW Manufacturing,6
+Sponsors,,,PackAssistant,6
+SOLUTIONPROVIDER,Stacy,Brown,"Formall, Inc.",7
+TIER1,Terri,Goniwiecha,kristoFOAM Industries,7
+SPONSOR,David,Kruger,TriEnda,7
+OEM,Mario,Newton,Toyota Motor North America,7
+SPONSOR,John,Onaga,G2 Supply,7
+SPONSOR,Joshua,Shaw,Crate Pros,7
+OEM,Kayla,Young,the Packaging School,7
+Sponsors,,,Wellplast AB,7
+OEM,Jasvir,Jawandha,Honda,7
+SOLUTIONPROVIDER,Angie,Bragg,TRG - Automotive Division,8
+SPONSOR,Anna,Brown,Doug Brown Packaging Products Inc.,8
+SPONSOR,Peter,Fahlman,UFP Packaging,8
+OEM,Jonathan,Farnsworth,Subaru,8
+TIER1,Matt,Hall,Magna,8
+SOLUTIONPROVIDER,Jim,O'Neil,Green Processing Company Inc,8
+SPONSOR,Ian,Renfer,AMS,8
+OEM,Joshua,Rudd,Toyota Motor North America,8
+OEM,Joshua,Schubert,Rivian,8
+,,,PakFab,8
+SPONSOR,Kirk,Blaha,UFP Packaging,9
+OEM,Michael,Cozort,Stellantis,9
+TIER1,Gavin,Marshall,Lear Corporation,9
+OEM,Huy,Nguyen,Toyota Motor North America,9
+SPONSOR,Caleb,Pledger,G2 Supply,9
+OEM,Cameron,Plezia,Rivian,9
+SOLUTIONPROVIDER,Joe,Rhoades,"Forming Technologies, LLC",9
+SPONSOR,Tim,Slicker,Crate Pros,9
+Sponsors,,,Wellplast AB,9
+TIER1,Jake,Bade,AGC Automotive,10
+SOLUTIONPROVIDER,Don,Clark,Tree Brand Packaging,10
+SPEAKER,Terry,Craig,ArPlank Direct,10
+SPEAKER & SPONSOR,Terry,Craig,ArPlank Direct,10
+SPEAKER,Russell,Ferebee,Isuzu North American Corporation,10
+SOLUTIONPROVIDER,Tino,Fernandez,Handel,10
+SPEAKER,Trevor,Franken,Toyota,10
+OEM and Speaker,Trevor,Franken,Toyota,10
+SPEAKER,Bridget,Grewal,Magna,10
+SPONSOR,Xavier,Ovize,KTPconTeyor,10
+SPONSOR,Tony,Palmeri,Caster Connection,10
+Sponsors,,,Guardian Container,10
+SPEAKER,Dana,Blair,NTIC Zerust,11
+SPEAKER & SPONSOR,Dana,Blair,NTIC Zerust,11
+SPONSOR,ADRIAN,CONTRERAS,CHEP,11
+SOLUTIONPROVIDER,David,Hicken,MHSI Global,11
+OEM,Lauren,Jones,Scout Motors,11
+SPEAKER,Kelsey,Kester,BMW,11
+OEM and Speaker,Kelsey,Kester,BMW,11
+SOLUTIONPROVIDER,Mark,Miskerik,BoxonTech,11
+SPONSOR,Mike,See,"Georg Utz, Inc",11
+TIER1,Nathan,Shinault,Denso Manufacturing Michigan,11
+SPONSOR,Jeff,Tischleder,ITB Packaging,11
+SPONSOR,Ray,Brooks,"Georg Utz, Inc",12
+TIER1,Edward,Case,DENSO-South Sub Region,12
+SPEAKER & SPONSOR,Daniel,Castaneda,PakFab,12
+OEM,Daniel,Cooper,Yamaha Motor Manufacturing Corporation,12
+SPEAKER,Connor,DeYoung,Mazda,12
+OEM and Speaker,Connor,DeYoung,Mazda,12
+SOLUTIONPROVIDER,Chris,Disney,Benchmark Tool & Machine,12
+SPEAKER,Nathan,Kilcoyne,Nissan North America,12
+OEM and Speaker,Nathan,Kilcoyne,Nissan North America,12
+SPEAKER,Patrick,Mahoney,CHEP,12
+SPEAKER & SPONSOR,Patrick,Mahoney,CHEP,12
+SOLUTIONPROVIDER,Harry,Moulopoulos Jr.,Packaging Solutions Inc.,12
+Sponsors,,,Guardian Container,12
+SPONSOR,Brian G,Dynda,Doug Brown Packaging Products Inc.,13
+OEM,Ashley,Londono,SWJ,13
+SPONSOR,Ben,Mathias,PakFab,13
+SPONSOR,Mitch,Mustard,UFP Packaging,13
+SOLUTIONPROVIDER,Christopher,Pitharas,Hanes Packaging,13
+OEM,Jasmine,Sholapurwalla,Toyota Motor North America,13
+TIER1,Scott,Wyant,NIFCO,13
+Sponsors,,,Capra Robotics,13
+SPONSOR,Stephanie,Aiello,Goodpack USA Inc,14
+SPEAKER,Dan,Casillo,Ventek Solutions,14
+SPEAKER,Daniel,Castaneda,PakFab,14
+OEM,Curtis,duckett,BMW Manufacturing,14
+SPEAKER,Carlos,Gutierrez,Volvo Cars US,14
+TIER1,Akinwale,Iyun,"Decostar Georgia, Magna",14
+SOLUTIONPROVIDER,Steve,Juranics,Pine Valley Packaging Ltd.,14
+OEM,Audra,Lester,Yamaha Motor Manufacturing Corporation,14
+OEM,David,Lester,Yamaha Motor Manufacturing Corporation,14
+SPONSOR,Sheila,McLaughlin,CHEP,14
+SPONSOR,Lo,Toaso,JSP,14
+SOLUTIONPROVIDER,Steven,Zyvitski,EPS - Engineered Packaging Solutions Inc.,14
+TIER1,John,Benjamin,Denso Manufacturing Michigan,15
+OEM,Chris,Braun,"American Honda Motor Company, Inc.",15
+OEM,Aravind varma,Chintalapati,Tesla,15
+SPONSOR,Jamey,Fish,PackIQ,15
+SPONSOR,Kacie,Freeberg,ORBIS Corporation,15
+OEM,Nathan,Money,General Motors,15
+SPONSOR,Mark,Pung,MTS Systems NA,15
+SOLUTIONPROVIDER,Krystal,Roye,Palmetto Racks & Packs,15
+Sponsors,,,Lotis (Vantage Plastics),15
+ Solution Provider,,,,15
+SPONSOR,Matt,Brown,Nefab,16
+OEM,Daniella,Calero,Volvo Group,16
+OEM,Robert,Dembicky,"American Honda Motor Company, Inc.",16
+SOLUTIONPROVIDER,Phill,Evans,Aicello America Corp.,16
+SPONSOR,Breanna,Herbert,ORBIS Corporation,16
+TIER1,greg,Moore,DENSO-South Sub Region,16
+OEM,Kenneth,Perry,General Motors,16
+SPONSOR,Tom,Valiulis,PackIQ,16
+Sponsors,,,Lotis (Vantage Plastics),16
+OEM,Mitul,Desai,Honda of Canada Mfg.,17
+TIER1,Joshua,Hofmann,Flex N Gate,17
+SPONSOR,Francois,Labbe,Polymos,17
+SPONSOR,Megan,Moore,Nefab,17
+SOLUTIONPROVIDER,Gregory,Morris,All Packaging Solutions,17
+SPONSOR,Kevin,O'Neal,ORBIS Corporation,17
+OEM,Joel,Schuchard,General Motors,17
+OEM,Erik,Swenson,Volvo Cars US,17
+Sponsors,,,Lotis (Vantage Plastics),17
+OEM,Joseph,Ahn,AGCO,18
+SPONSOR,Jessica,Davis,Peninsula Plastics,18
+SOLUTIONPROVIDER,Mac,McLemore,Allen Plastics Repair Inc.,18
+SPONSOR,Frederic,Messier,Polymos,18
+OEM,Kevin,Takai,General Motors,18
+SPONSOR,Jeremy,Teike,Nefab,18
+TIER1,Lam,Tse,Honda Trading America,18
+Sponsors,,,Lotis (Vantage Plastics),18
+TIER1,Heidi,Charles,Flex N Gate,19
+SOLUTIONPROVIDER,Rob,Council,APR Allen Plastics Repair,19
+OEM,Marcy,Golden,Honda Development & Manufacturing of America,19
+SPONSOR,Kyle,Kamendat,Peninsula Plastics,19
+SPONSOR,Renee,McCoppin,Aeris Protective Packaging Inc,19
+SPONSOR,NANCY,RODRIGUEZ,Racks and Dunnage,19
+OEM,Prajakta,Shetye,"Cummins, Inc.",19
+OEM,Chris,Teagan,General Motors,19
+Sponsors,,,Lotis (Vantage Plastics),19
+OEM,Laura,Goltzene,Honda Development & Manufacturing of America,20
+SOLUTIONPROVIDER,Kasie,Harmon Clifford,Aristo Industries,20
+TIER1,Doug,Metcalf,"Murakami Manufacturing USA, Inc.",20
+OEM,Alessandro,Pollacci,Ferrari S.p.A.,20
+SPONSOR,Jeff,Sazant,Aeris Protective Packaging Inc,20
+SPONSOR,JOSE LUIS,TELLO,Racks and Dunnage,20
+OEM,Trevor,Thrasher,General Motors,20
+SPONSOR,Ryan,Victory,Peninsula Plastics,20
+Sponsors,,,Lotis (Vantage Plastics),20
+SOLUTIONPROVIDER,Luke,Barber,Barber Packaging Company,21
+SPONSOR,Brian,Bishop,Con-Pearl NA,21
+SPONSOR,Adam,Denton,Signode,21
+OEM,Toni,Gomes,"American Honda Motor Company, Inc.",21
+TIER1,Alvaro,Gonzalez,Magna,21
+OEM,Pasquale,Santoro,Ferrari Spa,21
+OEM,Kelly,Vierk,General Motors,21
+SPONSOR,Kane,Williamson,Peninsula Plastics,21
+Sponsors,,,ARMOR Protective Packaging,21
+OEM,Beau,Barrett,Toyota,22
+SPONSOR,Douglas,Borgsdorf,Primex Design and Fabrication,22
+SPONSOR,Bryan,English,ArPlank Direct,22
+SPONSOR,John,Fuller,Con-Pearl NA,22
+OEM,Corey,Hept,"American Honda Motor Company, Inc.",22
+SPONSOR,Jamie,Holt,Signode,22
+SOLUTIONPROVIDER,Jody,Owens,C-P-S Automotive LP,22
+Tier Ones,,,,22
+OEM,Danielle,Bowden,Toyota,23
+SPONSOR,Nikole,Graybill,Primex Design and Fabrication,23
+TIER1,Srikanth,Gudimella,Schaeffler Group USA Inc.,23
+SPONSOR,Brandon,Hoots,Con-Pearl NA,23
+OEM,Emily,OShaughnessy,Harley-Davidson Motor Company,23
+SPONSOR,Shawn,Potter,SSI Schaefer,23
+OEM,Tharmilan,Selvathurai,Honda of Canada Mfg.,23
+SOLUTIONPROVIDER,Alex,Smith,Central Kentucky Tool,23
+SPONSOR,Mike,Thompson,Basin Industries,23
+TIER1,Jacqueline,Bieber,BorgWarner,24
+OEM,Natasha,Bradley,Toyota Motor North America,24
+SOLUTIONPROVIDER,Amy,Gearing,Crown Packaging,24
+SPONSOR,Chris,Helms,Primex Design & Fabrication,24
+OEM,Andrew,Heo,Hyundai Motor Group Metaplant America,24
+SPONSOR,Matt,Neal,Con-Pearl NA,24
+OEM,Mark,Suchodolski,"American Honda Motor Company, Inc.",24
+SPONSOR,Mark,Suvak,Basin Industries,24
+SPONSOR,Patrick,Tallman,SSI Schaefer,24
+OEM,Chris,Alberty,Rivian,25
+OEM,Matthew,Baron,Isuzu Logistics North America (ILNA),25
+SOLUTIONPROVIDER,RYan,Bieneman,Diverse Global Industrial Solutions,25
+OEM,Wes,Burt,Toyota,25
+SPONSOR,Matt,Gleason,Big 3 Precision,25
+TIER1,Brian,Lloyd,CSP,25
+SPONSOR,EDDIE,Opalinski,Primex Design & Fabrication,25
+SPONSOR,Mark,Ward,Con-Pearl NA,25
+Sponsors,,,Variotech,25
+OEM,Austin,Ciervo,Toyota Motor North America,26
+SOLUTIONPROVIDER,Brian,Diaz Calva,Dupont,26
+OEM,Jason,Duley,"American Honda Motor Company, Inc.",26
+SPONSOR,Bob,Fallen,G2 Supply,26
+OEM,Gabriel Alfredo,Franconeri,Mercedes Benz,26
+TIER1,Wasim,Khan,"Cummins, Inc.",26
+SPONSOR,Aaron,Olin,Variotech Corporation,26
+SPONSOR,Jim,Wenzel,Big 3 Precision,26
+Sponsors,,,TriEnda,26
+OEM,Marie,Brosnan,Mopar,27
+TIER1,James,Duke,"Decostar Georgia, Magna",27
+SPONSOR,Jaime,Fuentes,Carolina Performance,27
+OEM,Brian,Gorshak,Toyota Motor North America,27
+SPONSOR,Chau,Ham,G2 Supply,27
+OEM,Brent,Knight,Rivian,27
+SPONSOR,Rebecca,Krueger,TriEnda,27
+SOLUTIONPROVIDER,Darcy,Nettleton,EPS - Engineered Packaging Solutions Inc.,27
+Sponsors,,,Wave Reaction,27
+SOLUTIONPROVIDER,FELIPE,FLORES GARCIA,FORM PACKAGING,28
+SPONSOR,Gary,Gardner,Wave Reaction,28
+OEM,Kevin,Grethen,Toyota Motor North America,28
+OEM,Justin,Klieber,PACCAR - Corporate,28
+SPONSOR,Sarena,Krueger,TriEnda,28
+OEM,Erica,McBride-Rapp,Rivian,28
+SPONSOR,Connor,McGowan,G2 Supply,28
+SPONSOR,Rene,Robles,Carolina Performance,28
+TIER1,Matthias,Stiller,Jonas & Redmann Automationstechnik GmbH,28
+SPEAKER,Todd,Chesna,Ford Motor Company,29
+OEM and Speaker,Todd,Chesna,Ford Motor Company,29
+SOLUTIONPROVIDER,Patrick,DeKold,Ingenics Consulting,29
+OEM,Tate,Fennell,Scout Motors,29
+SPEAKER,Jeremy,Galanty,General Motors,29
+OEM and Speaker,Jeremy,Galanty,General Motors,29
+SOLUTIONPROVIDER,Roberto,Gaytan,Barber Packaging Company,29
+TIER1,Daniel,Heid,Robert Bosch LLC,29
+SPEAKER,Lowell,Huffman,rePurpose Global,29
+SPEAKER & SPONSOR,Lowell,Huffman,rePurpose Global,29
+SPONSOR,Joe,Pace,Bradford Company,29
+SPONSOR,Julian,Schultis,Goodpack USA Inc,29
+SPEAKER,Ray,White,Ventek Solutions,29
+SPEAKER & SPONSOR,Ray,White,Ventek Solutions,29
+TIER1,Tom,Andrew,JTEKT Koyo Bearings NA,30
+SPEAKER & SPONSOR,Matt,Bublick,Product Movers,30
+OEM,Craig,Hable,Mercury Marine,30
+SPONSOR,Michael,Hyjek,KTPconTeyor,30
+SOLUTIONPROVIDER,Jeffrey,Lazarz,Essex Weld Solutions,30
+SPEAKER,Joseph,McCabe,AFS,30
+OEM and Speaker,Joseph,McCabe,AFS,30
+SPEAKER,Nasser,Nasser,General Motors,30
+OEM and Speaker,Nasser,Nasser,General Motors,30
+SPONSOR,Keisha,Puckett,Caster Connection,30
+SPEAKER,Matthias,Stiller,Jonas & Redmann Automationstechnik GmbH,30
+OEM,Sabrina,Stiller,Fraunhofer Institute for Applied Polymer Research IAP,30
+SPONSOR,Robert,Wainio,CHEP,30
+SPEAKER,Matt,Bublick,Product Movers,31
+SPONSOR,Grant,Cook,ITB Packaging,31
+TIER1,Margaret,Fay,SAF Holland,31
+SPEAKER,Nate,Franck,TriEnda,31
+SPONSOR,Nate,Franck,TriEnda,31
+OEM,Guillermo,Guillermo,Scout Motors,31
+SPEAKER,Ben,Hesskamp,Guardian Container Consulting,31
+SPEAKER,Michael,Isecke,General Motors,31
+SOLUTIONPROVIDER,Michael,Orr,"Material Systems, Inc.",31
+SOLUTIONPROVIDER,Brian,Robey,Benchmark Tool & Machine,31
+OEM and Speaker,Vidya,Seeram,Volvo,31
+SPEAKER & SPONSOR,Ben,,Guardian Container,31
+OEM,Anjaneya,Bandekar,Tesla,32
+OEM,Diane,Berning,Honda Development & Manufacturing of America,32
+SPEAKER,Jonathan,Brekan,Daubert Cromwell,32
+SPEAKER & SPONSOR,Jonathan,Brekan,Daubert Cromwell,32
+SPEAKER & SPONSOR,Dan,Casillo,Ventek Solutions,32
+OEM and Speaker,Carlos,Gutierrez,Volvo Cars US,32
+SOLUTIONPROVIDER,Michael,Morin,Wilson Cutting Systems,32
+TIER1,Rob,Ripley,Denso Manufacturing Michigan,32
+SPEAKER,Alex,Seger,Nissan North America,32
+OEM and Speaker,Alex,Seger,Nissan North America,32
+SPONSOR,Gabe,Williston,JSP,32
+SPONSOR,Renars,Bundzis,Dupont,33
+TIER1,SOUKAINA,EDDAMRHI,OPmobility,33
+SPONSOR,Jacob,Miller,PakFab,33
+SPONSOR,Nicholas,Rigg,UFP Packaging,33
+SOLUTIONPROVIDER,Patrick,Rothweiler,HPJ Industries,33
+OEM,Jason,Skrobot,Toyota,33
+OEM,Beth,Verdery,Textron Specialized Vehicles,33
+Sponsors,,,Crate Pros (extra- rising star award),33
+TIER1,Dan,Brunetti,RESRG Automotive,34
+SPONSOR,Bruce,Carothers,Daubert Cromwell,34
+OEM,Tom,Cook,Nissan North America,34
+OEM,Scott,Grooms,BMW Manufacturing,34
+SPONSOR,Grant,Murphy,Dupont,34
+SOLUTIONPROVIDER,Chris,Rini,PMG Labels LP,34
+SPONSOR,Jeff,Short,ARMOR Protective Packaging,34
+SPONSOR,Mark,Shortall,PakFab,34
+OEM,Lisa,Tackett,Toyota Motor North America,34
+OEM,Paras,Gudka,BMW Manufacturing,35
+SPONSOR,Chris,Harrod,ArPlank Direct,35
+TIER1,Sam,Moorhead,Robert Bosch LLC,35
+SPONSOR,Todd,Starnes,PakFab,35
+OEM,Robert,Trottmann,Toyota Motor North America,35
+SOLUTIONPROVIDER,Doug,Zippay,Smart Karton,35
+Sponsors,,,Estare,35
+Sponsors,,,Freudenberg,35
+SPONSOR,Vedagya,Bakshi,Estare,36
+SOLUTIONPROVIDER,Kirk,Mailloux,Green Processing Company Inc,36
+SPONSOR,Ted,Mclaughlin,ArPlank Direct,36
+OEM,Dylan,Schmidt,Mercury Marine,36
+SOLUTIONPROVIDER,Alex,Turner,"TEN-E Packaging Solutions, Inc.",36
+TIER1,Ethan,Turner,Schaeffler Group USA Inc.,36
+OEM,Kelly,Wallin,Toyota,36
+SPONSOR,Eva,Welsh,Freudenberg Performance Materials,36
+Sponsors,,,Anchor Bay Packaging,36
+OEM,Eric,Abed,BMW Manufacturing,37
+SPONSOR,Sean,Alexander,"Buckhorn, Inc.",37
+OEM,Hashim,Anwar,General Motors,37
+SOLUTIONPROVIDER,Theo,Doll,Söhner GmbH,37
+SPONSOR,Chris,Mein,NTIC Zerust,37
+OEM,Megan,Murray,Nissan North America,37
+TIER1,Michael,Rossnagel,OPmobility,37
+SOLUTIONPROVIDER,Oliver,Townsend,Heinzel Sales,37
+Sponsors,,,Anchor Bay Packaging,37
+Sponsors,,,FCA Packaging,37
+OEM,Benjamin,Bader,General Motors,38
+OEM,Robert,Banner,BMW Manufacturing,38
+SOLUTIONPROVIDER,Shannon,Cline,Hanes Packaging,38
+SPONSOR,Al,Kopack,Anchor Bay Packaging,38
+SPONSOR,Gustavo,Oberto,"Buckhorn, Inc.",38
+TIER1,Ron,Rice,OPmobility,38
+OEM,Jonathan,Tomlinson,Nissan North America,38
+SOLUTIONPROVIDER,Walter C,Walter,Tree Brand Packaging,38
+Sponsors,,,FCA Packaging,38
+Sponsors,,,Product Movers,38
+SPONSOR,Thomas,Bauer,GEBHARDT Logistic Solutions GmbH,39
+OEM,Dan,Belbey,BMW,39
+OEM,Drew,Chahalis,Scout Motors,39
+SOLUTIONPROVIDER,Kevin,Gross,Motor City Racks,39
+SPONSOR,Erika,Mallery,rePurpose Global,39
+SPONSOR,Shane,Reisner,Anchor Bay Packaging,39
+SPONSOR,Kris,Roach,"Buckhorn, Inc.",39
+SOLUTIONPROVIDER,Paul,Summers,Veritiv,39
+SPONSOR,Scott,Bradford,Bradford Company,40
+SOLUTIONPROVIDER,Will,Claytor,Wilson Cutting Systems,40
+OEM,Caleb,Coates,Scout Motors,40
+OEM,James,cox,Zoox Inc,40
+OEM,Kimberly,Delorme,BMW Manufacturing,40
+SOLUTIONPROVIDER,Anuja,Deo,MHSI Global,40
+SPONSOR,Eric Hassen,Eric Hassen,Caster Connection,40
+SPONSOR,Simon,Steinkirchner,GEBHARDT Logistic Solutions GmbH,40
+SPONSOR,,,,40
+EXHIBITOR,Jade,Abdul,ORBIS Corporation,
+EXHIBITOR,Vedagya,Bakshi,Estare,
+EXHIBITOR,James,Barone,ORBIS Corporation,
+EXHIBITOR,Jackson,Bernatchez,Pack Studio,
+EXHIBITOR,rodney,Bice,Bradford Company,
+EXHIBITOR,Bradley,Brown,Basin Industries,
+EXHIBITOR,Qiaodong,Cui,Pack Studio,
+EXHIBITOR,Michael,Emerson,KTPconTeyor,
+EXHIBITOR,Scott,Fluette,PackIQ,
+EXHIBITOR,Juan Carlos,Franco,Aeris Protective Packaging Inc,
+SOLUTIONPROVIDER,Jorge,Gallardo,4G Ingenieria,
+TIER1 & Speaker,Bridget,Grewal,Magna,
+EXHIBITOR,Ross,Heavener,ITB Packaging LLC,
+EXHIBITOR,Roger,Higgins,Crate Pros,
+SPEAKER,Andrew,Hurley,PackagingSchool.com,
+EXHIBITOR,Kevin,"Landmark, Ph.D.",NTIC Zerust,
+EXHIBITOR,Andy,Large,Basin Industries,
+EXHIBITOR,Mike,Lie,PackIQ,
+EXHIBITOR,Frank,Lozano,PakFab,
+EXHIBITOR,Kelli,McConahey,SSI Schaefer,
+EXHIBITOR,Fritz,Rohne,PackIQ,
+EXHIBITOR,Bob,Roudonis,Bradford Company,
+EXHIBITOR,Emilio,Ruffolo,Big 3 Precision,
+EXHIBITOR,Ryan,Schroeder,Big 3 Precision,
+EXHIBITOR,Tony,Siebert,Daubert Cromwell,
+EXHIBITOR,Darrell,Tiedeman,Nefab,
+OEM and Speaker,Dan,Universal,Isuzu North American Corporation,
+EXHIBITOR,Paul,Vincent,PackIQ,
+EXHIBITOR,Tom,White,NTIC Zerust,
+SPEAKER,,,,
+SPEAKER,,,,
+SPEAKER,,,,
+SPEAKER,,,,
+SPEAKER,,,,
+SPEAKER,,,,
+SPEAKER,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Additional OEMs,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+Sponsors,,,,
+,,,,
+Exhibitor Ticket,,,Doug Brown,
+Exhibitor Ticket,,,Doug Brown,
+Exhibitor Ticket,,,Fortus one,
+Exhibitor Ticket,,,Fortus One,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Exhibitor Ticket,,,,
+Sponsors,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+Tier Ones,,,,
+ Solution Provider,,,,
+ Solution Provider,,,,
+ Solution Provider,,,,
+ Solution Provider,,,,
+ Solution Provider,,,,
+ Solution Provider,,,,

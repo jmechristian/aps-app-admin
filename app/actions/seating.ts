@@ -1,5 +1,7 @@
 'use server';
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
@@ -8,6 +10,17 @@ import {
   type SeatingAssignment,
   type SeatingRegistrantOption,
 } from '@/lib/seating-chart';
+import {
+  matchSeatingCsvToRegistrants,
+  parseSeatingCsv,
+  type SeatingImportRegistrant,
+} from '@/lib/seating-import';
+
+const DEFAULT_SEATING_CSV_PATH = path.join(
+  process.cwd(),
+  'data',
+  'aps-2026-table-assignments.csv'
+);
 
 type SeatingRegistrantRecord = {
   id: string;
@@ -255,8 +268,7 @@ export async function fetchSeatingRegistrantOptions(
   }));
 }
 
-export async function assignRegistrantToTable(params: {
-  eventId: string;
+async function upsertRegistrantTableAssignment(params: {
   registrantId: string;
   tableNumber: number;
 }) {
@@ -285,6 +297,7 @@ export async function assignRegistrantToTable(params: {
   }
 
   const existing = await getAssignmentByRegistrantId(params.registrantId);
+  let action: 'created' | 'updated' = 'updated';
 
   if (existing?.id) {
     await requestGraphQL(UPDATE_APS_SEATING_CHART_REGISTRANT, {
@@ -334,7 +347,21 @@ export async function assignRegistrantToTable(params: {
         apsRegistrantSeatingChartRegistrantId: assignmentId,
       },
     });
+    action = 'created';
   }
+
+  return action;
+}
+
+export async function assignRegistrantToTable(params: {
+  eventId: string;
+  registrantId: string;
+  tableNumber: number;
+}) {
+  await upsertRegistrantTableAssignment({
+    registrantId: params.registrantId,
+    tableNumber: params.tableNumber,
+  });
 
   revalidatePath(`/aps/${params.eventId}`);
   revalidatePath(`/aps/${params.eventId}/seating`);
@@ -403,4 +430,113 @@ export async function updateRegistrantSeatingAssignment(
     console.error('Failed to update seating assignment:', error);
     return { ok: false, message: 'Failed to update seating assignment.' };
   }
+}
+
+export type SeatingCsvImportPreview = {
+  unmatched: Array<{ name: string; company: string; tableNumber: number | null; reason: string }>;
+  conflicts: Array<{ name: string; company: string; reason: string }>;
+  alreadyCorrect: number;
+  changes: Array<{
+    registrantId: string;
+    name: string;
+    email: string;
+    company: string;
+    currentTable: number | null;
+    tableNumber: number;
+  }>;
+};
+
+function readDefaultSeatingCsv() {
+  if (!fs.existsSync(DEFAULT_SEATING_CSV_PATH)) {
+    throw new Error('Default seating CSV was not found on the server.');
+  }
+  return fs.readFileSync(DEFAULT_SEATING_CSV_PATH, 'utf8');
+}
+
+async function buildImportRegistrants(eventId: string): Promise<SeatingImportRegistrant[]> {
+  const [registrants, assignments] = await Promise.all([
+    fetchRegistrantsByApsId(eventId),
+    fetchSeatingAssignments(),
+  ]);
+  const tableByRegistrant = new Map(
+    assignments.map((assignment) => [assignment.registrantId, assignment.tableNumber])
+  );
+
+  return registrants.map((registrant) => ({
+    id: registrant.id,
+    firstName: registrant.firstName ?? null,
+    lastName: registrant.lastName ?? null,
+    email: registrant.email,
+    attendeeType: registrant.attendeeType ?? null,
+    status: registrant.status ?? null,
+    companyName: registrant.company?.name ?? null,
+    tableNumber: tableByRegistrant.get(registrant.id) ?? registrant.seatingChartRegistrant?.tableNumber ?? null,
+  }));
+}
+
+export async function previewSeatingCsvImport(params: {
+  eventId: string;
+  csvText?: string;
+}): Promise<SeatingCsvImportPreview> {
+  const csvText = params.csvText?.trim() ? params.csvText : readDefaultSeatingCsv();
+  const result = matchSeatingCsvToRegistrants(
+    parseSeatingCsv(csvText),
+    await buildImportRegistrants(params.eventId)
+  );
+
+  return {
+    unmatched: result.unmatched.map((item) => ({
+      name: `${item.csv.firstName} ${item.csv.lastName}`.trim(),
+      company: item.csv.company,
+      tableNumber: item.csv.tableNumber,
+      reason: item.reason,
+    })),
+    conflicts: result.conflicts.map((item) => ({
+      name: `${item.csv.firstName} ${item.csv.lastName}`.trim(),
+      company: item.csv.company,
+      reason: item.reason,
+    })),
+    alreadyCorrect: result.assignments.filter(
+      (item) => item.registrant.tableNumber === item.csv.tableNumber
+    ).length,
+    changes: result.assignments
+      .filter(
+        (item) =>
+          item.csv.tableNumber != null && item.registrant.tableNumber !== item.csv.tableNumber
+      )
+      .map((item) => ({
+        registrantId: item.registrant.id,
+        name: `${item.registrant.firstName ?? ''} ${item.registrant.lastName ?? ''}`.trim(),
+        email: item.registrant.email,
+        company: item.registrant.companyName ?? '',
+        currentTable: item.registrant.tableNumber ?? null,
+        tableNumber: item.csv.tableNumber as number,
+      })),
+  };
+}
+
+export async function applySeatingImportBatch(params: {
+  eventId: string;
+  items: Array<{ registrantId: string; tableNumber: number }>;
+}) {
+  let created = 0;
+  let updated = 0;
+  const failed: string[] = [];
+
+  for (const item of params.items) {
+    try {
+      const action = await upsertRegistrantTableAssignment(item);
+      if (action === 'created') created += 1;
+      else updated += 1;
+    } catch (error) {
+      failed.push(
+        `${item.registrantId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  revalidatePath(`/aps/${params.eventId}`);
+  revalidatePath(`/aps/${params.eventId}/seating`);
+
+  return { created, updated, failed };
 }
