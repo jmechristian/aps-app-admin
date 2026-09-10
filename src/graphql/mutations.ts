@@ -6525,6 +6525,78 @@ export const deleteApsAppFeedback = /* GraphQL */ `mutation DeleteApsAppFeedback
   APITypes.DeleteApsAppFeedbackMutationVariables,
   APITypes.DeleteApsAppFeedbackMutation
 >;
+export const createApsAppLeaderboardEntry = /* GraphQL */ `mutation CreateApsAppLeaderboardEntry(
+  $input: CreateApsAppLeaderboardEntryInput!
+  $condition: ModelApsAppLeaderboardEntryConditionInput
+) {
+  createApsAppLeaderboardEntry(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateApsAppLeaderboardEntryMutationVariables,
+  APITypes.CreateApsAppLeaderboardEntryMutation
+>;
+export const updateApsAppLeaderboardEntry = /* GraphQL */ `mutation UpdateApsAppLeaderboardEntry(
+  $input: UpdateApsAppLeaderboardEntryInput!
+  $condition: ModelApsAppLeaderboardEntryConditionInput
+) {
+  updateApsAppLeaderboardEntry(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateApsAppLeaderboardEntryMutationVariables,
+  APITypes.UpdateApsAppLeaderboardEntryMutation
+>;
+export const deleteApsAppLeaderboardEntry = /* GraphQL */ `mutation DeleteApsAppLeaderboardEntry(
+  $input: DeleteApsAppLeaderboardEntryInput!
+  $condition: ModelApsAppLeaderboardEntryConditionInput
+) {
+  deleteApsAppLeaderboardEntry(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteApsAppLeaderboardEntryMutationVariables,
+  APITypes.DeleteApsAppLeaderboardEntryMutation
+>;
 export const deleteAPSCompanyEvents = /* GraphQL */ `mutation DeleteAPSCompanyEvents(
   $input: DeleteAPSCompanyEventsInput!
   $condition: ModelAPSCompanyEventsConditionInput

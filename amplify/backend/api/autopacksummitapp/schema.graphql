@@ -1119,6 +1119,7 @@ type ApsContactRequest
         identityClaim: "sub"
         provider: userPools
       }
+      { allow: groups, groups: ["Admin"], provider: userPools }
     ]
   ) {
   id: ID!
@@ -1437,11 +1438,43 @@ type ApsAppFeedback
   updatedAt: AWSDateTime!
 }
 
+# Attendee summit-score leaderboard (computed from existing activity, then persisted).
+type ApsAppLeaderboardEntry
+  @model
+  @aws_api_key
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools, operations: [create, update] }
+      { allow: private, provider: userPools, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["updatedAt"])
+  userProfileId: ID! @index(name: "byUserProfile")
+  displayName: String
+  company: String
+  jobTitle: String
+  profilePicture: String
+  points: Int!
+  breakdown: AWSJSON
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
 # --- Auth directive fix ---
 # Amplify Gen1 sometimes generates `ModelApsDmMessageConnection` with `@aws_api_key`
 # only, which breaks USER_POOLS callers when querying `items`.
 # We explicitly declare it here so it supports BOTH auth modes (API key + user pools).
 type ModelApsDmMessageConnection @aws_api_key @aws_cognito_user_pools {
   items: [ApsDmMessage]!
+  nextToken: String
+}
+
+type ModelApsAppLeaderboardEntryConnection @aws_api_key @aws_cognito_user_pools {
+  items: [ApsAppLeaderboardEntry]!
   nextToken: String
 }

@@ -7980,6 +7980,136 @@ export const apsEmailSendsByCampaignIdAndCreatedAt = /* GraphQL */ `query ApsEma
   APITypes.ApsEmailSendsByCampaignIdAndCreatedAtQueryVariables,
   APITypes.ApsEmailSendsByCampaignIdAndCreatedAtQuery
 >;
+export const getApsAppLeaderboardEntry = /* GraphQL */ `query GetApsAppLeaderboardEntry($id: ID!) {
+  getApsAppLeaderboardEntry(id: $id) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApsAppLeaderboardEntryQueryVariables,
+  APITypes.GetApsAppLeaderboardEntryQuery
+>;
+export const listApsAppLeaderboardEntries = /* GraphQL */ `query ListApsAppLeaderboardEntries(
+  $filter: ModelApsAppLeaderboardEntryFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApsAppLeaderboardEntries(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      userProfileId
+      displayName
+      company
+      jobTitle
+      profilePicture
+      points
+      breakdown
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApsAppLeaderboardEntriesQueryVariables,
+  APITypes.ListApsAppLeaderboardEntriesQuery
+>;
+export const apsAppLeaderboardEntriesByEventIdAndUpdatedAt = /* GraphQL */ `query ApsAppLeaderboardEntriesByEventIdAndUpdatedAt(
+  $eventId: ID!
+  $updatedAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppLeaderboardEntryFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppLeaderboardEntriesByEventIdAndUpdatedAt(
+    eventId: $eventId
+    updatedAt: $updatedAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      userProfileId
+      displayName
+      company
+      jobTitle
+      profilePicture
+      points
+      breakdown
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppLeaderboardEntriesByEventIdAndUpdatedAtQueryVariables,
+  APITypes.ApsAppLeaderboardEntriesByEventIdAndUpdatedAtQuery
+>;
+export const apsAppLeaderboardEntriesByUserProfileId = /* GraphQL */ `query ApsAppLeaderboardEntriesByUserProfileId(
+  $userProfileId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppLeaderboardEntryFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppLeaderboardEntriesByUserProfileId(
+    userProfileId: $userProfileId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      userProfileId
+      displayName
+      company
+      jobTitle
+      profilePicture
+      points
+      breakdown
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppLeaderboardEntriesByUserProfileIdQueryVariables,
+  APITypes.ApsAppLeaderboardEntriesByUserProfileIdQuery
+>;
 export const getAPSCompanyEvents = /* GraphQL */ `query GetAPSCompanyEvents($id: ID!) {
   getAPSCompanyEvents(id: $id) {
     id

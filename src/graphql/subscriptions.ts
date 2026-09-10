@@ -8642,6 +8642,75 @@ export const onDeleteApsEmailSend = /* GraphQL */ `subscription OnDeleteApsEmail
   APITypes.OnDeleteApsEmailSendSubscriptionVariables,
   APITypes.OnDeleteApsEmailSendSubscription
 >;
+export const onCreateApsAppLeaderboardEntry = /* GraphQL */ `subscription OnCreateApsAppLeaderboardEntry(
+  $filter: ModelSubscriptionApsAppLeaderboardEntryFilterInput
+) {
+  onCreateApsAppLeaderboardEntry(filter: $filter) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsAppLeaderboardEntrySubscriptionVariables,
+  APITypes.OnCreateApsAppLeaderboardEntrySubscription
+>;
+export const onUpdateApsAppLeaderboardEntry = /* GraphQL */ `subscription OnUpdateApsAppLeaderboardEntry(
+  $filter: ModelSubscriptionApsAppLeaderboardEntryFilterInput
+) {
+  onUpdateApsAppLeaderboardEntry(filter: $filter) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsAppLeaderboardEntrySubscriptionVariables,
+  APITypes.OnUpdateApsAppLeaderboardEntrySubscription
+>;
+export const onDeleteApsAppLeaderboardEntry = /* GraphQL */ `subscription OnDeleteApsAppLeaderboardEntry(
+  $filter: ModelSubscriptionApsAppLeaderboardEntryFilterInput
+) {
+  onDeleteApsAppLeaderboardEntry(filter: $filter) {
+    id
+    owner
+    eventId
+    userProfileId
+    displayName
+    company
+    jobTitle
+    profilePicture
+    points
+    breakdown
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsAppLeaderboardEntrySubscriptionVariables,
+  APITypes.OnDeleteApsAppLeaderboardEntrySubscription
+>;
 export const onCreateAPSCompanyEvents = /* GraphQL */ `subscription OnCreateAPSCompanyEvents(
   $filter: ModelSubscriptionAPSCompanyEventsFilterInput
 ) {

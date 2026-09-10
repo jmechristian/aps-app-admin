@@ -2903,6 +2903,73 @@ export type DeleteApsAppFeedbackInput = {
   id: string,
 };
 
+export type CreateApsAppLeaderboardEntryInput = {
+  id?: string | null,
+  owner?: string | null,
+  eventId: string,
+  userProfileId: string,
+  displayName?: string | null,
+  company?: string | null,
+  jobTitle?: string | null,
+  profilePicture?: string | null,
+  points: number,
+  breakdown?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type ModelApsAppLeaderboardEntryConditionInput = {
+  owner?: ModelStringInput | null,
+  eventId?: ModelIDInput | null,
+  userProfileId?: ModelIDInput | null,
+  displayName?: ModelStringInput | null,
+  company?: ModelStringInput | null,
+  jobTitle?: ModelStringInput | null,
+  profilePicture?: ModelStringInput | null,
+  points?: ModelIntInput | null,
+  breakdown?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppLeaderboardEntryConditionInput | null > | null,
+  or?: Array< ModelApsAppLeaderboardEntryConditionInput | null > | null,
+  not?: ModelApsAppLeaderboardEntryConditionInput | null,
+};
+
+export type ApsAppLeaderboardEntry = {
+  __typename: "ApsAppLeaderboardEntry",
+  id: string,
+  owner?: string | null,
+  eventId: string,
+  userProfileId: string,
+  displayName?: string | null,
+  company?: string | null,
+  jobTitle?: string | null,
+  profilePicture?: string | null,
+  points: number,
+  breakdown?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateApsAppLeaderboardEntryInput = {
+  id: string,
+  owner?: string | null,
+  eventId?: string | null,
+  userProfileId?: string | null,
+  displayName?: string | null,
+  company?: string | null,
+  jobTitle?: string | null,
+  profilePicture?: string | null,
+  points?: number | null,
+  breakdown?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteApsAppLeaderboardEntryInput = {
+  id: string,
+};
+
 export type DeleteAPSCompanyEventsInput = {
   id: string,
 };
@@ -4573,6 +4640,30 @@ export type ModelApsEmailSendConnection = {
   nextToken?: string | null,
 };
 
+export type ModelApsAppLeaderboardEntryFilterInput = {
+  id?: ModelIDInput | null,
+  owner?: ModelStringInput | null,
+  eventId?: ModelIDInput | null,
+  userProfileId?: ModelIDInput | null,
+  displayName?: ModelStringInput | null,
+  company?: ModelStringInput | null,
+  jobTitle?: ModelStringInput | null,
+  profilePicture?: ModelStringInput | null,
+  points?: ModelIntInput | null,
+  breakdown?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelApsAppLeaderboardEntryFilterInput | null > | null,
+  or?: Array< ModelApsAppLeaderboardEntryFilterInput | null > | null,
+  not?: ModelApsAppLeaderboardEntryFilterInput | null,
+};
+
+export type ModelApsAppLeaderboardEntryConnection = {
+  __typename: "ModelApsAppLeaderboardEntryConnection",
+  items:  Array<ApsAppLeaderboardEntry | null >,
+  nextToken?: string | null,
+};
+
 export type ModelAPSCompanyEventsFilterInput = {
   id?: ModelIDInput | null,
   aPSId?: ModelIDInput | null,
@@ -5425,6 +5516,23 @@ export type ModelSubscriptionApsEmailSendFilterInput = {
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionApsEmailSendFilterInput | null > | null,
   or?: Array< ModelSubscriptionApsEmailSendFilterInput | null > | null,
+};
+
+export type ModelSubscriptionApsAppLeaderboardEntryFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  eventId?: ModelSubscriptionIDInput | null,
+  userProfileId?: ModelSubscriptionIDInput | null,
+  displayName?: ModelSubscriptionStringInput | null,
+  company?: ModelSubscriptionStringInput | null,
+  jobTitle?: ModelSubscriptionStringInput | null,
+  profilePicture?: ModelSubscriptionStringInput | null,
+  points?: ModelSubscriptionIntInput | null,
+  breakdown?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionApsAppLeaderboardEntryFilterInput | null > | null,
+  or?: Array< ModelSubscriptionApsAppLeaderboardEntryFilterInput | null > | null,
+  owner?: ModelStringInput | null,
 };
 
 export type ModelSubscriptionAPSCompanyEventsFilterInput = {
@@ -11868,6 +11976,75 @@ export type DeleteApsAppFeedbackMutation = {
     eventId: string,
     message: string,
     imageKeys?: Array< string | null > | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateApsAppLeaderboardEntryMutationVariables = {
+  input: CreateApsAppLeaderboardEntryInput,
+  condition?: ModelApsAppLeaderboardEntryConditionInput | null,
+};
+
+export type CreateApsAppLeaderboardEntryMutation = {
+  createApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateApsAppLeaderboardEntryMutationVariables = {
+  input: UpdateApsAppLeaderboardEntryInput,
+  condition?: ModelApsAppLeaderboardEntryConditionInput | null,
+};
+
+export type UpdateApsAppLeaderboardEntryMutation = {
+  updateApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteApsAppLeaderboardEntryMutationVariables = {
+  input: DeleteApsAppLeaderboardEntryInput,
+  condition?: ModelApsAppLeaderboardEntryConditionInput | null,
+};
+
+export type DeleteApsAppLeaderboardEntryMutation = {
+  deleteApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -21769,6 +21946,117 @@ export type ApsEmailSendsByCampaignIdAndCreatedAtQuery = {
   } | null,
 };
 
+export type GetApsAppLeaderboardEntryQueryVariables = {
+  id: string,
+};
+
+export type GetApsAppLeaderboardEntryQuery = {
+  getApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListApsAppLeaderboardEntriesQueryVariables = {
+  filter?: ModelApsAppLeaderboardEntryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListApsAppLeaderboardEntriesQuery = {
+  listApsAppLeaderboardEntries?:  {
+    __typename: "ModelApsAppLeaderboardEntryConnection",
+    items:  Array< {
+      __typename: "ApsAppLeaderboardEntry",
+      id: string,
+      owner?: string | null,
+      eventId: string,
+      userProfileId: string,
+      displayName?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      profilePicture?: string | null,
+      points: number,
+      breakdown?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppLeaderboardEntriesByEventIdAndUpdatedAtQueryVariables = {
+  eventId: string,
+  updatedAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppLeaderboardEntryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppLeaderboardEntriesByEventIdAndUpdatedAtQuery = {
+  apsAppLeaderboardEntriesByEventIdAndUpdatedAt?:  {
+    __typename: "ModelApsAppLeaderboardEntryConnection",
+    items:  Array< {
+      __typename: "ApsAppLeaderboardEntry",
+      id: string,
+      owner?: string | null,
+      eventId: string,
+      userProfileId: string,
+      displayName?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      profilePicture?: string | null,
+      points: number,
+      breakdown?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ApsAppLeaderboardEntriesByUserProfileIdQueryVariables = {
+  userProfileId: string,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelApsAppLeaderboardEntryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ApsAppLeaderboardEntriesByUserProfileIdQuery = {
+  apsAppLeaderboardEntriesByUserProfileId?:  {
+    __typename: "ModelApsAppLeaderboardEntryConnection",
+    items:  Array< {
+      __typename: "ApsAppLeaderboardEntry",
+      id: string,
+      owner?: string | null,
+      eventId: string,
+      userProfileId: string,
+      displayName?: string | null,
+      company?: string | null,
+      jobTitle?: string | null,
+      profilePicture?: string | null,
+      points: number,
+      breakdown?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type GetAPSCompanyEventsQueryVariables = {
   id: string,
 };
@@ -30620,6 +30908,72 @@ export type OnDeleteApsEmailSendSubscription = {
     sesMessageId?: string | null,
     error?: string | null,
     sentAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateApsAppLeaderboardEntrySubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppLeaderboardEntryFilterInput | null,
+};
+
+export type OnCreateApsAppLeaderboardEntrySubscription = {
+  onCreateApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateApsAppLeaderboardEntrySubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppLeaderboardEntryFilterInput | null,
+};
+
+export type OnUpdateApsAppLeaderboardEntrySubscription = {
+  onUpdateApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteApsAppLeaderboardEntrySubscriptionVariables = {
+  filter?: ModelSubscriptionApsAppLeaderboardEntryFilterInput | null,
+};
+
+export type OnDeleteApsAppLeaderboardEntrySubscription = {
+  onDeleteApsAppLeaderboardEntry?:  {
+    __typename: "ApsAppLeaderboardEntry",
+    id: string,
+    owner?: string | null,
+    eventId: string,
+    userProfileId: string,
+    displayName?: string | null,
+    company?: string | null,
+    jobTitle?: string | null,
+    profilePicture?: string | null,
+    points: number,
+    breakdown?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
