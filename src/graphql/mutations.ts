@@ -849,6 +849,8 @@ export const createApsAppUser = /* GraphQL */ `mutation CreateApsAppUser(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -985,6 +987,8 @@ export const deleteApsAppUser = /* GraphQL */ `mutation DeleteApsAppUser(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1039,6 +1043,8 @@ export const createApsAppUserContact = /* GraphQL */ `mutation CreateApsAppUserC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1095,6 +1101,8 @@ export const updateApsAppUserContact = /* GraphQL */ `mutation UpdateApsAppUserC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1151,6 +1159,8 @@ export const deleteApsAppUserContact = /* GraphQL */ `mutation DeleteApsAppUserC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1308,6 +1318,8 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1485,6 +1497,8 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1662,6 +1676,8 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1738,6 +1754,8 @@ export const createApsAppUserLead = /* GraphQL */ `mutation CreateApsAppUserLead
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1794,6 +1812,8 @@ export const updateApsAppUserLead = /* GraphQL */ `mutation UpdateApsAppUserLead
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1850,6 +1870,8 @@ export const deleteApsAppUserLead = /* GraphQL */ `mutation DeleteApsAppUserLead
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1914,6 +1936,8 @@ export const createApsAppUserProfile = /* GraphQL */ `mutation CreateApsAppUserP
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -2027,6 +2051,8 @@ export const deleteApsAppUserProfile = /* GraphQL */ `mutation DeleteApsAppUserP
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -2502,6 +2528,8 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2575,6 +2603,8 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2648,6 +2678,8 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3372,6 +3404,8 @@ export const createApsAppUserExhibitorView = /* GraphQL */ `mutation CreateApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3456,6 +3490,8 @@ export const updateApsAppUserExhibitorView = /* GraphQL */ `mutation UpdateApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3540,6 +3576,8 @@ export const deleteApsAppUserExhibitorView = /* GraphQL */ `mutation DeleteApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3624,6 +3662,8 @@ export const createApsAppUserPassportStamp = /* GraphQL */ `mutation CreateApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3709,6 +3749,8 @@ export const updateApsAppUserPassportStamp = /* GraphQL */ `mutation UpdateApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3794,6 +3836,8 @@ export const deleteApsAppUserPassportStamp = /* GraphQL */ `mutation DeleteApsAp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3879,6 +3923,8 @@ export const createApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation CreateA
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -3963,6 +4009,8 @@ export const updateApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation UpdateA
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4047,6 +4095,8 @@ export const deleteApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation DeleteA
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4131,6 +4181,8 @@ export const createApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation CreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4208,6 +4260,8 @@ export const updateApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation UpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4285,6 +4339,8 @@ export const deleteApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation DeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4362,6 +4418,8 @@ export const createApsAppUserFavoriteSponsor = /* GraphQL */ `mutation CreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4439,6 +4497,8 @@ export const updateApsAppUserFavoriteSponsor = /* GraphQL */ `mutation UpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4516,6 +4576,8 @@ export const deleteApsAppUserFavoriteSponsor = /* GraphQL */ `mutation DeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4593,6 +4655,8 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4675,6 +4739,8 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4757,6 +4823,8 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4839,6 +4907,8 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4869,6 +4939,8 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4934,6 +5006,8 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4964,6 +5038,8 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5029,6 +5105,8 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5059,6 +5137,8 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7526,6 +7606,8 @@ export const updateApsAppUser = /* GraphQL */ `mutation UpdateApsAppUser(
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7588,6 +7670,8 @@ export const updateApsAppUserProfile = /* GraphQL */ `mutation UpdateApsAppUserP
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -7684,6 +7768,8 @@ export const createProfileAffiliate = /* GraphQL */ `mutation CreateProfileAffil
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7734,6 +7820,8 @@ export const updateProfileAffiliate = /* GraphQL */ `mutation UpdateProfileAffil
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7784,6 +7872,8 @@ export const deleteProfileAffiliate = /* GraphQL */ `mutation DeleteProfileAffil
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7834,6 +7924,8 @@ export const createProfileEducation = /* GraphQL */ `mutation CreateProfileEduca
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7883,6 +7975,8 @@ export const updateProfileEducation = /* GraphQL */ `mutation UpdateProfileEduca
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7932,6 +8026,8 @@ export const deleteProfileEducation = /* GraphQL */ `mutation DeleteProfileEduca
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -7981,6 +8077,8 @@ export const createProfileInterest = /* GraphQL */ `mutation CreateProfileIntere
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -8028,6 +8126,8 @@ export const updateProfileInterest = /* GraphQL */ `mutation UpdateProfileIntere
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -8075,6 +8175,8 @@ export const deleteProfileInterest = /* GraphQL */ `mutation DeleteProfileIntere
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt

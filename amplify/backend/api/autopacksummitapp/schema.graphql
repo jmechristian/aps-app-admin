@@ -481,6 +481,11 @@ type ApsAppUserProfile
   thinkificId: Int
   apcProgress: Float
 
+  # Rising Star / Young Leader Award. risingStarKey is "STAR" when awarded
+  # so we can list honorees without scanning every profile.
+  risingStarKey: String @index(name: "byRisingStarKey")
+  risingStarYear: Int
+
   # Reverse relationships required for @belongsTo in Contact/Lead
   contacts: [ApsAppUserContact] @hasMany(indexName: "byContact", fields: ["id"])
   leads: [ApsAppUserLead] @hasMany(indexName: "byContact", fields: ["id"])

@@ -34,7 +34,7 @@ const SAFE = BLEED + 9;
 const PUNCH = BLEED + 36;
 const WHITE_H = BLEED + CLASSIC_SPLIT * TRIM_H;
 const FOOTER_H = PAGE_H - WHITE_H;
-const RAIL_W = BLEED + 46;
+const RAIL_W = BLEED + 52;
 
 const styles = StyleSheet.create({
   page: {
@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
   railType: {
     color: '#ffffff',
     fontFamily: 'Helvetica-Bold',
-    fontSize: 16,
-    letterSpacing: 1.6,
+    fontSize: 20,
+    letterSpacing: 1.4,
   },
   railContent: {
     marginLeft: RAIL_W,
@@ -259,9 +259,34 @@ function ApsLogoPdf({
 }
 
 function displayName(person: BadgePerson): { first: string; last: string } {
-  const first = person.firstName || 'Guest';
+  const first = person.firstName || (person.email ? 'Guest' : '');
   const last = person.lastName;
   return { first, last };
+}
+
+function QrSlot({
+  src,
+  width,
+  height,
+}: {
+  src?: string | null;
+  width: number;
+  height: number;
+}) {
+  if (src) {
+    return <Image src={src} style={{ width, height }} />;
+  }
+  return (
+    <View
+      style={{
+        width,
+        height,
+        borderWidth: 1,
+        borderColor: '#d4d4d8',
+        backgroundColor: '#ffffff',
+      }}
+    />
+  );
 }
 
 function ClassicBadge({
@@ -279,14 +304,16 @@ function ClassicBadge({
       <View style={styles.classicWhite}>
         <View style={styles.classicHeader}>
           <ApsLogoPdf />
-          <Image src={person.qrDataUrl} style={styles.qr} />
+          <QrSlot src={person.qrDataUrl} width={50} height={50} />
         </View>
         <View style={styles.classicBody}>
-          <Text
-            style={[styles.firstName, { fontSize: firstNameFontSizePt(first) }]}
-          >
-            {first}
-          </Text>
+          {first ? (
+            <Text
+              style={[styles.firstName, { fontSize: firstNameFontSizePt(first) }]}
+            >
+              {first}
+            </Text>
+          ) : null}
           {last ? <Text style={styles.lastName}>{last}</Text> : null}
           {person.company ? (
             <Text style={styles.company}>{person.company}</Text>
@@ -324,23 +351,34 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
           <ApsLogoPdf />
         </View>
         <View style={{ flex: 1, justifyContent: 'center', paddingRight: 8 }}>
-          <Text style={[styles.railName, { fontSize: firstNameFontSizePt(first) + 2 }]}>
-            {first}
-          </Text>
+          {first ? (
+            <Text style={[styles.railName, { fontSize: firstNameFontSizePt(first) + 2 }]}>
+              {first}
+            </Text>
+          ) : null}
           {last ? (
-            <Text style={{ fontSize: 14, marginTop: 4, color: '#111111' }}>{last}</Text>
+            <Text
+              style={{
+                fontSize: 22,
+                marginTop: first ? 6 : 0,
+                color: '#111111',
+                fontFamily: 'Helvetica-Bold',
+              }}
+            >
+              {last}
+            </Text>
           ) : null}
           {person.company ? (
-            <Text style={{ fontSize: 11, marginTop: 10, color: '#333333' }}>
+            <Text style={{ fontSize: 17, marginTop: 10, color: '#222222' }}>
               {person.company}
             </Text>
           ) : null}
           <Text
             style={{
-              fontSize: 8,
-              marginTop: 10,
+              fontSize: 14,
+              marginTop: 12,
               letterSpacing: 1.4,
-              color: '#555555',
+              color: '#333333',
               fontFamily: 'Helvetica-Bold',
             }}
           >
@@ -355,7 +393,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
           }}
         >
           <Image src={getPackIqSrc('black')} style={{ width: 88, height: 36 }} />
-          <Image src={person.qrDataUrl} style={{ width: 58, height: 58 }} />
+          <QrSlot src={person.qrDataUrl} width={58} height={58} />
         </View>
       </View>
     </Page>
@@ -372,9 +410,11 @@ function SignalBadge({ person }: { person: BadgePdfPerson }) {
     <Page size={[PAGE_W, PAGE_H]} style={[styles.signalPage, { backgroundColor: color }]}>
       <ApsLogoPdf variant='light' width={128} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
-        <Text style={[styles.signalFirst, { fontSize: firstNameFontSizePt(first) + 6 }]}>
-          {first}
-        </Text>
+        {first ? (
+          <Text style={[styles.signalFirst, { fontSize: firstNameFontSizePt(first) + 6 }]}>
+            {first}
+          </Text>
+        ) : null}
         {last ? <Text style={styles.signalLast}>{last}</Text> : null}
         {person.company ? (
           <Text style={styles.signalCompany}>{person.company}</Text>
@@ -390,7 +430,7 @@ function SignalBadge({ person }: { person: BadgePdfPerson }) {
         }}
       >
         <View style={styles.qrPlate}>
-          <Image src={person.qrDataUrl} style={{ width: 62, height: 62 }} />
+          <QrSlot src={person.qrDataUrl} width={62} height={62} />
         </View>
         <View style={styles.tableBox}>
           <Text

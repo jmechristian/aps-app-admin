@@ -147,6 +147,19 @@ export function toBadgePerson(input: {
   };
 }
 
+export function createBlankBadgePeople(): BadgePerson[] {
+  return TYPE_ORDER.map((type) => ({
+    id: `blank-${type}`,
+    firstName: '',
+    lastName: '',
+    company: '',
+    attendeeType: type,
+    tableNumber: null,
+    qrCodeUrl: null,
+    email: '',
+  }));
+}
+
 export function groupBadgePeople(people: BadgePerson[]): Array<{
   type: string;
   label: string;

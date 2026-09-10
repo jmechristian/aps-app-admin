@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { fetchFullRegistrantDetailsByApsId } from '@/app/actions/registrants';
 import { renderBadgePdf, type BadgePdfPerson } from '@/lib/badge-pdf';
 import {
+  createBlankBadgePeople,
   groupBadgePeople,
   isBadgeDesign,
   toBadgePerson,
@@ -71,7 +72,13 @@ export async function GET(
   }
 
   const ordered = groupBadgePeople(people).flatMap((group) => group.people);
-  const pdfPeople = await mapPool(ordered, 8, toPdfPerson);
+  const pdfPeople = [
+    ...(await mapPool(ordered, 8, toPdfPerson)),
+    ...createBlankBadgePeople().map((person) => ({
+      ...person,
+      qrDataUrl: '',
+    })),
+  ];
   const pdf = await renderBadgePdf({ people: pdfPeople, design });
 
   const body = new Uint8Array(pdf);

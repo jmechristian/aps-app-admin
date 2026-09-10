@@ -124,6 +124,41 @@ const UPDATE_REGISTRANT_SEATING_LINK = /* GraphQL */ `
 
 type AuthOpts = { authMode?: 'apiKey' | 'userPools'; jwt?: string };
 
+type ListApsResult = {
+  listAPS?: {
+    items?: Array<{ id: string; year: string } | null>;
+    nextToken?: string | null;
+  } | null;
+};
+
+type ListRegistrantsResult = {
+  listApsRegistrants?: {
+    items?: Array<{
+      id: string;
+      firstName?: string | null;
+      lastName?: string | null;
+      email: string;
+      attendeeType?: string | null;
+      status?: string | null;
+      company?: { name?: string | null } | null;
+      seatingChartRegistrant?: { tableNumber?: number | null } | null;
+    } | null>;
+    nextToken?: string | null;
+  } | null;
+};
+
+type SeatingByRegistrantResult = {
+  apsSeatingChartRegistrantsByRegistrantID?: {
+    items?: Array<{
+      id: string;
+      registrantID: string;
+      seatingChartID: string;
+      tableNumber?: number | null;
+    } | null>;
+    nextToken?: string | null;
+  } | null;
+};
+
 function graphqlOpts(): AuthOpts | undefined {
   const jwt = process.env.APS_ADMIN_JWT;
   return jwt ? { authMode: 'userPools', jwt } : undefined;
@@ -133,12 +168,11 @@ async function listEvents() {
   const events: Array<{ id: string; year: string }> = [];
   let nextToken: string | null | undefined = null;
   do {
-    const data = await requestGraphQL<{
-      listAPS?: {
-        items?: Array<{ id: string; year: string } | null>;
-        nextToken?: string | null;
-      } | null;
-    }>(LIST_APS, { limit: 50, nextToken: nextToken || undefined });
+    const pageToken = nextToken || undefined;
+    const data: ListApsResult = await requestGraphQL<ListApsResult>(LIST_APS, {
+      limit: 50,
+      nextToken: pageToken,
+    });
     events.push(...(data.listAPS?.items ?? []).filter((item): item is { id: string; year: string } => Boolean(item)));
     nextToken = data.listAPS?.nextToken;
   } while (nextToken);
@@ -149,25 +183,15 @@ async function listRegistrants(eventId: string): Promise<SeatingImportRegistrant
   const rows: SeatingImportRegistrant[] = [];
   let nextToken: string | null | undefined = null;
   do {
-    const data = await requestGraphQL<{
-      listApsRegistrants?: {
-        items?: Array<{
-          id: string;
-          firstName?: string | null;
-          lastName?: string | null;
-          email: string;
-          attendeeType?: string | null;
-          status?: string | null;
-          company?: { name?: string | null } | null;
-          seatingChartRegistrant?: { tableNumber?: number | null } | null;
-        } | null>;
-        nextToken?: string | null;
-      } | null;
-    }>(LIST_REGISTRANTS, {
-      filter: { apsID: { eq: eventId } },
-      limit: 1000,
-      nextToken: nextToken || undefined,
-    });
+    const pageToken = nextToken || undefined;
+    const data: ListRegistrantsResult = await requestGraphQL<ListRegistrantsResult>(
+      LIST_REGISTRANTS,
+      {
+        filter: { apsID: { eq: eventId } },
+        limit: 1000,
+        nextToken: pageToken,
+      }
+    );
     for (const item of data.listApsRegistrants?.items ?? []) {
       if (!item?.id) continue;
       rows.push({
@@ -203,19 +227,10 @@ async function ensureSeatingChartExists() {
 async function getAssignmentByRegistrantId(registrantId: string) {
   let nextToken: string | null | undefined = null;
   do {
-    const data = await requestGraphQL<{
-      apsSeatingChartRegistrantsByRegistrantID?: {
-        items?: Array<{
-          id: string;
-          registrantID: string;
-          seatingChartID: string;
-          tableNumber?: number | null;
-        } | null>;
-        nextToken?: string | null;
-      } | null;
-    }>(
+    const pageToken = nextToken || undefined;
+    const data: SeatingByRegistrantResult = await requestGraphQL<SeatingByRegistrantResult>(
       APS_SEATING_REGISTRANTS_BY_REGISTRANT,
-      { registrantID: registrantId, limit: 1000, nextToken: nextToken || undefined },
+      { registrantID: registrantId, limit: 1000, nextToken: pageToken },
       graphqlOpts()
     );
     const match = (data.apsSeatingChartRegistrantsByRegistrantID?.items ?? []).find(

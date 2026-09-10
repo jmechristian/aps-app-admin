@@ -194,7 +194,7 @@ function RailCard({
   const color = getTypeColor(person.attendeeType);
   const typeLabel = getTypeLabel(person.attendeeType).toUpperCase();
   const first = person.firstName || 'Guest';
-  const railPct = ((BADGE_PAGE.bleedPt + 46) / BADGE_PAGE.pagePt.w) * 100;
+  const railPct = ((BADGE_PAGE.bleedPt + 52) / BADGE_PAGE.pagePt.w) * 100;
   const px = (pt: number) => previewPx(pt, cardWidth);
 
   return (
@@ -211,7 +211,7 @@ function RailCard({
           style={{
             writingMode: 'vertical-rl',
             transform: 'rotate(180deg)',
-            fontSize: px(16),
+            fontSize: px(20),
           }}
         >
           {typeLabel}
@@ -230,21 +230,24 @@ function RailCard({
             {first}
           </p>
           {person.lastName ? (
-            <p className='mt-1 leading-tight' style={{ fontSize: px(14) }}>
+            <p
+              className='mt-1.5 font-bold leading-tight'
+              style={{ fontSize: px(22) }}
+            >
               {person.lastName}
             </p>
           ) : null}
           {person.company ? (
             <p
-              className='mt-2 leading-tight text-slate-700'
-              style={{ fontSize: px(11) }}
+              className='mt-2.5 leading-tight text-slate-800'
+              style={{ fontSize: px(17) }}
             >
               {person.company}
             </p>
           ) : null}
           <p
-            className='mt-2 font-bold tracking-[0.16em] text-slate-500'
-            style={{ fontSize: px(8) }}
+            className='mt-3 font-bold tracking-[0.16em] text-slate-700'
+            style={{ fontSize: px(14) }}
           >
             TABLE  {formatTableLabel(person.tableNumber)}
           </p>

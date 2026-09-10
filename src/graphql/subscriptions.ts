@@ -212,6 +212,8 @@ export const onCreateApsAppUserNote = /* GraphQL */ `subscription OnCreateApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -389,6 +391,8 @@ export const onUpdateApsAppUserNote = /* GraphQL */ `subscription OnUpdateApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -566,6 +570,8 @@ export const onDeleteApsAppUserNote = /* GraphQL */ `subscription OnDeleteApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -634,6 +640,8 @@ export const onCreateApsAppUserExhibitorView = /* GraphQL */ `subscription OnCre
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -718,6 +726,8 @@ export const onUpdateApsAppUserExhibitorView = /* GraphQL */ `subscription OnUpd
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -802,6 +812,8 @@ export const onDeleteApsAppUserExhibitorView = /* GraphQL */ `subscription OnDel
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -886,6 +898,8 @@ export const onCreateApsAppUserPassportStamp = /* GraphQL */ `subscription OnCre
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -971,6 +985,8 @@ export const onUpdateApsAppUserPassportStamp = /* GraphQL */ `subscription OnUpd
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1056,6 +1072,8 @@ export const onDeleteApsAppUserPassportStamp = /* GraphQL */ `subscription OnDel
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1141,6 +1159,8 @@ export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1225,6 +1245,8 @@ export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1309,6 +1331,8 @@ export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1393,6 +1417,8 @@ export const onCreateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1470,6 +1496,8 @@ export const onUpdateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnU
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1547,6 +1575,8 @@ export const onDeleteApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnD
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1624,6 +1654,8 @@ export const onCreateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1701,6 +1733,8 @@ export const onUpdateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnU
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1778,6 +1812,8 @@ export const onDeleteApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnD
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1855,6 +1891,8 @@ export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1937,6 +1975,8 @@ export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnU
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2019,6 +2059,8 @@ export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnD
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2101,6 +2143,8 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2131,6 +2175,8 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2196,6 +2242,8 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2226,6 +2274,8 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2291,6 +2341,8 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -2321,6 +2373,8 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4149,6 +4203,8 @@ export const onCreateApsAppUser = /* GraphQL */ `subscription OnCreateApsAppUser
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4284,6 +4340,8 @@ export const onUpdateApsAppUser = /* GraphQL */ `subscription OnUpdateApsAppUser
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4419,6 +4477,8 @@ export const onDeleteApsAppUser = /* GraphQL */ `subscription OnDeleteApsAppUser
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4472,6 +4532,8 @@ export const onCreateApsAppUserContact = /* GraphQL */ `subscription OnCreateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4527,6 +4589,8 @@ export const onUpdateApsAppUserContact = /* GraphQL */ `subscription OnUpdateAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4582,6 +4646,8 @@ export const onDeleteApsAppUserContact = /* GraphQL */ `subscription OnDeleteAps
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4637,6 +4703,8 @@ export const onCreateApsAppUserLead = /* GraphQL */ `subscription OnCreateApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4692,6 +4760,8 @@ export const onUpdateApsAppUserLead = /* GraphQL */ `subscription OnUpdateApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4747,6 +4817,8 @@ export const onDeleteApsAppUserLead = /* GraphQL */ `subscription OnDeleteApsApp
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4810,6 +4882,8 @@ export const onCreateApsAppUserProfile = /* GraphQL */ `subscription OnCreateAps
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -4922,6 +4996,8 @@ export const onUpdateApsAppUserProfile = /* GraphQL */ `subscription OnUpdateAps
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -5034,6 +5110,8 @@ export const onDeleteApsAppUserProfile = /* GraphQL */ `subscription OnDeleteAps
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -5129,6 +5207,8 @@ export const onCreateProfileAffiliate = /* GraphQL */ `subscription OnCreateProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5178,6 +5258,8 @@ export const onUpdateProfileAffiliate = /* GraphQL */ `subscription OnUpdateProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5227,6 +5309,8 @@ export const onDeleteProfileAffiliate = /* GraphQL */ `subscription OnDeleteProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5276,6 +5360,8 @@ export const onCreateProfileEducation = /* GraphQL */ `subscription OnCreateProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5324,6 +5410,8 @@ export const onUpdateProfileEducation = /* GraphQL */ `subscription OnUpdateProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5372,6 +5460,8 @@ export const onDeleteProfileEducation = /* GraphQL */ `subscription OnDeleteProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5420,6 +5510,8 @@ export const onCreateProfileInterest = /* GraphQL */ `subscription OnCreateProfi
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5466,6 +5558,8 @@ export const onUpdateProfileInterest = /* GraphQL */ `subscription OnUpdateProfi
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5512,6 +5606,8 @@ export const onDeleteProfileInterest = /* GraphQL */ `subscription OnDeleteProfi
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5974,6 +6070,8 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -6046,6 +6144,8 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -6118,6 +6218,8 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt

@@ -238,6 +238,8 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -332,6 +334,8 @@ export const getApsAppUserExhibitorView = /* GraphQL */ `query GetApsAppUserExhi
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -443,6 +447,8 @@ export const getApsAppUserPassportStamp = /* GraphQL */ `query GetApsAppUserPass
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -556,6 +562,8 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -667,6 +675,8 @@ export const getApsAppUserFavoriteSpeaker = /* GraphQL */ `query GetApsAppUserFa
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -771,6 +781,8 @@ export const getApsAppUserFavoriteSponsor = /* GraphQL */ `query GetApsAppUserFa
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -875,6 +887,8 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -984,6 +998,8 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -1014,6 +1030,8 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4403,6 +4421,8 @@ export const getApsAppUser = /* GraphQL */ `query GetApsAppUser($id: ID!) {
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4506,6 +4526,8 @@ export const getApsAppUserContact = /* GraphQL */ `query GetApsAppUserContact($i
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4651,6 +4673,8 @@ export const getApsAppUserLead = /* GraphQL */ `query GetApsAppUserLead($id: ID!
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4800,6 +4824,8 @@ export const getApsAppUserProfile = /* GraphQL */ `query GetApsAppUserProfile($i
     resume
     thinkificId
     apcProgress
+    risingStarKey
+    risingStarYear
     contacts {
       nextToken
       __typename
@@ -4899,6 +4925,8 @@ export const listApsAppUserProfiles = /* GraphQL */ `query ListApsAppUserProfile
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4950,6 +4978,8 @@ export const apsAppUserProfilesByUserId = /* GraphQL */ `query ApsAppUserProfile
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -4962,6 +4992,59 @@ export const apsAppUserProfilesByUserId = /* GraphQL */ `query ApsAppUserProfile
 ` as GeneratedQuery<
   APITypes.ApsAppUserProfilesByUserIdQueryVariables,
   APITypes.ApsAppUserProfilesByUserIdQuery
+>;
+export const apsAppUserProfilesByRisingStarKey = /* GraphQL */ `query ApsAppUserProfilesByRisingStarKey(
+  $risingStarKey: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsAppUserProfileFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsAppUserProfilesByRisingStarKey(
+    risingStarKey: $risingStarKey
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      userId
+      firstName
+      lastName
+      email
+      phone
+      company
+      jobTitle
+      attendeeType
+      expertise
+      quickTools
+      profilePicture
+      bio
+      linkedin
+      twitter
+      facebook
+      instagram
+      youtube
+      website
+      location
+      resume
+      thinkificId
+      apcProgress
+      risingStarKey
+      risingStarYear
+      speakerId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsAppUserProfilesByRisingStarKeyQueryVariables,
+  APITypes.ApsAppUserProfilesByRisingStarKeyQuery
 >;
 export const apsAppUserProfilesBySpeakerId = /* GraphQL */ `query ApsAppUserProfilesBySpeakerId(
   $speakerId: ID!
@@ -5001,6 +5084,8 @@ export const apsAppUserProfilesBySpeakerId = /* GraphQL */ `query ApsAppUserProf
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5042,6 +5127,8 @@ export const getProfileAffiliate = /* GraphQL */ `query GetProfileAffiliate($id:
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5149,6 +5236,8 @@ export const getProfileEducation = /* GraphQL */ `query GetProfileEducation($id:
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5253,6 +5342,8 @@ export const getProfileInterest = /* GraphQL */ `query GetProfileInterest($id: I
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
@@ -5742,6 +5833,8 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
       resume
       thinkificId
       apcProgress
+      risingStarKey
+      risingStarYear
       speakerId
       createdAt
       updatedAt
