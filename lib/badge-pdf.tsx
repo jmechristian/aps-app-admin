@@ -236,7 +236,7 @@ function getApsLogoPaths(variant: 'color' | 'light') {
   }));
 }
 
-function ApsLogoPdf({
+export function ApsLogoPdf({
   variant = 'color',
   width = 118,
 }: {

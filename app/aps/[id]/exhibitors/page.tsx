@@ -7,6 +7,8 @@ import { fetchCompaniesByEventId } from '@/app/actions/companies';
 import Link from 'next/link';
 import CreateExhibitorButton from './create-exhibitor-button';
 import DeleteExhibitorButton from './delete-exhibitor-button';
+import PlacardStudio from './placard-studio';
+import type { PlacardExhibitor } from '@/lib/placards';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -19,6 +21,14 @@ export default async function ExhibitorsPage({ params }: PageProps) {
     fetchCompaniesByEventId(eventId),
     fetchApprovedRegistrantsByCompanyForEvent(eventId),
   ]);
+
+  const placards: PlacardExhibitor[] = exhibitors.map((exhibitor) => ({
+    id: exhibitor.id,
+    companyName: exhibitor.company?.name?.trim() || 'Exhibitor',
+    boothNumber: exhibitor.boothNumber?.trim() || null,
+    qrCodeUrl: exhibitor.qrCode ?? null,
+    passportQrPayload: exhibitor.passportQrPayload ?? null,
+  }));
 
   return (
     <CategoryPageShell
@@ -142,6 +152,8 @@ export default async function ExhibitorsPage({ params }: PageProps) {
           </div>
         )}
       </section>
+
+      <PlacardStudio eventId={eventId} exhibitors={placards} />
     </CategoryPageShell>
   );
 }
