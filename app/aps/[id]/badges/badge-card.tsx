@@ -223,7 +223,7 @@ function RailCard({
         </p>
       </div>
       <div
-        className='flex h-full flex-col pt-[12%] pr-[7%] pb-[6%]'
+        className='flex h-full flex-col pt-[12%] pr-[7%] pb-[10%]'
         style={{ paddingLeft: `${railPct + 4}%` }}
       >
         <ApsLogo width={px(118)} />
@@ -245,21 +245,21 @@ function RailCard({
           {person.company ? (
             <p
               className='mt-2.5 leading-tight text-slate-800'
-              style={{ fontSize: px(17) }}
+              style={{ fontSize: px(22) }}
             >
               {person.company}
             </p>
           ) : null}
           {person.tableNumber == null ? null : (
             <p
-              className='mt-3 font-bold tracking-[0.16em] text-slate-500'
-              style={{ fontSize: px(14) }}
+              className='font-bold tracking-[0.16em] text-slate-500'
+              style={{ fontSize: px(12), marginTop: px(24) }}
             >
               TABLE  {formatTableLabel(person.tableNumber)}
             </p>
           )}
         </div>
-        <div className='flex items-end justify-between gap-2'>
+        <div className='flex items-end justify-between gap-2' style={{ paddingRight: px(12) }}>
           <img
             src='/images/PackIQ_black.png'
             alt='PackIQ'

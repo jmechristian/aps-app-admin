@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     paddingTop: PUNCH,
     paddingRight: SAFE,
     paddingLeft: 14,
-    paddingBottom: BLEED + 12,
+    paddingBottom: BLEED + 26,
   },
   railName: {
     fontFamily: 'Helvetica-Bold',
@@ -376,15 +376,15 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
             </Text>
           ) : null}
           {person.company ? (
-            <Text style={{ fontSize: 17, marginTop: 10, color: '#222222' }}>
+            <Text style={{ fontSize: 22, marginTop: 10, color: '#222222' }}>
               {person.company}
             </Text>
           ) : null}
           {person.tableNumber == null ? null : (
             <Text
               style={{
-                fontSize: 14,
-                marginTop: 12,
+                fontSize: 12,
+                marginTop: 24,
                 letterSpacing: 1.4,
                 color: '#555555',
                 fontFamily: 'Helvetica-Bold',
@@ -399,6 +399,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
+            paddingRight: 12,
           }}
         >
           <Image src={getPackIqSrc('black')} style={{ width: 88, height: 36 }} />
