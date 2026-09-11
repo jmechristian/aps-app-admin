@@ -63,7 +63,7 @@ function PlacardFace({
           {booth ? (
             <p
               className='mt-1.5 font-bold'
-              style={{ fontSize: px(16), color: PLACARD_COLORS.navy }}
+              style={{ fontSize: px(28), color: PLACARD_COLORS.navy }}
             >
               {booth}
             </p>

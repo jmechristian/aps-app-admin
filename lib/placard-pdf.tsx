@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   booth: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 28,
     fontFamily: 'Helvetica-Bold',
     color: PLACARD_COLORS.navy,
   },
