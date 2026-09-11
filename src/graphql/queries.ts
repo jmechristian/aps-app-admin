@@ -1515,6 +1515,144 @@ export const listApsPushTokens = /* GraphQL */ `query ListApsPushTokens(
   APITypes.ListApsPushTokensQueryVariables,
   APITypes.ListApsPushTokensQuery
 >;
+export const getApsPostEventSurvey = /* GraphQL */ `query GetApsPostEventSurvey($id: ID!) {
+  getApsPostEventSurvey(id: $id) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetApsPostEventSurveyQueryVariables,
+  APITypes.GetApsPostEventSurveyQuery
+>;
+export const listApsPostEventSurveys = /* GraphQL */ `query ListApsPostEventSurveys(
+  $filter: ModelApsPostEventSurveyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listApsPostEventSurveys(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      registrantId
+      userId
+      surveyKey
+      identityType
+      mostBeneficial
+      leastBeneficial
+      summitRating
+      gainedValue
+      gainedValueComments
+      favoritePresentation
+      sessionRatings
+      networkGrowthRating
+      improvementSuggestions
+      recommendName
+      recommendCompany
+      recommendEmail
+      recommendPhone
+      completedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListApsPostEventSurveysQueryVariables,
+  APITypes.ListApsPostEventSurveysQuery
+>;
 export const getApsAppFeedback = /* GraphQL */ `query GetApsAppFeedback($id: ID!) {
   getApsAppFeedback(id: $id) {
     id
@@ -3422,6 +3560,202 @@ export const apsPushTokensByUserIdAndUpdatedAt = /* GraphQL */ `query ApsPushTok
   APITypes.ApsPushTokensByUserIdAndUpdatedAtQueryVariables,
   APITypes.ApsPushTokensByUserIdAndUpdatedAtQuery
 >;
+export const apsPostEventSurveysByEventIdAndCreatedAt = /* GraphQL */ `query ApsPostEventSurveysByEventIdAndCreatedAt(
+  $eventId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsPostEventSurveyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsPostEventSurveysByEventIdAndCreatedAt(
+    eventId: $eventId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      registrantId
+      userId
+      surveyKey
+      identityType
+      mostBeneficial
+      leastBeneficial
+      summitRating
+      gainedValue
+      gainedValueComments
+      favoritePresentation
+      sessionRatings
+      networkGrowthRating
+      improvementSuggestions
+      recommendName
+      recommendCompany
+      recommendEmail
+      recommendPhone
+      completedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsPostEventSurveysByEventIdAndCreatedAtQueryVariables,
+  APITypes.ApsPostEventSurveysByEventIdAndCreatedAtQuery
+>;
+export const apsPostEventSurveysByRegistrantId = /* GraphQL */ `query ApsPostEventSurveysByRegistrantId(
+  $registrantId: ID!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsPostEventSurveyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsPostEventSurveysByRegistrantId(
+    registrantId: $registrantId
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      registrantId
+      userId
+      surveyKey
+      identityType
+      mostBeneficial
+      leastBeneficial
+      summitRating
+      gainedValue
+      gainedValueComments
+      favoritePresentation
+      sessionRatings
+      networkGrowthRating
+      improvementSuggestions
+      recommendName
+      recommendCompany
+      recommendEmail
+      recommendPhone
+      completedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsPostEventSurveysByRegistrantIdQueryVariables,
+  APITypes.ApsPostEventSurveysByRegistrantIdQuery
+>;
+export const apsPostEventSurveysByUserIdAndCreatedAt = /* GraphQL */ `query ApsPostEventSurveysByUserIdAndCreatedAt(
+  $userId: ID!
+  $createdAt: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsPostEventSurveyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsPostEventSurveysByUserIdAndCreatedAt(
+    userId: $userId
+    createdAt: $createdAt
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      registrantId
+      userId
+      surveyKey
+      identityType
+      mostBeneficial
+      leastBeneficial
+      summitRating
+      gainedValue
+      gainedValueComments
+      favoritePresentation
+      sessionRatings
+      networkGrowthRating
+      improvementSuggestions
+      recommendName
+      recommendCompany
+      recommendEmail
+      recommendPhone
+      completedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsPostEventSurveysByUserIdAndCreatedAtQueryVariables,
+  APITypes.ApsPostEventSurveysByUserIdAndCreatedAtQuery
+>;
+export const apsPostEventSurveysBySurveyKey = /* GraphQL */ `query ApsPostEventSurveysBySurveyKey(
+  $surveyKey: String!
+  $sortDirection: ModelSortDirection
+  $filter: ModelApsPostEventSurveyFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  apsPostEventSurveysBySurveyKey(
+    surveyKey: $surveyKey
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      owner
+      eventId
+      registrantId
+      userId
+      surveyKey
+      identityType
+      mostBeneficial
+      leastBeneficial
+      summitRating
+      gainedValue
+      gainedValueComments
+      favoritePresentation
+      sessionRatings
+      networkGrowthRating
+      improvementSuggestions
+      recommendName
+      recommendCompany
+      recommendEmail
+      recommendPhone
+      completedAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ApsPostEventSurveysBySurveyKeyQueryVariables,
+  APITypes.ApsPostEventSurveysBySurveyKeyQuery
+>;
 export const apsAppFeedbacksByUserIdAndCreatedAt = /* GraphQL */ `query ApsAppFeedbacksByUserIdAndCreatedAt(
   $userId: ID!
   $createdAt: ModelStringKeyConditionInput
@@ -3958,6 +4292,10 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
       __typename
     }
     notes {
+      nextToken
+      __typename
+    }
+    postEventSurveys {
       nextToken
       __typename
     }

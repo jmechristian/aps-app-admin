@@ -1,6 +1,7 @@
 import CategoryPageShell from '../category-page-shell';
 import SeatingChartManager from './seating-chart-manager';
 import SeatingCsvImport from './seating-csv-import';
+import SeatingClearAll from './seating-clear-all';
 import {
   fetchSeatingAssignments,
   fetchSeatingRegistrantOptions,
@@ -35,6 +36,8 @@ export default async function SeatingPage({ params }: PageProps) {
       </section>
 
       <SeatingCsvImport eventId={eventId} />
+
+      <SeatingClearAll eventId={eventId} assignmentCount={assignments.length} />
 
       <SeatingChartManager
         eventId={eventId}

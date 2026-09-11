@@ -1,7 +1,5 @@
 'use server';
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
 import { fetchRegistrantsByApsId } from '@/app/actions/registrants';
@@ -15,12 +13,6 @@ import {
   parseSeatingCsv,
   type SeatingImportRegistrant,
 } from '@/lib/seating-import';
-
-const DEFAULT_SEATING_CSV_PATH = path.join(
-  process.cwd(),
-  'data',
-  'aps-2026-table-assignments.csv'
-);
 
 type SeatingRegistrantRecord = {
   id: string;
@@ -368,6 +360,26 @@ export async function assignRegistrantToTable(params: {
   revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
 }
 
+async function unlinkRegistrantSeating(registrantId: string) {
+  try {
+    await requestGraphQL(UPDATE_REGISTRANT_SEATING_LINK, {
+      input: {
+        id: registrantId,
+        apsRegistrantSeatingChartRegistrantId: null,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (
+      message.toLowerCase().includes('not found') ||
+      message.toLowerCase().includes('conditional request failed')
+    ) {
+      return;
+    }
+    throw error;
+  }
+}
+
 export async function clearRegistrantTableAssignment(params: {
   eventId: string;
   registrantId: string;
@@ -379,16 +391,47 @@ export async function clearRegistrantTableAssignment(params: {
     input: { id: existing.id },
   });
 
-  await requestGraphQL(UPDATE_REGISTRANT_SEATING_LINK, {
-    input: {
-      id: params.registrantId,
-      apsRegistrantSeatingChartRegistrantId: null,
-    },
-  });
+  await unlinkRegistrantSeating(params.registrantId);
 
   revalidatePath(`/aps/${params.eventId}`);
   revalidatePath(`/aps/${params.eventId}/seating`);
   revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+}
+
+export async function clearAllSeatingAssignments(params: {
+  eventId: string;
+  confirmation: string;
+}) {
+  if (params.confirmation.trim() !== 'DELETE ALL TABLES') {
+    throw new Error('Type DELETE ALL TABLES to confirm.');
+  }
+
+  const assignments = await fetchSeatingAssignments();
+  let deleted = 0;
+  const failed: string[] = [];
+
+  for (const assignment of assignments) {
+    try {
+      await requestGraphQL(DELETE_APS_SEATING_CHART_REGISTRANT, {
+        input: { id: assignment.id },
+      });
+      if (assignment.registrantId) {
+        await unlinkRegistrantSeating(assignment.registrantId);
+      }
+      deleted += 1;
+    } catch (error) {
+      failed.push(
+        `${assignment.firstName ?? ''} ${assignment.lastName ?? ''} (${assignment.id}): ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    }
+  }
+
+  revalidatePath(`/aps/${params.eventId}`);
+  revalidatePath(`/aps/${params.eventId}/seating`);
+
+  return { deleted, failed, remaining: assignments.length - deleted };
 }
 
 type SeatingActionState = {
@@ -446,13 +489,6 @@ export type SeatingCsvImportPreview = {
   }>;
 };
 
-function readDefaultSeatingCsv() {
-  if (!fs.existsSync(DEFAULT_SEATING_CSV_PATH)) {
-    throw new Error('Default seating CSV was not found on the server.');
-  }
-  return fs.readFileSync(DEFAULT_SEATING_CSV_PATH, 'utf8');
-}
-
 async function buildImportRegistrants(eventId: string): Promise<SeatingImportRegistrant[]> {
   const [registrants, assignments] = await Promise.all([
     fetchRegistrantsByApsId(eventId),
@@ -476,9 +512,12 @@ async function buildImportRegistrants(eventId: string): Promise<SeatingImportReg
 
 export async function previewSeatingCsvImport(params: {
   eventId: string;
-  csvText?: string;
+  csvText: string;
 }): Promise<SeatingCsvImportPreview> {
-  const csvText = params.csvText?.trim() ? params.csvText : readDefaultSeatingCsv();
+  const csvText = params.csvText.trim();
+  if (!csvText) {
+    throw new Error('Upload a seating CSV to preview assignments.');
+  }
   const result = matchSeatingCsvToRegistrants(
     parseSeatingCsv(csvText),
     await buildImportRegistrants(params.eventId)

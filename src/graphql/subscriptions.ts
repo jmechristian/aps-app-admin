@@ -3035,6 +3035,297 @@ export const onDeleteApsPushToken = /* GraphQL */ `subscription OnDeleteApsPushT
   APITypes.OnDeleteApsPushTokenSubscriptionVariables,
   APITypes.OnDeleteApsPushTokenSubscription
 >;
+export const onCreateApsPostEventSurvey = /* GraphQL */ `subscription OnCreateApsPostEventSurvey(
+  $filter: ModelSubscriptionApsPostEventSurveyFilterInput
+  $owner: String
+) {
+  onCreateApsPostEventSurvey(filter: $filter, owner: $owner) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateApsPostEventSurveySubscriptionVariables,
+  APITypes.OnCreateApsPostEventSurveySubscription
+>;
+export const onUpdateApsPostEventSurvey = /* GraphQL */ `subscription OnUpdateApsPostEventSurvey(
+  $filter: ModelSubscriptionApsPostEventSurveyFilterInput
+  $owner: String
+) {
+  onUpdateApsPostEventSurvey(filter: $filter, owner: $owner) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateApsPostEventSurveySubscriptionVariables,
+  APITypes.OnUpdateApsPostEventSurveySubscription
+>;
+export const onDeleteApsPostEventSurvey = /* GraphQL */ `subscription OnDeleteApsPostEventSurvey(
+  $filter: ModelSubscriptionApsPostEventSurveyFilterInput
+  $owner: String
+) {
+  onDeleteApsPostEventSurvey(filter: $filter, owner: $owner) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteApsPostEventSurveySubscriptionVariables,
+  APITypes.OnDeleteApsPostEventSurveySubscription
+>;
 export const onCreateApsAppFeedback = /* GraphQL */ `subscription OnCreateApsAppFeedback(
   $filter: ModelSubscriptionApsAppFeedbackFilterInput
   $owner: String
@@ -3791,6 +4082,10 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
       nextToken
       __typename
     }
+    postEventSurveys {
+      nextToken
+      __typename
+    }
     qrCode
     createdAt
     updatedAt
@@ -3930,6 +4225,10 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
       nextToken
       __typename
     }
+    postEventSurveys {
+      nextToken
+      __typename
+    }
     qrCode
     createdAt
     updatedAt
@@ -4066,6 +4365,10 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
       __typename
     }
     notes {
+      nextToken
+      __typename
+    }
+    postEventSurveys {
       nextToken
       __typename
     }

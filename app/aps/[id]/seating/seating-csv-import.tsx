@@ -19,7 +19,7 @@ export default function SeatingCsvImport({ eventId }: SeatingCsvImportProps) {
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  function handlePreview(csvText?: string) {
+  function handlePreview(csvText: string) {
     setError(null);
     setProgress(null);
     startTransition(async () => {
@@ -41,7 +41,11 @@ export default function SeatingCsvImport({ eventId }: SeatingCsvImportProps) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      handlePreview(typeof reader.result === 'string' ? reader.result : undefined);
+      if (typeof reader.result !== 'string' || !reader.result.trim()) {
+        setError('Could not read that CSV.');
+        return;
+      }
+      handlePreview(reader.result);
     };
     reader.readAsText(file);
   }
@@ -91,15 +95,7 @@ export default function SeatingCsvImport({ eventId }: SeatingCsvImportProps) {
       </p>
 
       <div className='mt-5 flex flex-wrap items-center gap-3'>
-        <button
-          type='button'
-          onClick={() => handlePreview()}
-          disabled={isPending}
-          className='rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50'
-        >
-          Preview APS 2026 CSV
-        </button>
-        <label className='rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50'>
+        <label className='rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800'>
           Upload CSV
           <input
             type='file'

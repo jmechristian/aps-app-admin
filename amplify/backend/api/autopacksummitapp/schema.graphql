@@ -29,6 +29,13 @@ enum SponsorType {
   NONE
 }
 
+enum PostEventSurveyIdentity {
+  SPONSOR
+  SOLUTION_PROVIDER
+  OEM
+  TIER_ONE
+}
+
 input SendModeratedDmMessageInput {
   threadId: ID!
   body: String!
@@ -333,6 +340,8 @@ type ApsRegistrant
   appUser: ApsAppUser @hasOne(fields: ["appUserId"])
 
   notes: [ApsAppUserNote] @hasMany(indexName: "byRegistrant", fields: ["id"])
+  postEventSurveys: [ApsPostEventSurvey]
+    @hasMany(indexName: "byRegistrant", fields: ["id"])
   qrCode: String
 }
 
@@ -1421,6 +1430,46 @@ type ApsPushToken
   platform: String
   updatedAt: AWSDateTime!
   createdAt: AWSDateTime!
+}
+
+# One completed post-event survey per registrant per event.
+# Uniqueness is the deterministic id/surveyKey: pes:<eventId>|r:<registrantId>
+# Owner may create+read only (no updates), so it cannot be submitted twice.
+type ApsPostEventSurvey
+  @model
+  @aws_cognito_user_pools
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools, operations: [create, read] }
+      { allow: groups, groups: ["Admin"], provider: userPools }
+    ]
+  ) {
+  id: ID!
+  owner: String
+  eventId: ID! @index(name: "byEvent", sortKeyFields: ["createdAt"])
+  registrantId: ID! @index(name: "byRegistrant")
+  registrant: ApsRegistrant! @belongsTo(fields: ["registrantId"])
+  userId: ID! @index(name: "byUser", sortKeyFields: ["createdAt"])
+  surveyKey: String! @index(name: "bySurveyKey")
+
+  identityType: PostEventSurveyIdentity
+  mostBeneficial: String
+  leastBeneficial: String
+  summitRating: Int
+  gainedValue: Boolean
+  gainedValueComments: String
+  favoritePresentation: String
+  sessionRatings: AWSJSON
+  networkGrowthRating: Int
+  improvementSuggestions: String
+  recommendName: String
+  recommendCompany: String
+  recommendEmail: String
+  recommendPhone: String
+
+  completedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
 }
 
 # In-app feedback submissions (text + optional screenshot/image keys).

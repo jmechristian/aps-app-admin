@@ -648,6 +648,10 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
       nextToken
       __typename
     }
+    postEventSurveys {
+      nextToken
+      __typename
+    }
     qrCode
     createdAt
     updatedAt
@@ -6545,6 +6549,297 @@ export const deleteApsPushToken = /* GraphQL */ `mutation DeleteApsPushToken(
   APITypes.DeleteApsPushTokenMutationVariables,
   APITypes.DeleteApsPushTokenMutation
 >;
+export const createApsPostEventSurvey = /* GraphQL */ `mutation CreateApsPostEventSurvey(
+  $input: CreateApsPostEventSurveyInput!
+  $condition: ModelApsPostEventSurveyConditionInput
+) {
+  createApsPostEventSurvey(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateApsPostEventSurveyMutationVariables,
+  APITypes.CreateApsPostEventSurveyMutation
+>;
+export const updateApsPostEventSurvey = /* GraphQL */ `mutation UpdateApsPostEventSurvey(
+  $input: UpdateApsPostEventSurveyInput!
+  $condition: ModelApsPostEventSurveyConditionInput
+) {
+  updateApsPostEventSurvey(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateApsPostEventSurveyMutationVariables,
+  APITypes.UpdateApsPostEventSurveyMutation
+>;
+export const deleteApsPostEventSurvey = /* GraphQL */ `mutation DeleteApsPostEventSurvey(
+  $input: DeleteApsPostEventSurveyInput!
+  $condition: ModelApsPostEventSurveyConditionInput
+) {
+  deleteApsPostEventSurvey(input: $input, condition: $condition) {
+    id
+    owner
+    eventId
+    registrantId
+    registrant {
+      id
+      apsID
+      firstName
+      lastName
+      email
+      phone
+      companyId
+      jobTitle
+      attendeeType
+      termsAccepted
+      interests
+      otherInterest
+      buyerQuestion
+      packagingChallenge
+      certification
+      billingAddressFirstName
+      billingAddressLastName
+      billingAddressEmail
+      billingAddressPhone
+      billingAddressStreet
+      billingAddressCity
+      billingAddressState
+      billingAddressZip
+      billingAddressCountry
+      sameAsAttendee
+      speakerTopic
+      learningObjectives
+      totalAmount
+      discountCode
+      status
+      paymentConfirmation
+      registrationEmailSent
+      registrationEmailSentDate
+      registrationEmailReceived
+      registrationEmailReceivedDate
+      welcomeEmailSent
+      welcomeEmailSentDate
+      welcomeEmailReceived
+      welcomeEmailReceivedDate
+      appEmailSent
+      appEmailSentDate
+      appEmailReceived
+      appEmailReceivedDate
+      paymentMethod
+      paymentLast4
+      approvedAt
+      headshot
+      presentation
+      presentationTitle
+      presentationSummary
+      bio
+      invoice
+      appUserId
+      qrCode
+      createdAt
+      updatedAt
+      aPSRegistrantsId
+      aPSCompanyRegistrantsId
+      apsRegistrantSeatingChartRegistrantId
+      __typename
+    }
+    userId
+    surveyKey
+    identityType
+    mostBeneficial
+    leastBeneficial
+    summitRating
+    gainedValue
+    gainedValueComments
+    favoritePresentation
+    sessionRatings
+    networkGrowthRating
+    improvementSuggestions
+    recommendName
+    recommendCompany
+    recommendEmail
+    recommendPhone
+    completedAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteApsPostEventSurveyMutationVariables,
+  APITypes.DeleteApsPostEventSurveyMutation
+>;
 export const createApsAppFeedback = /* GraphQL */ `mutation CreateApsAppFeedback(
   $input: CreateApsAppFeedbackInput!
   $condition: ModelApsAppFeedbackConditionInput
@@ -7331,6 +7626,10 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
       nextToken
       __typename
     }
+    postEventSurveys {
+      nextToken
+      __typename
+    }
     qrCode
     createdAt
     updatedAt
@@ -7468,6 +7767,10 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
       __typename
     }
     notes {
+      nextToken
+      __typename
+    }
+    postEventSurveys {
       nextToken
       __typename
     }
