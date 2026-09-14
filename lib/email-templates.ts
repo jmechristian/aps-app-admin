@@ -1,6 +1,7 @@
 import { render } from '@react-email/render';
 import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
 import { AppAccessEmail } from '@/react-email-starter/emails/app-access-email';
+import { AttendeeInfoEmail } from '@/react-email-starter/emails/attendee-info-email';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -37,6 +38,15 @@ export type EmailTemplateDefinition = {
   renderHtml: (ctx: EmailTemplateContext) => Promise<string>;
   renderText?: (ctx: EmailTemplateContext) => string;
 };
+
+const APP_STORE_URL =
+  process.env.APS_APP_STORE_URL ||
+  'https://apps.apple.com/us/app/automotive-packaging-summit/id6761734425';
+const PLAY_STORE_URL =
+  process.env.APS_PLAY_STORE_URL ||
+  'https://play.google.com/store/apps/details?id=com.packagingschool.autopacksummit';
+const WEB_APP_URL =
+  process.env.APS_WEB_APP_URL || 'https://autopacksummit.expo.app/';
 
 const welcomeTemplate: EmailTemplateDefinition = {
   key: 'welcome-email',
@@ -89,12 +99,8 @@ const appAccessTemplate: EmailTemplateDefinition = {
         tempPassword: recipient.tempPassword ?? null,
         eventYear,
         dashboardUrl: `https://www.autopacksummit.com/registrants/${recipient.id}`,
-        appStoreUrl:
-          process.env.APS_APP_STORE_URL ||
-          'https://apps.apple.com/us/app/automotive-packaging-summit/id6761734425',
-        playStoreUrl:
-          process.env.APS_PLAY_STORE_URL ||
-          'https://play.google.com/store/apps/details?id=com.packagingschool.autopacksummit',
+        appStoreUrl: APP_STORE_URL,
+        playStoreUrl: PLAY_STORE_URL,
       }),
     );
   },
@@ -119,9 +125,87 @@ const appAccessTemplate: EmailTemplateDefinition = {
   },
 };
 
+const attendeeInfoTemplate: EmailTemplateDefinition = {
+  key: 'attendee-info-email',
+  label: 'Attendee info (pre-event)',
+  description:
+    'Dates, cocktail hour, tour spots, app download (iOS, Android, web), temp password, meals, attire, and parking.',
+  requiresTempPassword: true,
+  defaultSubject: ({ eventYear }) =>
+    `AutoPack Summit ${eventYear}: Important Information for Attendees`,
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      AttendeeInfoEmail({
+        firstName: recipient.firstName ?? '',
+        email: recipient.email,
+        tempPassword: recipient.tempPassword ?? null,
+        eventYear,
+        appStoreUrl: APP_STORE_URL,
+        playStoreUrl: PLAY_STORE_URL,
+        webAppUrl: WEB_APP_URL,
+      }),
+    );
+  },
+  renderText: ({ recipient, eventYear }) => {
+    const lines = [
+      `Dear ${recipient.firstName?.trim() || 'AutoPack Summit Attendee'},`,
+      '',
+      `We're excited to welcome you to Greenville for the ${eventYear} Automotive Packaging Summit.`,
+      '',
+      'EVENT DATES AND LOCATION',
+      `September 30–October 2, ${eventYear}`,
+      'Hyatt Regency Greenville',
+      '220 North Main Street, Greenville, SC 29601',
+      '',
+      'The main conference program is Thursday, October 1. Registration and continental breakfast begin at 7:30 AM, followed by welcome remarks at 8:30 AM.',
+      'Agenda: https://www.autopacksummit.com/agenda',
+      '',
+      'KICKOFF COCKTAIL HOUR',
+      'Wednesday, September 30 · 6:00–8:00 PM',
+      'New Realm Brewing, 912 S. Main Street, Greenville, SC 29601',
+      'Please look for the EVITE invitation and RSVP.',
+      '',
+      'WEDNESDAY TOUR — SPOTS STILL AVAILABLE',
+      'Clemson University ICAR and Deep Orange Facility Tour',
+      'Wednesday, September 30 · 11:00 AM–12:30 PM · Transportation provided',
+      'To add the tour, reply to this email or write bianca@packagingschool.com as soon as possible.',
+      '',
+      'DOWNLOAD THE EVENT APP',
+      `iOS: ${APP_STORE_URL}`,
+      `Android: ${PLAY_STORE_URL}`,
+      `Web app: ${WEB_APP_URL}`,
+      '',
+      'Sign in with the email associated with your registration.',
+      `Email: ${recipient.email}`,
+      recipient.tempPassword
+        ? `Temporary password: ${recipient.tempPassword}`
+        : 'Temporary password unavailable — use Forgot Password in the app.',
+      '',
+      'Use the temporary password only if you have not signed in yet and created your own password. If you already set a password, keep using that one.',
+      'App guide: https://www.autopacksummit.com/appguide',
+      '',
+      'THURSDAY MEALS AND RECEPTION',
+      "Thursday's program includes continental breakfast, lunch, networking breaks, and an evening cocktail reception with hors d'oeuvres from 5:00 to 7:00 PM at the Hyatt.",
+      '',
+      'ATTIRE',
+      'Business casual. Comfortable clothing and walking shoes for facility tours.',
+      '',
+      'TRAVEL AND PARKING',
+      'Self-parking in the Hyatt garage is $10 per day. Park front-in; reverse parking is not permitted. Rates may change.',
+      '',
+      'Questions: bianca@packagingschool.com',
+      '',
+      'The AutoPack Summit Team',
+      'https://www.autopacksummit.com',
+    ];
+    return lines.join('\n');
+  },
+};
+
 const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [welcomeTemplate.key]: welcomeTemplate,
   [appAccessTemplate.key]: appAccessTemplate,
+  [attendeeInfoTemplate.key]: attendeeInfoTemplate,
 };
 
 export function listEmailTemplates(): EmailTemplateDefinition[] {

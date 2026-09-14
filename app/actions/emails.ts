@@ -329,6 +329,100 @@ async function toTemplateRecipient(
   return base;
 }
 
+const PREVIEW_PLACEHOLDER_RECIPIENT: EmailTemplateRecipient = {
+  id: 'preview',
+  firstName: 'Jamie',
+  lastName: 'Christian',
+  email: 'preview@autopacksummit.com',
+  phone: '(864) 412-5000',
+  jobTitle: 'Attendee',
+  attendeeType: 'OEM',
+  companyName: 'Packaging School',
+  speedNetworking: true,
+  totalAmount: 499,
+  billingAddressStreet: '220 North Main Street',
+  billingAddressCity: 'Greenville',
+  billingAddressState: 'SC',
+  billingAddressZip: '29601',
+  tempPassword: null,
+};
+
+function recipientDisplayName(recipient: EmailTemplateRecipient) {
+  return (
+    [recipient.firstName, recipient.lastName].filter(Boolean).join(' ').trim() ||
+    recipient.email
+  );
+}
+
+function findRegistrantByEmail(
+  registrants: Registrant[],
+  email: string,
+): Registrant | null {
+  const needle = email.trim().toLowerCase();
+  if (!needle) return null;
+  return (
+    registrants.find((r) => (r.email || '').trim().toLowerCase() === needle) ??
+    null
+  );
+}
+
+async function resolveTemplateSubject(params: {
+  templateKey: string;
+  eventId: string;
+  subject?: string;
+}) {
+  const template = assertEmailTemplate(params.templateKey);
+  const eventYear = await getEventYear(params.eventId);
+  const subject = params.subject?.trim() || template.defaultSubject({ eventYear });
+  return { template, eventYear, subject };
+}
+
+async function resolveRecipientForPreview(params: {
+  eventId: string;
+  email?: string;
+  includeTempPassword?: boolean;
+}): Promise<{
+  recipient: EmailTemplateRecipient;
+  usedPlaceholder: boolean;
+}> {
+  const all = await fetchRegistrantsByApsId(params.eventId);
+  const requested = params.email?.trim();
+
+  if (requested) {
+    const match = findRegistrantByEmail(all, requested);
+    if (!match) {
+      throw new Error(
+        `No registrant with email ${requested} on this event.`,
+      );
+    }
+    return {
+      recipient: await toTemplateRecipient(match, {
+        includeTempPassword: params.includeTempPassword,
+      }),
+      usedPlaceholder: false,
+    };
+  }
+
+  const fallback =
+    all.find((r) => r.status === 'APPROVED' && r.email) ??
+    all.find((r) => r.email) ??
+    null;
+
+  if (!fallback) {
+    return {
+      recipient: PREVIEW_PLACEHOLDER_RECIPIENT,
+      usedPlaceholder: true,
+    };
+  }
+
+  return {
+    recipient: await toTemplateRecipient(fallback, {
+      includeTempPassword: params.includeTempPassword,
+    }),
+    usedPlaceholder: false,
+  };
+}
+
 export async function getEmailTemplateOptions() {
   return listEmailTemplates().map((t) => ({
     key: t.key,
@@ -338,6 +432,100 @@ export async function getEmailTemplateOptions() {
       eventYear: process.env.APS_EVENT_YEAR || '2026',
     }),
   }));
+}
+
+export async function previewEmailTemplate(params: {
+  eventId: string;
+  templateKey: string;
+  subject?: string;
+  email?: string;
+}): Promise<{
+  html: string;
+  subject: string;
+  recipientEmail: string;
+  recipientName: string;
+  usedPlaceholder: boolean;
+  hasStoredTempPassword: boolean;
+  tempPassword: string | null;
+}> {
+  const { template, eventYear, subject } = await resolveTemplateSubject(params);
+  const { recipient, usedPlaceholder } = await resolveRecipientForPreview({
+    eventId: params.eventId,
+    email: params.email,
+    includeTempPassword: Boolean(template.requiresTempPassword),
+  });
+
+  const html = await template.renderHtml({
+    recipient,
+    eventYear,
+    subject,
+  });
+
+  const storedPassword =
+    !usedPlaceholder && template.requiresTempPassword
+      ? recipient.tempPassword ?? null
+      : null;
+
+  return {
+    html,
+    subject,
+    recipientEmail: recipient.email,
+    recipientName: recipientDisplayName(recipient),
+    usedPlaceholder,
+    hasStoredTempPassword: Boolean(storedPassword),
+    tempPassword: storedPassword,
+  };
+}
+
+export async function sendTestEmail(params: {
+  eventId: string;
+  templateKey: string;
+  email: string;
+  subject?: string;
+}): Promise<{ ok: true; message: string; to: string; subject: string }> {
+  const to = params.email.trim().toLowerCase();
+  if (!to || !to.includes('@')) {
+    throw new Error('Enter a registered email address.');
+  }
+
+  const { template, eventYear, subject } = await resolveTemplateSubject(params);
+  const all = await fetchRegistrantsByApsId(params.eventId);
+  const match = findRegistrantByEmail(all, to);
+  if (!match) {
+    throw new Error(`No registrant with email ${params.email.trim()} on this event.`);
+  }
+
+  const recipient = await toTemplateRecipient(match, {
+    includeTempPassword: Boolean(template.requiresTempPassword),
+  });
+  const html = await template.renderHtml({
+    recipient,
+    eventYear,
+    subject,
+  });
+  const text = template.renderText?.({
+    recipient,
+    eventYear,
+    subject,
+  });
+
+  const testSubject = subject.startsWith('[TEST]')
+    ? subject
+    : `[TEST] ${subject}`;
+
+  await sendHtmlEmail({
+    to: recipient.email.trim(),
+    subject: testSubject,
+    html,
+    text,
+  });
+
+  return {
+    ok: true,
+    to: recipient.email.trim(),
+    subject: testSubject,
+    message: `Test sent to ${recipient.email.trim()} as ${recipientDisplayName(recipient)}.`,
+  };
 }
 
 export async function previewCampaignAudience(params: {

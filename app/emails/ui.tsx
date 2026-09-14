@@ -9,8 +9,10 @@ import {
   listCampaignsByEventId,
   listSendsByCampaignId,
   previewCampaignAudience,
+  previewEmailTemplate,
   scheduleEmailCampaign,
   sendEmailCampaignNow,
+  sendTestEmail,
   type EmailCampaign,
   type EmailSend,
   type RegistrantStatusFilter,
@@ -41,6 +43,8 @@ const TYPE_OPTIONS: RegistrantTypeFilter[] = [
   'STAFF',
   'EXHIBITOR',
 ];
+
+const COMPLETE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getGraphQLData<T>(res: unknown): T {
   const data = (res as { data?: T }).data;
@@ -116,6 +120,20 @@ export default function EmailsClient() {
   >([]);
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
+
+  const [previewEmail, setPreviewEmail] = useState('');
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [previewMeta, setPreviewMeta] = useState<{
+    subject: string;
+    recipientEmail: string;
+    recipientName: string;
+    usedPlaceholder: boolean;
+    hasStoredTempPassword: boolean;
+    tempPassword: string | null;
+  } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [testSending, setTestSending] = useState(false);
 
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
     null,
@@ -232,6 +250,52 @@ export default function EmailsClient() {
       cancelled = true;
     };
   }, [eventId, audienceStatuses, audienceTypes]);
+
+  const previewLookupEmail = COMPLETE_EMAIL_RE.test(previewEmail.trim())
+    ? previewEmail.trim()
+    : '';
+
+  useEffect(() => {
+    if (!eventId || !templateKey) return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        setPreviewLoading(true);
+        setPreviewError(null);
+        try {
+          const result = await previewEmailTemplate({
+            eventId,
+            templateKey,
+            subject: subject.trim() || undefined,
+            email: previewLookupEmail || undefined,
+          });
+          if (cancelled) return;
+          setPreviewHtml(result.html);
+          setPreviewMeta({
+            subject: result.subject,
+            recipientEmail: result.recipientEmail,
+            recipientName: result.recipientName,
+            usedPlaceholder: result.usedPlaceholder,
+            hasStoredTempPassword: result.hasStoredTempPassword,
+            tempPassword: result.tempPassword,
+          });
+        } catch (e) {
+          if (cancelled) return;
+          setPreviewError(
+            e instanceof Error ? e.message : 'Failed to render preview',
+          );
+        } finally {
+          if (!cancelled) setPreviewLoading(false);
+        }
+      })();
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [eventId, templateKey, subject, previewLookupEmail]);
 
   function toggleStatus(status: RegistrantStatusFilter) {
     setAudienceStatuses((prev) => {
@@ -367,8 +431,9 @@ export default function EmailsClient() {
             <p className="text-sm text-slate-600">{eventLabel}</p>
           </div>
 
+          <div className="mt-6 grid gap-6 lg:grid-cols-2 lg:items-start">
           <form
-            className="mt-6 grid gap-4"
+            className="grid gap-4"
             onSubmit={(e) => {
               e.preventDefault();
               if (!eventId) return;
@@ -612,6 +677,158 @@ export default function EmailsClient() {
               </button>
             </div>
           </form>
+
+          <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  Preview
+                </h3>
+                <p className="mt-1 text-xs text-slate-600">
+                  {previewMeta
+                    ? previewMeta.usedPlaceholder
+                      ? 'Sample data — enter a registered email to preview as that attendee.'
+                      : `Showing ${previewMeta.recipientName} (${previewMeta.recipientEmail})`
+                    : 'Select a template to render a live preview.'}
+                </p>
+              </div>
+              {previewLoading ? (
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
+                  Updating…
+                </span>
+              ) : null}
+            </div>
+
+            {previewMeta && !previewMeta.usedPlaceholder ? (
+              <div className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                {previewMeta.hasStoredTempPassword ? (
+                  <>
+                    Stored temp password:{' '}
+                    <span className="font-mono text-sm font-semibold text-slate-900">
+                      {previewMeta.tempPassword}
+                    </span>
+                    <span className="mt-1 block text-[11px] text-slate-500">
+                      Same credential as this registrant&apos;s profile in
+                      admin.
+                    </span>
+                  </>
+                ) : (
+                  <span>
+                    No stored temp password on file for this registrant. The
+                    email will tell them to use Forgot Password.
+                  </span>
+                )}
+              </div>
+            ) : null}
+
+            {previewMeta?.subject ? (
+              <p className="mt-3 truncate rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                Subject:{' '}
+                <span className="font-semibold text-slate-900">
+                  {previewMeta.subject}
+                </span>
+              </p>
+            ) : null}
+
+            <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              {previewError ? (
+                <div className="border-b border-rose-100 bg-rose-50 p-3 text-sm text-rose-700">
+                  {previewError}
+                </div>
+              ) : null}
+              {previewHtml ? (
+                <iframe
+                  key={`${templateKey}-${previewMeta?.recipientEmail ?? 'sample'}-${previewMeta?.tempPassword ?? 'none'}`}
+                  title="Email preview"
+                  sandbox=""
+                  srcDoc={previewHtml}
+                  className="h-[min(80vh,880px)] w-full bg-slate-100"
+                />
+              ) : (
+                <div className="p-8 text-center text-sm text-slate-500">
+                  {eventId
+                    ? previewError
+                      ? 'Enter a registered email or clear the field to preview sample data.'
+                      : 'Rendering preview…'
+                    : 'Choose an event to preview.'}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="text-sm font-semibold text-slate-900">
+                Send a test
+              </div>
+              <p className="mt-1 text-xs text-slate-600">
+                Sends this template to one registered email on the selected
+                event, using that attendee&apos;s real data. The inbox subject
+                is prefixed with [TEST]. Campaigns and send logs are not
+                updated.
+              </p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="email"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
+                  value={previewEmail}
+                  onChange={(e) => setPreviewEmail(e.target.value)}
+                  placeholder="registered@email.com"
+                  autoComplete="email"
+                />
+                <button
+                  type="button"
+                  disabled={
+                    testSending ||
+                    !eventId ||
+                    !templateKey ||
+                    !COMPLETE_EMAIL_RE.test(previewEmail.trim())
+                  }
+                  className="shrink-0 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
+                  onClick={() => {
+                    void (async () => {
+                      const email = previewEmail.trim();
+                      if (!COMPLETE_EMAIL_RE.test(email)) return;
+                      if (
+                        !window.confirm(
+                          `Send a test of "${selectedTemplate?.label || templateKey}" to ${email}? This uses their registration data.`,
+                        )
+                      ) {
+                        return;
+                      }
+                      setTestSending(true);
+                      setError(null);
+                      setStatusMessage(null);
+                      try {
+                        const result = await sendTestEmail({
+                          eventId,
+                          templateKey,
+                          email,
+                          subject: subject.trim() || undefined,
+                        });
+                        setStatusMessage(result.message);
+                      } catch (err) {
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : 'Test send failed',
+                        );
+                      } finally {
+                        setTestSending(false);
+                      }
+                    })();
+                  }}
+                >
+                  {testSending ? 'Sending…' : 'Send test'}
+                </button>
+              </div>
+              {error ? (
+                <p className="mt-2 text-xs text-rose-700">{error}</p>
+              ) : null}
+              {statusMessage ? (
+                <p className="mt-2 text-xs text-slate-700">{statusMessage}</p>
+              ) : null}
+            </div>
+          </aside>
+          </div>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
