@@ -245,7 +245,7 @@ function RailCard({
           {person.company ? (
             <p
               className='mt-2.5 leading-tight text-slate-800'
-              style={{ fontSize: px(22) }}
+              style={{ fontSize: px(20) }}
             >
               {person.company}
             </p>
@@ -266,7 +266,7 @@ function RailCard({
             className='object-contain'
             style={{ height: px(28) }}
           />
-          {blank ? null : <QrImage url={person.qrCodeUrl} size={px(58)} />}
+          {blank ? null : <QrImage url={person.qrCodeUrl} size={px(72)} />}
         </div>
       </div>
       <PunchGuide cardWidth={cardWidth} />

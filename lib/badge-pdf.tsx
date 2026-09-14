@@ -9,6 +9,7 @@ import {
   Image,
   Svg,
   Path,
+  Font,
   StyleSheet,
 } from '@react-pdf/renderer';
 import {
@@ -26,6 +27,9 @@ import {
 } from '@/lib/badges';
 
 export type BadgePdfPerson = BadgePerson & { qrDataUrl: string };
+
+// Match browser wrapping: don't hyphenate names or company names mid-word.
+Font.registerHyphenationCallback((word) => [word]);
 
 const PAGE_W = BADGE_PAGE.pagePt.w;
 const PAGE_H = BADGE_PAGE.pagePt.h;
@@ -72,18 +76,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     textAlign: 'center',
     color: '#111111',
+    lineHeight: 1,
   },
   lastName: {
     fontSize: 13,
     marginTop: 3,
     textAlign: 'center',
     color: '#111111',
+    lineHeight: 1.25,
+    width: '100%',
   },
   company: {
     fontSize: 11,
     marginTop: 8,
     textAlign: 'center',
-    color: '#222222',
+    color: '#1e293b',
+    lineHeight: 1.25,
+    width: '100%',
   },
   tableCaption: {
     fontSize: 8,
@@ -141,6 +150,7 @@ const styles = StyleSheet.create({
   railName: {
     fontFamily: 'Helvetica-Bold',
     color: '#111111',
+    lineHeight: 1,
   },
   signalPage: {
     width: PAGE_W,
@@ -153,16 +163,21 @@ const styles = StyleSheet.create({
   signalFirst: {
     fontFamily: 'Helvetica-Bold',
     color: '#ffffff',
+    lineHeight: 1,
   },
   signalLast: {
     fontSize: 15,
     marginTop: 4,
     color: '#ffffff',
+    lineHeight: 1.25,
+    width: '100%',
   },
   signalCompany: {
     fontSize: 11,
     marginTop: 10,
     color: '#ffffff',
+    lineHeight: 1.25,
+    width: '100%',
   },
   signalType: {
     fontSize: 8,
@@ -357,7 +372,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
         <View style={{ alignItems: 'flex-start' }}>
           <ApsLogoPdf />
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', paddingRight: 8 }}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
           {first ? (
             <Text style={[styles.railName, { fontSize: firstNameFontSizePt(first) + 2 }]}>
               {first}
@@ -370,13 +385,21 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
                 marginTop: first ? 6 : 0,
                 color: '#111111',
                 fontFamily: 'Helvetica-Bold',
+                lineHeight: 1.25,
+                width: '100%',
               }}
             >
               {last}
             </Text>
           ) : null}
           {person.company ? (
-            <Text style={{ fontSize: 22, marginTop: 10, color: '#222222' }}>
+            <Text
+              style={{
+                fontSize: 20,
+                lineHeight: 1.25,
+                width: '100%',
+              }}
+            >
               {person.company}
             </Text>
           ) : null}
@@ -404,7 +427,7 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
         >
           <Image src={getPackIqSrc('black')} style={{ width: 88, height: 36 }} />
           {blank ? null : (
-            <QrSlot src={person.qrDataUrl} width={58} height={58} />
+            <QrSlot src={person.qrDataUrl} width={72} height={72} />
           )}
         </View>
       </View>
