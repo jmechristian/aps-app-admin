@@ -2,7 +2,7 @@
 
 import QRCode from 'qrcode';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { generateVCard } from '@/lib/vcard';
+import { attendeeQrPayload } from '@/lib/attendee-qr';
 
 function loadS3ConfigFromAwsExports(): {
   bucket: string;
@@ -104,6 +104,7 @@ export async function generateAndUploadQRCodeFromText(
       Key: key,
       Body: qrCodeBuffer,
       ContentType: 'image/png',
+      CacheControl: 'public, max-age=300',
       ACL: 'public-read', // Make the object publicly readable
     });
 
@@ -125,6 +126,7 @@ export async function generateAndUploadQRCodeFromText(
           Key: key,
           Body: qrCodeBuffer,
           ContentType: 'image/png',
+          CacheControl: 'public, max-age=300',
         });
         await s3Client.send(command);
       } else {
@@ -147,22 +149,17 @@ export async function generateAndUploadQRCodeFromText(
 }
 
 /**
- * Backwards-compatible helper: generate QR from registrant vCard.
+ * Attendee QR: HTTPS hop that opens this person in the event app.
+ * Same payload as autopack-summit-app (`https://autopacksummit.com/app/c/<id>`).
  */
 export async function generateAndUploadQRCode(
   registrantId: string,
-  data: {
-    firstName?: string | null;
-    lastName?: string | null;
-    email: string;
-    phone?: string | null;
-    company?: string | null;
-    jobTitle?: string | null;
-    website?: string | null;
-  }
 ): Promise<string> {
-  const vCard = generateVCard(data);
-  return generateAndUploadQRCodeFromText(registrantId, vCard);
+  const url = await generateAndUploadQRCodeFromText(
+    registrantId,
+    attendeeQrPayload(registrantId),
+  );
+  return `${url}?v=${Date.now()}`;
 }
 
 export async function generateAndUploadExhibitorPassportQRCode(

@@ -1673,14 +1673,7 @@ export async function createRegistrant(
   // Generate and upload QR code (best-effort)
   try {
     const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
-    const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
-      firstName: input.firstName ?? null,
-      lastName: input.lastName ?? null,
-      email: input.email,
-      phone: input.phone ?? null,
-      company: companyNameForProfile ?? null,
-      jobTitle: input.jobTitle ?? null,
-    });
+    const qrCodeUrl = await generateAndUploadQRCode(registrantId);
 
     // Update the registrant with the QR code URL
     await requestGraphQL<{
@@ -2500,14 +2493,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
   if (!registrant.qrCode && profileId) {
     try {
       const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
-      const qrCodeUrl = await generateAndUploadQRCode(registrant.id, {
-        firstName: registrant.firstName ?? null,
-        lastName: registrant.lastName ?? null,
-        email: registrant.email,
-        phone: registrant.phone ?? null,
-        company: registrant.company?.name ?? null,
-        jobTitle: registrant.jobTitle ?? null,
-      });
+      const qrCodeUrl = await generateAndUploadQRCode(registrant.id);
       await requestGraphQL(
         UPDATE_REGISTRANT,
         {
@@ -2675,14 +2661,7 @@ export async function regenerateRegistrantQRCode(
     }
 
     const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
-    const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
-      firstName: registrant.firstName ?? null,
-      lastName: registrant.lastName ?? null,
-      email: registrant.email,
-      phone: registrant.phone ?? null,
-      company: registrant.company?.name ?? null,
-      jobTitle: registrant.jobTitle ?? null,
-    });
+    const qrCodeUrl = await generateAndUploadQRCode(registrantId);
 
     await requestGraphQL(UPDATE_REGISTRANT, {
       input: {
@@ -3054,14 +3033,7 @@ export async function updateRegistrantCompanyAssignment(
 
     try {
       const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
-      const qrCodeUrl = await generateAndUploadQRCode(registrantId, {
-        firstName: registrant.firstName ?? null,
-        lastName: registrant.lastName ?? null,
-        email: registrant.email,
-        phone: registrant.phone ?? null,
-        company: companyNameForProfile,
-        jobTitle: registrant.jobTitle ?? null,
-      });
+      const qrCodeUrl = await generateAndUploadQRCode(registrantId);
       await requestGraphQL(UPDATE_REGISTRANT, {
         input: {
           id: registrantId,

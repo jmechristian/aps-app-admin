@@ -15,34 +15,11 @@ import CompanyLogoForm from './company-logo-form';
 import RegistrantEditForm from './registrant-edit-form';
 import RegistrantQrCodePanel from './registrant-qr-code-panel';
 import RegistrantWorkflowPanel from './registrant-workflow-panel';
+import { attendeeQrPayload } from '@/lib/attendee-qr';
 
 type PageProps = {
   params: Promise<{ id: string; registrantId: string }>;
 };
-
-function buildVCardPreview(registrant: {
-  firstName?: string | null;
-  lastName?: string | null;
-  email: string;
-  phone?: string | null;
-  company?: { name: string } | null;
-  jobTitle?: string | null;
-}) {
-  const lines: string[] = ['BEGIN:VCARD', 'VERSION:3.0'];
-  const fullName =
-    `${registrant.firstName ?? ''} ${registrant.lastName ?? ''}`.trim() ||
-    registrant.email;
-  lines.push(`FN:${fullName}`);
-  if (registrant.firstName || registrant.lastName) {
-    lines.push(`N:${registrant.lastName ?? ''};${registrant.firstName ?? ''};;;`);
-  }
-  lines.push(`EMAIL:${registrant.email}`);
-  if (registrant.phone) lines.push(`TEL:${registrant.phone}`);
-  if (registrant.company?.name) lines.push(`ORG:${registrant.company.name}`);
-  if (registrant.jobTitle) lines.push(`TITLE:${registrant.jobTitle}`);
-  lines.push('END:VCARD');
-  return lines.join('\n');
-}
 
 function formatThinkificPercentage(value: string) {
   const numeric = Number(value);
@@ -154,7 +131,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
   const fullName =
     `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() ||
     'N/A';
-  const vCardPreview = buildVCardPreview(registrant);
+  const payloadPreview = attendeeQrPayload(registrant.id);
 
   return (
     <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
@@ -327,7 +304,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
               eventId={eventId}
               registrantId={registrant.id}
               qrCode={registrant.qrCode ?? null}
-              vCardPreview={vCardPreview}
+              payloadPreview={payloadPreview}
             />
           </div>
         </div>

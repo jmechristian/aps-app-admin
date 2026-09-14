@@ -9,7 +9,7 @@ type RegistrantQrCodePanelProps = {
   eventId: string;
   registrantId: string;
   qrCode: string | null;
-  vCardPreview: string;
+  payloadPreview: string;
 };
 
 type ActionState = {
@@ -36,7 +36,7 @@ export default function RegistrantQrCodePanel({
   eventId,
   registrantId,
   qrCode,
-  vCardPreview,
+  payloadPreview,
 }: RegistrantQrCodePanelProps) {
   const router = useRouter();
   const [cacheKey, setCacheKey] = useState(0);
@@ -86,17 +86,17 @@ export default function RegistrantQrCodePanel({
         <div className='rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center'>
           <p className='text-sm font-semibold text-slate-700'>No QR code yet</p>
           <p className='mt-1 text-xs text-slate-500'>
-            Click regenerate to create a QR code from the current registrant info.
+            Click regenerate to create a QR code that opens this attendee in the event app.
           </p>
         </div>
       )}
 
       <div className='mt-6'>
         <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-          Encoded vCard preview
+          Encoded app link
         </p>
         <pre className='mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700'>
-          {vCardPreview}
+          {payloadPreview}
         </pre>
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
   toBadgePerson,
   type BadgePerson,
 } from '@/lib/badges';
-import { generateVCard } from '@/lib/vcard';
+import { attendeeQrPayload } from '@/lib/attendee-qr';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -37,15 +37,7 @@ async function mapPool<T, R>(
 }
 
 async function toPdfPerson(person: BadgePerson): Promise<BadgePdfPerson> {
-  const vcard = generateVCard({
-    firstName: person.firstName,
-    lastName: person.lastName,
-    email: person.email,
-    phone: person.phone,
-    company: person.company,
-    jobTitle: person.jobTitle,
-  });
-  const qrDataUrl = await QRCode.toDataURL(vcard, {
+  const qrDataUrl = await QRCode.toDataURL(attendeeQrPayload(person.id), {
     type: 'image/png',
     width: 384,
     margin: 1,
