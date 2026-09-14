@@ -15,6 +15,7 @@ enum RegistrantType {
   SPEAKER
   STAFF
   EXHIBITOR
+  WAITLIST
 }
 
 enum RegistrantStatus {
@@ -105,6 +106,20 @@ type AdminLatestTempCredentialResult {
   createdAt: AWSDateTime!
 }
 
+input AdminRegenerateAttendeeQrCodesInput {
+  eventId: ID
+  limit: Int
+  nextToken: String
+}
+
+type AdminRegenerateAttendeeQrCodesResult {
+  processed: Int!
+  updated: Int!
+  failed: Int!
+  nextToken: String
+  errors: [String!]
+}
+
 type AdminThinkificEnrollment {
   enrollmentId: Int
   courseId: Int
@@ -154,6 +169,11 @@ type Mutation {
     input: AdminCreateExhibitorInput!
   ): AdminCreateExhibitorResult
     @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  adminRegenerateAttendeeQrCodes(
+    input: AdminRegenerateAttendeeQrCodesInput
+  ): AdminRegenerateAttendeeQrCodesResult
+    @function(name: "adminRegistrantOps-${env}")
     @aws_cognito_user_pools
   adminPublishDueAnnouncements(
     eventId: ID!
@@ -1300,7 +1320,8 @@ type ApsAnnouncementOpen
     ]
   ) {
   id: ID!
-  announcementId: ID! @index(name: "byAnnouncement", sortKeyFields: ["createdAt"])
+  announcementId: ID!
+    @index(name: "byAnnouncement", sortKeyFields: ["createdAt"])
   eventId: ID! @index(name: "byEventCreated", sortKeyFields: ["createdAt"])
   userId: ID!
   source: String
@@ -1528,7 +1549,9 @@ type ModelApsDmMessageConnection @aws_api_key @aws_cognito_user_pools {
   nextToken: String
 }
 
-type ModelApsAppLeaderboardEntryConnection @aws_api_key @aws_cognito_user_pools {
+type ModelApsAppLeaderboardEntryConnection
+  @aws_api_key
+  @aws_cognito_user_pools {
   items: [ApsAppLeaderboardEntry]!
   nextToken: String
 }

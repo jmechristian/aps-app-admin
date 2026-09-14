@@ -103,6 +103,22 @@ export const adminCreateExhibitor = /* GraphQL */ `mutation AdminCreateExhibitor
   APITypes.AdminCreateExhibitorMutationVariables,
   APITypes.AdminCreateExhibitorMutation
 >;
+export const adminRegenerateAttendeeQrCodes = /* GraphQL */ `mutation AdminRegenerateAttendeeQrCodes(
+  $input: AdminRegenerateAttendeeQrCodesInput
+) {
+  adminRegenerateAttendeeQrCodes(input: $input) {
+    processed
+    updated
+    failed
+    nextToken
+    errors
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.AdminRegenerateAttendeeQrCodesMutationVariables,
+  APITypes.AdminRegenerateAttendeeQrCodesMutation
+>;
 export const adminPublishDueAnnouncements = /* GraphQL */ `mutation AdminPublishDueAnnouncements($eventId: ID!) {
   adminPublishDueAnnouncements(eventId: $eventId) {
     publishedCount
