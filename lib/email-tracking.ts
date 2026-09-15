@@ -151,11 +151,15 @@ function rewriteHrefs(html: string, sendId: string): string {
 }
 
 function injectPixel(html: string, sendId: string): string {
-  const pixel = `<img src="${openUrl(sendId)}" width="1" height="1" alt="" style="display:none;width:1px;height:1px;border:0;" />`;
+  // Do not use display:none — Gmail and others skip those images.
+  const pixel = `<img src="${openUrl(sendId)}" width="1" height="1" alt="" style="width:1px;height:1px;border:0;opacity:0;" />`;
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `${pixel}</body>`);
+  }
   if (/<body\b[^>]*>/i.test(html)) {
     return html.replace(/<body\b[^>]*>/i, (match) => `${match}${pixel}`);
   }
-  return `${pixel}${html}`;
+  return `${html}${pixel}`;
 }
 
 /** Wrap links and inject an open pixel. On any failure, returns the original HTML. */
