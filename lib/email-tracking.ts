@@ -91,6 +91,18 @@ export function verifyClickToken(
   }
 }
 
+export function verifyImageToken(
+  sendId: string,
+  destination: string,
+  token: string,
+): boolean {
+  try {
+    return tokensMatch(sign(`img:${sendId}:${destination}`), token);
+  } catch {
+    return false;
+  }
+}
+
 export function isAllowedRedirect(destination: string): boolean {
   try {
     const parsed = new URL(destination);
@@ -139,6 +151,34 @@ function clickUrl(sendId: string, destination: string): string {
   return `${getTrackingBaseUrl()}/api/email/t/click?s=${encodeURIComponent(sendId)}&t=${token}&u=${encodeURIComponent(destination)}`;
 }
 
+function imageUrl(sendId: string, destination: string): string {
+  const token = sign(`img:${sendId}:${destination}`);
+  return `${getTrackingBaseUrl()}/api/email/t/img?s=${encodeURIComponent(sendId)}&t=${token}&u=${encodeURIComponent(destination)}`;
+}
+
+function shouldTrackImg(src: string): boolean {
+  if (!src) return false;
+  const trimmed = src.trim();
+  if (trimmed.includes('/api/email/t/')) return false;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+function rewriteImgs(html: string, sendId: string): string {
+  return html.replace(
+    /(\ssrc\s*=\s*)(["'])([^"']*?)\2/gi,
+    (full, prefix: string, quote: string, raw: string) => {
+      const src = decodeHtmlEntities(raw).trim();
+      if (!shouldTrackImg(src)) return full;
+      return `${prefix}${quote}${escapeHtmlAttr(imageUrl(sendId, src))}${quote}`;
+    },
+  );
+}
+
 function rewriteHrefs(html: string, sendId: string): string {
   return html.replace(
     /(\shref\s*=\s*)(["'])([^"']*?)\2/gi,
@@ -168,7 +208,7 @@ export function applyEmailTracking(html: string, sendId: string): string {
     if (!html || !sendId) return html;
     if (!getTrackingSecret()) return html;
     if (!getTrackingBaseUrl()) return html;
-    return injectPixel(rewriteHrefs(html, sendId), sendId);
+    return injectPixel(rewriteImgs(rewriteHrefs(html, sendId), sendId), sendId);
   } catch (error) {
     console.error('Email tracking wrap failed; sending original HTML.', error);
     return html;
