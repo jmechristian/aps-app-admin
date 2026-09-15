@@ -117,6 +117,14 @@ const CREATE_CAMPAIGN = /* GraphQL */ `
   }
 `;
 
+const UPDATE_CAMPAIGN = /* GraphQL */ `
+  mutation UpdateApsEmailCampaign($input: UpdateApsEmailCampaignInput!) {
+    updateApsEmailCampaign(input: $input) {
+      ${CAMPAIGN_FIELDS}
+    }
+  }
+`;
+
 const DELETE_CAMPAIGN = /* GraphQL */ `
   mutation DeleteApsEmailCampaign($input: DeleteApsEmailCampaignInput!) {
     deleteApsEmailCampaign(input: $input) {
