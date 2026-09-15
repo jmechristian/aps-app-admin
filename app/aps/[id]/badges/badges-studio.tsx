@@ -11,6 +11,10 @@ import {
   type BadgePerson,
 } from '@/lib/badges';
 
+function personName(person: BadgePerson) {
+  return `${person.firstName} ${person.lastName}`.trim() || person.email;
+}
+
 export default function BadgesStudio({
   eventId,
   people,
@@ -22,17 +26,82 @@ export default function BadgesStudio({
   const [enlarged, setEnlarged] = useState<BadgePerson | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(people.map((person) => person.id)),
+  );
   const groups = useMemo(() => groupBadgePeople(people), [people]);
-  const missingQr = people.filter((person) => !person.qrCodeUrl).length;
+  const missingQrPeople = useMemo(
+    () => people.filter((person) => !person.qrCodeUrl),
+    [people],
+  );
+  const selectedCount = selectedIds.size;
+  const allSelected = people.length > 0 && selectedCount === people.length;
+
+  const visibleGroups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return groups;
+    return groups
+      .map((group) => ({
+        ...group,
+        people: group.people.filter((person) => {
+          const haystack = [
+            person.firstName,
+            person.lastName,
+            person.company,
+            person.email,
+            person.attendeeType,
+          ]
+            .join(' ')
+            .toLowerCase();
+          return haystack.includes(q);
+        }),
+      }))
+      .filter((group) => group.people.length > 0);
+  }, [groups, query]);
+
+  function togglePerson(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAll() {
+    setSelectedIds(new Set(people.map((person) => person.id)));
+  }
+
+  function clearSelected() {
+    setSelectedIds(new Set());
+  }
+
+  function toggleGroup(ids: string[]) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allOn = ids.every((id) => next.has(id));
+      for (const id of ids) {
+        if (allOn) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+  }
 
   async function handleExport() {
-    if (exporting || people.length === 0) return;
+    if (exporting || selectedCount === 0) return;
     setExporting(true);
     setExportError(null);
     try {
-      const response = await fetch(
-        `/aps/${eventId}/badges/export?design=${design}`,
-      );
+      const response = await fetch(`/aps/${eventId}/badges/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          design,
+          ids: Array.from(selectedIds),
+        }),
+      });
       if (!response.ok) {
         const message = (await response.text()).trim();
         throw new Error(message || `Export failed (${response.status})`);
@@ -74,22 +143,50 @@ export default function BadgesStudio({
           <div className='space-y-2'>
             <h2 className='text-xl font-bold text-slate-900'>Print studio</h2>
             <p className='max-w-xl text-sm text-slate-600'>
-              Approved registrants only. Preview is grouped by attendee type.
+              Approved registrants only. Check the badges you want to print.
               Export is a single PDF at 4.25&quot; × 5.25&quot; (4&quot; × 5&quot;
               trim with 0.125&quot; bleed).
             </p>
             <div className='flex flex-wrap gap-2 pt-1'>
+              <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
+                {selectedCount} selected
+              </span>
               <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
                 {people.length} badge{people.length === 1 ? '' : 's'}
               </span>
               <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
                 {groups.length} type{groups.length === 1 ? '' : 's'}
               </span>
-              {missingQr > 0 ? (
+              {missingQrPeople.length > 0 ? (
                 <span className='rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800'>
-                  {missingQr} missing QR — will generate on export
+                  {missingQrPeople.length} missing QR — will generate on export
                 </span>
               ) : null}
+            </div>
+            {missingQrPeople.length > 0 ? (
+              <ul className='space-y-0.5 pt-1 text-xs text-amber-800'>
+                {missingQrPeople.map((person) => (
+                  <li key={person.id}>{personName(person)}</li>
+                ))}
+              </ul>
+            ) : null}
+            <div className='flex flex-wrap gap-2 pt-2'>
+              <button
+                type='button'
+                onClick={selectAll}
+                disabled={exporting || allSelected || people.length === 0}
+                className='rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50'
+              >
+                Select all
+              </button>
+              <button
+                type='button'
+                onClick={clearSelected}
+                disabled={exporting || selectedCount === 0}
+                className='rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50'
+              >
+                Clear
+              </button>
             </div>
           </div>
 
@@ -119,8 +216,8 @@ export default function BadgesStudio({
                 <button
                   type='button'
                   onClick={handleExport}
-                  disabled={exporting}
-                  className='inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:cursor-wait disabled:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+                  disabled={exporting || selectedCount === 0}
+                  className='inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
                 >
                   {exporting ? (
                     <>
@@ -130,14 +227,16 @@ export default function BadgesStudio({
                       />
                       Generating PDF…
                     </>
-                  ) : (
+                  ) : selectedCount === people.length ? (
                     'Export PDF'
+                  ) : (
+                    `Export ${selectedCount} badge${selectedCount === 1 ? '' : 's'}`
                   )}
                 </button>
                 {exporting ? (
                   <p className='text-xs text-slate-500'>
-                    Building {people.length} badge
-                    {people.length === 1 ? '' : 's'} with QR codes. This can take
+                    Building {selectedCount} badge
+                    {selectedCount === 1 ? '' : 's'} with QR codes. This can take
                     a moment.
                   </p>
                 ) : null}
@@ -154,11 +253,24 @@ export default function BadgesStudio({
             )}
           </div>
         </div>
+        <div className='mt-5'>
+          <label className='sr-only' htmlFor='badge-search'>
+            Search registrants
+          </label>
+          <input
+            id='badge-search'
+            type='search'
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder='Search name, company, or email'
+            className='w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 sm:max-w-md'
+          />
+        </div>
         <p className='mt-4 text-xs text-slate-500'>
-          Click a badge to enlarge. Dashed inner box is the trim. Circle at the
-          top is the lanyard punch zone. Table numbers print only when seating
-          is assigned. The PDF ends with one blank write-in badge per attendee
-          type.
+          Check badges to include them. Click a badge to enlarge. Dashed inner
+          box is the trim. Circle at the top is the lanyard punch zone. Table
+          numbers print only when seating is assigned. Full exports still end
+          with one blank write-in badge per attendee type.
         </p>
       </section>
 
@@ -170,44 +282,83 @@ export default function BadgesStudio({
             badges.
           </p>
         </section>
+      ) : visibleGroups.length === 0 ? (
+        <section className='rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg'>
+          <p className='font-semibold text-slate-900'>No matching badges</p>
+          <p className='mt-1 text-sm text-slate-600'>
+            Try a different name, company, or email.
+          </p>
+        </section>
       ) : (
-        groups.map((group) => (
-          <section
-            key={group.type}
-            className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg sm:p-8'
-          >
-            <div className='sticky top-3 z-10 mb-5 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 backdrop-blur'>
-              <div className='flex items-center gap-3'>
-                <span
-                  className='h-3 w-3 shrink-0 rounded-full'
-                  style={{ backgroundColor: getTypeColor(group.type) }}
-                />
-                <div>
-                  <h3 className='text-lg font-bold text-slate-900'>
-                    {group.label}
-                  </h3>
-                  <p className='text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
-                    {group.people.length} badge
-                    {group.people.length === 1 ? '' : 's'}
-                  </p>
+        visibleGroups.map((group) => {
+          const groupIds = group.people.map((person) => person.id);
+          const selectedInGroup = groupIds.filter((id) =>
+            selectedIds.has(id),
+          ).length;
+          const groupAllSelected =
+            groupIds.length > 0 && selectedInGroup === groupIds.length;
+
+          return (
+            <section
+              key={group.type}
+              className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg sm:p-8'
+            >
+              <div className='sticky top-3 z-10 mb-5 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 backdrop-blur'>
+                <div className='flex items-center gap-3'>
+                  <span
+                    className='h-3 w-3 shrink-0 rounded-full'
+                    style={{ backgroundColor: getTypeColor(group.type) }}
+                  />
+                  <div>
+                    <h3 className='text-lg font-bold text-slate-900'>
+                      {group.label}
+                    </h3>
+                    <p className='text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
+                      {selectedInGroup}/{group.people.length} selected
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className='flex flex-wrap gap-5'>
-              {group.people.map((person) => (
                 <button
-                  key={person.id}
                   type='button'
-                  onClick={() => setEnlarged(person)}
-                  className='rounded-sm text-left transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-                  aria-label={`Enlarge badge for ${person.firstName} ${person.lastName}`.trim()}
+                  onClick={() => toggleGroup(groupIds)}
+                  disabled={exporting}
+                  className='rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50'
                 >
-                  <BadgeCard person={person} design={design} />
+                  {groupAllSelected ? 'Clear group' : 'Select group'}
                 </button>
-              ))}
-            </div>
-          </section>
-        ))
+              </div>
+              <div className='flex flex-wrap gap-5'>
+                {group.people.map((person) => {
+                  const selected = selectedIds.has(person.id);
+                  return (
+                    <div key={person.id} className='relative'>
+                      <label className='absolute top-2 left-2 z-10 flex cursor-pointer items-center rounded-md bg-white/95 p-1 shadow-sm'>
+                        <input
+                          type='checkbox'
+                          checked={selected}
+                          onChange={() => togglePerson(person.id)}
+                          disabled={exporting}
+                          className='h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900'
+                          aria-label={`Select ${personName(person)}`}
+                        />
+                      </label>
+                      <button
+                        type='button'
+                        onClick={() => setEnlarged(person)}
+                        className={`rounded-sm text-left transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 ${
+                          selected ? 'ring-2 ring-slate-900 ring-offset-2' : 'opacity-70'
+                        }`}
+                        aria-label={`Enlarge badge for ${personName(person)}`}
+                      >
+                        <BadgeCard person={person} design={design} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })
       )}
 
       {enlarged ? (
@@ -225,7 +376,7 @@ export default function BadgesStudio({
             <button
               type='button'
               onClick={() => setEnlarged(null)}
-              className='absolute -right-3 -top-3 z-10 rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-md hover:bg-slate-50'
+              className='absolute -top-3 -right-3 z-10 rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-md hover:bg-slate-50'
             >
               Close
             </button>
