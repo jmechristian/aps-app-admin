@@ -498,6 +498,193 @@ export const AttendeeInfoEmail = ({
               </div>
             </Section>
 
+            <Section style={{ padding: '24px 32px 0' }}>
+              <div
+                style={{
+                  borderLeft: `4px solid ${APS_BLUE}`,
+                  backgroundColor: '#f0f7fc',
+                  borderRadius: '0 12px 12px 0',
+                  padding: '22px 20px 10px',
+                }}
+              >
+                <Text style={labelStyle}>Just added</Text>
+                <Text style={headingStyle}>BMW iFACTORY Tour</Text>
+                <Text
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    color: APS_BLUE,
+                    margin: '0 0 12px',
+                    lineHeight: '1.4',
+                    ...font,
+                  }}
+                >
+                  Heritage meets Innovation at Plant Spartanburg
+                </Text>
+                <Text style={bodyStyle}>
+                  Newly added to Friday&apos;s agenda: an immersive look at the
+                  history, innovation, and people behind BMW&apos;s largest
+                  production facility. Explore exhibits on the BMW X models
+                  built in Spartanburg, the technologies shaping future
+                  manufacturing, and the stories connecting BMW with generations
+                  of drivers.
+                </Text>
+                <Text style={metaLabelStyle}>When</Text>
+                <Text style={metaValueStyle}>
+                  Friday, October 2 · four time slots
+                </Text>
+                <Row>
+                  <Column
+                    style={{
+                      width: '50%',
+                      verticalAlign: 'top',
+                      paddingRight: '6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        padding: '12px 12px 4px',
+                        textAlign: 'center' as const,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: APS_BLUE,
+                          margin: '0 0 8px',
+                          ...font,
+                        }}
+                      >
+                        9:00–10:30 AM
+                      </Text>
+                    </div>
+                  </Column>
+                  <Column
+                    style={{
+                      width: '50%',
+                      verticalAlign: 'top',
+                      paddingLeft: '6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        padding: '12px 12px 4px',
+                        textAlign: 'center' as const,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: APS_BLUE,
+                          margin: '0 0 8px',
+                          ...font,
+                        }}
+                      >
+                        11:00 AM–12:30 PM
+                      </Text>
+                    </div>
+                  </Column>
+                </Row>
+                <Row>
+                  <Column
+                    style={{
+                      width: '50%',
+                      verticalAlign: 'top',
+                      paddingRight: '6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        padding: '12px 12px 4px',
+                        textAlign: 'center' as const,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: APS_BLUE,
+                          margin: '0 0 8px',
+                          ...font,
+                        }}
+                      >
+                        12:00–1:30 PM
+                      </Text>
+                    </div>
+                  </Column>
+                  <Column
+                    style={{
+                      width: '50%',
+                      verticalAlign: 'top',
+                      paddingLeft: '6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        padding: '12px 12px 4px',
+                        textAlign: 'center' as const,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: APS_BLUE,
+                          margin: '0 0 8px',
+                          ...font,
+                        }}
+                      >
+                        2:00–3:30 PM
+                      </Text>
+                    </div>
+                  </Column>
+                </Row>
+                <Text style={bodyStyle}>
+                  Register for a time slot on the event agenda.
+                </Text>
+                <Button
+                  href={AGENDA_URL}
+                  style={{
+                    backgroundColor: APS_BLUE,
+                    color: '#ffffff',
+                    padding: '11px 22px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    ...font,
+                  }}
+                >
+                  View Agenda to Register
+                </Button>
+                <Text
+                  style={{
+                    fontSize: '13px',
+                    color: MUTED_TEXT,
+                    margin: '14px 0 8px',
+                    lineHeight: '1.5',
+                    ...font,
+                  }}
+                >
+                  autopacksummit.com/agenda
+                </Text>
+              </div>
+            </Section>
+
             <Section style={{ padding: '32px 32px 0' }}>
               <Hr style={{ borderColor: GRAY_BORDER, margin: '0 0 28px' }} />
               <Text

@@ -581,7 +581,8 @@ export default function SessionModal({
                   disabled={submitting}
                 />
                 <p className='mt-2 text-xs text-slate-500'>
-                  Stored as HTML. Rendering elsewhere should use{' '}
+                  Stored as HTML. Use <span className='font-semibold'>Clear format</span>{' '}
+                  to strip hidden paste styles. Rendering elsewhere should use{' '}
                   <span className='font-mono'>dangerouslySetInnerHTML</span>.
                 </p>
               </div>

@@ -10,12 +10,95 @@ type Command =
   | 'insertUnorderedList'
   | 'insertOrderedList'
   | 'undo'
-  | 'redo'
-  | 'removeFormat';
+  | 'redo';
+
+const ALLOWED_TAGS = new Set([
+  'P',
+  'BR',
+  'B',
+  'STRONG',
+  'I',
+  'EM',
+  'U',
+  'S',
+  'STRIKE',
+  'UL',
+  'OL',
+  'LI',
+  'A',
+]);
 
 function exec(command: Command, value?: string) {
-  // execCommand is deprecated but still widely supported and perfect for a lightweight admin WYSIWYG.
   document.execCommand(command, false, value);
+}
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function htmlToPlainText(html: string) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return (div.innerText || div.textContent || '').replace(/\u00a0/g, ' ');
+}
+
+function plainTextToHtml(text: string) {
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  if (!normalized) return '';
+  return normalized
+    .split(/\n{2,}/)
+    .map((block) => `<p>${escapeHtml(block).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+function unwrap(el: Element) {
+  const parent = el.parentNode;
+  if (!parent) {
+    el.remove();
+    return;
+  }
+  while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  parent.removeChild(el);
+}
+
+/** Drop comments, inline styles, classes, and non-semantic tags. Keep visible text. */
+function sanitizeHtml(html: string) {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+
+  function clean(root: ParentNode) {
+    for (const node of [...root.childNodes]) {
+      if (node.nodeType === Node.COMMENT_NODE) {
+        node.remove();
+        continue;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+      const el = node as HTMLElement;
+      clean(el);
+
+      const tag = el.tagName;
+      if (tag === 'A') {
+        const href = el.getAttribute('href')?.trim() ?? '';
+        for (const attr of [...el.attributes]) el.removeAttribute(attr.name);
+        if (/^(https?:|mailto:)/i.test(href)) el.setAttribute('href', href);
+        continue;
+      }
+
+      if (ALLOWED_TAGS.has(tag)) {
+        for (const attr of [...el.attributes]) el.removeAttribute(attr.name);
+        continue;
+      }
+
+      unwrap(el);
+    }
+  }
+
+  clean(template.content);
+  return template.innerHTML;
 }
 
 function ToolbarButton({
@@ -31,7 +114,6 @@ function ToolbarButton({
     <button
       type='button'
       onMouseDown={(e) => {
-        // Prevent losing selection/focus when clicking toolbar.
         e.preventDefault();
       }}
       onClick={onClick}
@@ -58,34 +140,45 @@ export default function WysiwygEditor({
   const lastAppliedValueRef = useRef<string>('');
   const [focused, setFocused] = useState(false);
 
-  // Apply external value changes (e.g. switching sessions in edit mode) without clobbering cursor while typing.
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
     if (focused) return;
 
-    const next = value ?? '';
+    const next = sanitizeHtml(value ?? '');
     if (next === lastAppliedValueRef.current) return;
 
     el.innerHTML = next;
     lastAppliedValueRef.current = next;
+    if (next !== (value ?? '')) onChange(next);
   }, [value, focused]);
 
-  function emit() {
+  function emit(rewrite = false) {
     const el = editorRef.current;
     if (!el) return;
-    const html = el.innerHTML ?? '';
+    const html = sanitizeHtml(el.innerHTML ?? '');
+    if (rewrite) el.innerHTML = html;
+    lastAppliedValueRef.current = html;
+    onChange(html);
+  }
+
+  function clearFormatting() {
+    const el = editorRef.current;
+    if (!el) return;
+    const html = plainTextToHtml(htmlToPlainText(el.innerHTML ?? ''));
+    el.innerHTML = html;
     lastAppliedValueRef.current = html;
     onChange(html);
   }
 
   function handlePaste(e: React.ClipboardEvent) {
     e.preventDefault();
-    const plainText = e.clipboardData.getData('text/plain');
-    if (plainText) {
-      document.execCommand('insertText', false, plainText);
-      emit();
-    }
+    const plain = e.clipboardData.getData('text/plain');
+    const html = e.clipboardData.getData('text/html');
+    const text = plain || (html ? htmlToPlainText(html) : '');
+    if (!text) return;
+    document.execCommand('insertText', false, text);
+    emit();
   }
 
   return (
@@ -117,8 +210,8 @@ export default function WysiwygEditor({
         <ToolbarButton label='Undo' onClick={() => exec('undo')} disabled={disabled} />
         <ToolbarButton label='Redo' onClick={() => exec('redo')} disabled={disabled} />
         <ToolbarButton
-          label='Clear'
-          onClick={() => exec('removeFormat')}
+          label='Clear format'
+          onClick={clearFormatting}
           disabled={disabled}
         />
         <ToolbarButton
@@ -127,16 +220,15 @@ export default function WysiwygEditor({
           onClick={() => {
             const url = window.prompt('Enter link URL');
             if (!url) return;
-            exec('createLink' as any, url);
-            emit();
+            document.execCommand('createLink', false, url);
+            emit(true);
           }}
         />
       </div>
 
       <div className='relative'>
-        {/* Placeholder */}
         {!value && !focused && (
-          <div className='pointer-events-none absolute left-3 top-2 text-sm text-slate-400'>
+          <div className='pointer-events-none absolute top-2 left-3 text-sm text-slate-400'>
             {placeholder}
           </div>
         )}
@@ -149,7 +241,7 @@ export default function WysiwygEditor({
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
-            emit();
+            emit(true);
           }}
           onInput={() => emit()}
           className='min-h-[140px] w-full px-3 py-2 text-sm text-slate-900 outline-none
@@ -163,5 +255,3 @@ export default function WysiwygEditor({
     </div>
   );
 }
-
-

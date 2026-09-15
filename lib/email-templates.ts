@@ -132,7 +132,7 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
   key: 'attendee-info-email',
   label: 'Attendee info (pre-event)',
   description:
-    'Dates, cocktail hour, tour spots, app download (iOS, Android, web), temp password, meals, attire, and parking.',
+    'Dates, cocktail hour, Clemson and BMW tour spots, app download (iOS, Android, web), temp password, meals, attire, and parking.',
   requiresTempPassword: true,
   defaultSubject: ({ eventYear }) =>
     `AutoPack Summit ${eventYear}: Important Information for Attendees`,
@@ -172,6 +172,12 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
       'Clemson University ICAR and Deep Orange Facility Tour',
       'Wednesday, September 30 · 11:00 AM–12:30 PM · Transportation provided',
       'To add the tour, reply to this email or write bianca@packagingschool.com as soon as possible.',
+      '',
+      'FRIDAY TOUR — JUST ADDED',
+      'BMW iFACTORY Tour: Heritage meets Innovation at Plant Spartanburg',
+      'Newly added to Friday’s agenda. Friday, October 2 · four time slots: 9:00–10:30 AM, 11:00 AM–12:30 PM, 12:00–1:30 PM, 2:00–3:30 PM',
+      "An immersive look at the history, innovation, and people behind BMW's largest production facility — exhibits on BMW X models built in Spartanburg, advanced manufacturing technology, and the stories connecting BMW with generations of drivers.",
+      'View Agenda to Register: https://www.autopacksummit.com/agenda',
       '',
       'DOWNLOAD THE EVENT APP',
       'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',
