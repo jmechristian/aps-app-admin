@@ -52,10 +52,7 @@ export function getTrackingBaseUrl(): string | null {
   const explicit =
     process.env.APS_EMAIL_TRACKING_BASE_URL || process.env.APS_ADMIN_URL;
   if (explicit) return explicit.replace(/\/$/, '');
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`;
-  }
-  return null;
+  return 'https://aps-app-admin.vercel.app';
 }
 
 function sign(value: string): string {
@@ -169,16 +166,31 @@ function clickUrl(sendId: string, destination: string): string {
   return `${getTrackingBaseUrl()}/api/email/t/click?s=${encodeURIComponent(sendId)}&t=${token}&u=${encodeURIComponent(destination)}`;
 }
 
-function imageUrl(sendId: string, destination: string): string {
-  const token = sign(`img:${sendId}:${destination}`);
-  return `${getTrackingBaseUrl()}/api/email/t/img?s=${encodeURIComponent(sendId)}&t=${token}&u=${encodeURIComponent(destination)}`;
+const TRACKED_ASSETS: Record<string, string> = {
+  header: 'https://packschool.s3.us-east-1.amazonaws.com/2026-email-header.png',
+  logo: 'https://packschool.s3.amazonaws.com/aps-logo-email.png',
+  ps: 'https://packschool.s3.us-east-1.amazonaws.com/ps-square150x.png',
+};
+
+export function getTrackedAssetUrl(name: string): string | null {
+  return TRACKED_ASSETS[name] || null;
 }
 
-function shouldTrackImg(src: string): boolean {
-  if (!src) return false;
-  const trimmed = src.trim();
-  if (trimmed.includes('/api/email/t/')) return false;
-  return isAllowedTrackingImage(trimmed);
+function normalizeAssetSrc(src: string): string {
+  return src.trim().split('?')[0].replace(/\/$/, '');
+}
+
+function assetNameForSrc(src: string): string | null {
+  const normalized = normalizeAssetSrc(src);
+  for (const [name, url] of Object.entries(TRACKED_ASSETS)) {
+    if (normalizeAssetSrc(url) === normalized) return name;
+  }
+  return null;
+}
+
+function assetUrl(sendId: string, name: string): string {
+  const token = sign(`open:${sendId}`);
+  return `${getTrackingBaseUrl()}/api/email/t/asset?n=${encodeURIComponent(name)}&s=${encodeURIComponent(sendId)}&t=${token}`;
 }
 
 function rewriteImgs(html: string, sendId: string): string {
@@ -186,8 +198,9 @@ function rewriteImgs(html: string, sendId: string): string {
     /(\ssrc\s*=\s*)(["'])([^"']*?)\2/gi,
     (full, prefix: string, quote: string, raw: string) => {
       const src = decodeHtmlEntities(raw).trim();
-      if (!shouldTrackImg(src)) return full;
-      return `${prefix}${quote}${escapeHtmlAttr(imageUrl(sendId, src))}${quote}`;
+      const name = assetNameForSrc(src);
+      if (!name) return full;
+      return `${prefix}${quote}${escapeHtmlAttr(assetUrl(sendId, name))}${quote}`;
     },
   );
 }
