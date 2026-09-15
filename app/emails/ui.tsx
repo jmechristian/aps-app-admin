@@ -1028,9 +1028,8 @@ export default function EmailsClient() {
               </div>
               <p className="mt-1 text-xs text-slate-600">
                 Sends this template to one registered email on the selected
-                event, using that attendee&apos;s real data. The inbox subject
-                is prefixed with [TEST]. Campaigns and send logs are not
-                updated.
+                event, using that attendee&apos;s real data. Campaigns and send
+                logs are not updated.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <input

@@ -618,11 +618,6 @@ function stripTestSubjectPrefix(subject: string): string {
   return subject.replace(/^\s*\[TEST\]\s*/i, '').trim();
 }
 
-function testInboxSubject(subject: string): string {
-  const base = stripTestSubjectPrefix(subject);
-  return base ? `[TEST] ${base}` : '[TEST]';
-}
-
 async function resolveTemplateSubject(params: {
   templateKey: string;
   eventId: string;
@@ -768,11 +763,9 @@ export async function sendTestEmail(params: {
     subject,
   });
 
-  const testSubject = testInboxSubject(subject);
-
   await sendHtmlEmail({
     to: recipient.email.trim(),
-    subject: testSubject,
+    subject,
     html,
     text,
   });
@@ -780,7 +773,7 @@ export async function sendTestEmail(params: {
   return {
     ok: true,
     to: recipient.email.trim(),
-    subject: testSubject,
+    subject,
     message: `Test sent to ${recipient.email.trim()} as ${recipientDisplayName(recipient)}.`,
   };
 }
