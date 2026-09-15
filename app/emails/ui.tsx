@@ -1232,10 +1232,7 @@ export default function EmailsClient() {
                         </button>
                       )}
 
-                      {(campaign.status === 'DRAFT' ||
-                        campaign.status === 'CANCELLED' ||
-                        campaign.status === 'SCHEDULED' ||
-                        campaign.status === 'FAILED') && (
+                      {campaign.status !== 'SENDING' && (
                         <button
                           type="button"
                           className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
@@ -1243,7 +1240,7 @@ export default function EmailsClient() {
                           onClick={async () => {
                             if (
                               !confirm(
-                                `Delete "${campaign.name}"? This cannot be undone.`,
+                                `Delete "${campaign.name}" and its send log? This cannot be undone.`,
                               )
                             ) {
                               return;

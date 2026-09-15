@@ -1119,8 +1119,10 @@ export async function deleteEmailCampaign(params: {
   campaignId: string;
 }): Promise<void> {
   const campaign = await getCampaignOrThrow(params.campaignId);
-  if (campaign.status === 'SENDING' || campaign.status === 'SENT') {
-    throw new Error('Sent or in-progress campaigns cannot be deleted.');
+  if (campaign.status === 'SENDING') {
+    throw new Error(
+      'This campaign is still sending. Wait until it finishes, then delete.',
+    );
   }
 
   try {
@@ -1129,13 +1131,21 @@ export async function deleteEmailCampaign(params: {
     // ignore missing EventBridge schedule
   }
 
+  const remaining: string[] = [];
   const sends = await listSendsByCampaignId(campaign.id);
-  for (const send of sends) {
+  await mapWithConcurrency(sends, 8, async (send) => {
     try {
       await requestGraphQL(DELETE_SEND, { input: { id: send.id } });
     } catch {
-      // keep going so the campaign can still be removed
+      remaining.push(send.id);
     }
+  });
+
+  const leftover = await listSendsByCampaignId(campaign.id);
+  if (remaining.length || leftover.length) {
+    throw new Error(
+      `Could not delete ${remaining.length || leftover.length} send log row(s). Campaign was not removed.`,
+    );
   }
 
   await requestGraphQL(DELETE_CAMPAIGN, { input: { id: campaign.id } });
