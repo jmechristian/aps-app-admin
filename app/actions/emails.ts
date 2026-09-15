@@ -1199,17 +1199,21 @@ export async function runEmailCampaign(campaignId: string): Promise<{
   }
 
   const startedAt = new Date().toISOString();
-  await requestGraphQL(UPDATE_CAMPAIGN, {
-    input: {
-      id: campaign.id,
-      status: 'SENDING',
-      startedAt,
-      totalRecipients: audience.length,
-      sentCount: 0,
-      failedCount: 0,
-      scheduledAt: campaign.scheduledAt ?? null,
+  await requestGraphQL(
+    UPDATE_CAMPAIGN,
+    {
+      input: {
+        id: campaign.id,
+        status: 'SENDING',
+        startedAt,
+        totalRecipients: audience.length,
+        sentCount: 0,
+        failedCount: 0,
+        scheduledAt: campaign.scheduledAt ?? null,
+      },
     },
-  });
+    { authMode: 'apiKey' },
+  );
 
   // Best-effort: remove any one-shot schedule once send starts.
   try {
@@ -1224,15 +1228,19 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     async (registrant) => {
       const created = await requestGraphQL<{
         createApsEmailSend?: EmailSend | null;
-      }>(CREATE_SEND, {
-        input: {
-          campaignId: campaign.id,
-          eventId: campaign.eventId,
-          registrantId: registrant.id,
-          email: registrant.email.trim(),
-          status: 'PENDING',
+      }>(
+        CREATE_SEND,
+        {
+          input: {
+            campaignId: campaign.id,
+            eventId: campaign.eventId,
+            registrantId: registrant.id,
+            email: registrant.email.trim(),
+            status: 'PENDING',
+          },
         },
-      });
+        { authMode: 'apiKey' },
+      );
       return {
         registrant,
         send: created.createApsEmailSend,
@@ -1276,15 +1284,25 @@ export async function runEmailCampaign(campaignId: string): Promise<{
         text,
       });
 
-      await requestGraphQL(UPDATE_SEND, {
-        input: {
-          id: record.send.id,
-          status: 'SENT',
-          sesMessageId: result.messageId ?? null,
-          sentAt: new Date().toISOString(),
-          error: null,
-        },
-      });
+      try {
+        await requestGraphQL(
+          UPDATE_SEND,
+          {
+            input: {
+              id: record.send.id,
+              status: 'SENT',
+              sesMessageId: result.messageId ?? undefined,
+              sentAt: new Date().toISOString(),
+            },
+          },
+          { authMode: 'apiKey' },
+        );
+      } catch (updateError) {
+        console.error(
+          'SES delivered but send log could not be marked SENT:',
+          updateError,
+        );
+      }
 
       if (template.requiresTempPassword || template.key === 'app-access-email') {
         try {
@@ -1303,14 +1321,22 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to send email';
-      await requestGraphQL(UPDATE_SEND, {
-        input: {
-          id: record.send.id,
-          status: 'FAILED',
-          error: message.slice(0, 1000),
-          sentAt: new Date().toISOString(),
-        },
-      });
+      try {
+        await requestGraphQL(
+          UPDATE_SEND,
+          {
+            input: {
+              id: record.send.id,
+              status: 'FAILED',
+              error: message.slice(0, 1000),
+              sentAt: new Date().toISOString(),
+            },
+          },
+          { authMode: 'apiKey' },
+        );
+      } catch (updateError) {
+        console.error('Failed to record send failure:', updateError);
+      }
       failedCount += 1;
     }
   });
@@ -1324,16 +1350,20 @@ export async function runEmailCampaign(campaignId: string): Promise<{
 
   const data = await requestGraphQL<{
     updateApsEmailCampaign?: EmailCampaign | null;
-  }>(UPDATE_CAMPAIGN, {
-    input: {
-      id: campaign.id,
-      status: finalStatus,
-      completedAt: new Date().toISOString(),
-      sentCount,
-      failedCount,
-      totalRecipients: audience.length,
+  }>(
+    UPDATE_CAMPAIGN,
+    {
+      input: {
+        id: campaign.id,
+        status: finalStatus,
+        completedAt: new Date().toISOString(),
+        sentCount,
+        failedCount,
+        totalRecipients: audience.length,
+      },
     },
-  });
+    { authMode: 'apiKey' },
+  );
 
   const updated = data.updateApsEmailCampaign;
   if (!updated) throw new Error('Failed to finalize campaign');

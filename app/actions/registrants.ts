@@ -2868,10 +2868,6 @@ export async function markRegistrantAppEmailSent(params: {
   registrantId: string;
   jwt?: string | null;
 }): Promise<void> {
-  const authOpts = params.jwt
-    ? { authMode: 'userPools' as const, jwt: params.jwt }
-    : undefined;
-
   await requestGraphQL(
     UPDATE_REGISTRANT,
     {
@@ -2881,7 +2877,9 @@ export async function markRegistrantAppEmailSent(params: {
         appEmailSentDate: new Date().toISOString(),
       },
     },
-    authOpts,
+    params.jwt
+      ? { authMode: 'userPools', jwt: params.jwt }
+      : { authMode: 'apiKey' },
   );
 }
 
