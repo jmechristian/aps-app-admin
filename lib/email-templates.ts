@@ -2,6 +2,9 @@ import { render } from '@react-email/render';
 import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
 import { AppAccessEmail } from '@/react-email-starter/emails/app-access-email';
 import { AttendeeInfoEmail } from '@/react-email-starter/emails/attendee-info-email';
+import { Tour1ConfirmedEmail } from '@/react-email-starter/emails/tour-1-confirmed-email';
+import { Tour2ConfirmedEmail } from '@/react-email-starter/emails/tour-2-confirmed-email';
+import { Tour2WaitlistEmail } from '@/react-email-starter/emails/tour-2-waitlist-email';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -171,6 +174,7 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
       'To add the tour, reply to this email or write bianca@packagingschool.com as soon as possible.',
       '',
       'DOWNLOAD THE EVENT APP',
+      'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',
       `iOS: ${APP_STORE_URL}`,
       `Android: ${PLAY_STORE_URL}`,
       `Web app: ${WEB_APP_URL}`,
@@ -188,10 +192,12 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
       "Thursday's program includes continental breakfast, lunch, networking breaks, and an evening cocktail reception with hors d'oeuvres from 5:00 to 7:00 PM at the Hyatt.",
       '',
       'ATTIRE',
-      'Business casual. Comfortable clothing and walking shoes for facility tours.',
+      'Business casual is recommended. If you are participating in a facility tour, wear comfortable clothing and walking shoes.',
       '',
       'TRAVEL AND PARKING',
-      'Self-parking in the Hyatt garage is $10 per day. Park front-in; reverse parking is not permitted. Rates may change.',
+      'Self-parking in the Hyatt garage is $10 per day. Park front-in; reverse parking is not permitted. Rates are subject to change.',
+      '',
+      'We look forward to seeing you in Greenville!',
       '',
       'Questions: bianca@packagingschool.com',
       '',
@@ -202,10 +208,171 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
   },
 };
 
+const tour1ConfirmedTemplate: EmailTemplateDefinition = {
+  key: 'tour-1-confirmed-email',
+  label: 'Tour 1 confirmed (CU-ICAR)',
+  description:
+    'Confirmed CU-ICAR / Deep Orange attendees: Wednesday schedule, Hyatt bus times, attire, and how to release a spot.',
+  defaultSubject: () =>
+    'Important Tour Information: CU-ICAR and Deep Orange',
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      Tour1ConfirmedEmail({
+        firstName: recipient.firstName ?? '',
+        eventYear,
+      }),
+    );
+  },
+  renderText: ({ recipient }) => {
+    const greetingName = recipient.firstName?.trim() || 'Tour Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      'We look forward to welcoming you to the Clemson University ICAR and Deep Orange Facility Tour on Wednesday, September 30!',
+      '',
+      'Please review the important transportation and timing information below.',
+      '',
+      'TOUR SCHEDULE',
+      'Wednesday, September 30',
+      '11:00 AM–12:30 PM',
+      '',
+      'Clemson University International Center for Automotive Research',
+      'Carroll A. Campbell Jr. Graduate Engineering Center',
+      '4 Research Drive',
+      'Greenville, SC 29607',
+      '',
+      'BUS TRANSPORTATION',
+      'Transportation is provided from the Hyatt Regency Greenville. The bus will arrive at the hotel’s main entrance at 10:15 AM and depart promptly at 10:30 AM.',
+      '',
+      'Please arrive early and be ready to board when the bus arrives. Unfortunately, we will not be able to delay departure for late arrivals.',
+      '',
+      'ABOUT THE TOUR',
+      'This exclusive tour will provide a behind-the-scenes look at Clemson University’s automotive research, advanced vehicle development, and renowned Deep Orange program.',
+      '',
+      'Lunch sandwiches will be served at the conclusion of the tour before we return to the Hyatt.',
+      '',
+      'We recommend wearing comfortable clothing and appropriate footwear.',
+      '',
+      'We look forward to seeing you on Wednesday! If your plans have changed and you are no longer able to attend, please let us know as soon as possible so we can offer your spot to another attendee.',
+      '',
+      'The AutoPack Summit Team',
+      'bianca@packagingschool.com',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
+const tour2ConfirmedTemplate: EmailTemplateDefinition = {
+  key: 'tour-2-confirmed-email',
+  label: 'Tour 2 confirmed (Clemson Packaging Science)',
+  description:
+    'Confirmed Clemson Packaging Science attendees: Friday schedule, self-drive parking, Hendrix meeting point, and waitlist release.',
+  defaultSubject: () =>
+    'Important Tour Information: Clemson Packaging Science Facilities',
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      Tour2ConfirmedEmail({
+        firstName: recipient.firstName ?? '',
+        eventYear,
+      }),
+    );
+  },
+  renderText: ({ recipient }) => {
+    const greetingName = recipient.firstName?.trim() || 'Tour Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      'We look forward to welcoming you to the Clemson University Packaging Science Facilities Tour on Friday, October 2!',
+      '',
+      'Please review the important arrival and parking information below.',
+      '',
+      'TOUR SCHEDULE',
+      'Friday, October 2',
+      '11:00 AM–12:00 PM',
+      '',
+      'Newman Hall and Sonoco Institute (Harris A. Smith Building)',
+      'Clemson University',
+      'Clemson, SC 29634',
+      '',
+      'TOUR PLAN',
+      '11:00 AM — Newman Hall',
+      'Guided walk-through of CEFPACK and Distribution Lab, with an opportunity to meet Don and Brennan, if available.',
+      '11:30 AM — Sonoco Institute (Harris A. Smith Building)',
+      'Guided walk-through of the building.',
+      '',
+      'TRANSPORTATION AND PARKING',
+      'Transportation is not provided for this tour. Attendees will need to drive to Clemson University and park in a metered visitor space.',
+      'We recommend using the metered parking spaces in Lot E-1, directly across from the Hendrix Student Center.',
+      `Hendrix Student Center: https://maps.google.com/?q=Hendrix+Student+Center+Clemson+University+Clemson+SC`,
+      'Clemson interactive parking map: https://www.tigerscommute.com/Public/Home.aspx',
+      'On the parking map, select Metered and then click the eye icon to display available metered parking locations. Limited metered parking may also be available along Fernow Street near the Harris A. Smith Building.',
+      "If you have never visited Clemson's campus, we strongly recommend arriving up to one hour early.",
+      '',
+      'MEETING LOCATION',
+      'An AutoPack Summit staff member will be waiting outside the Hendrix Student Center with an AutoPack Summit sign to help guide attendees to the Newman Hall Building. You might also meet us directly at Newman Hall (the covered door in between Newman Hall and Poole Building).',
+      'Please meet the group at the Hendrix Student Center no later than 10:40 AM. The group will begin walking to the tour location promptly at 10:45 AM.',
+      '',
+      'ABOUT THE TOUR',
+      "The tour will explore Clemson University's Packaging Science facilities, including material testing laboratories and state-of-the-art packaging design laboratories.",
+      'The tour involves a significant amount of fast-paced walking across campus. Please wear comfortable clothing and appropriate walking shoes.',
+      '',
+      'Because space is limited and we currently have a waitlist, please let us know as soon as possible if you are no longer able to attend.',
+      '',
+      'We look forward to seeing you!',
+      '',
+      'The AutoPack Summit Team',
+      'bianca@packagingschool.com',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
+const tour2WaitlistTemplate: EmailTemplateDefinition = {
+  key: 'tour-2-waitlist-email',
+  label: 'Tour 2 waitlist (Clemson Packaging Science)',
+  description:
+    'Requested but not approved Clemson Packaging Science attendees: at capacity, waitlist order, wait for a separate confirmation before going to campus for the tour.',
+  defaultSubject: () => 'Clemson University Tour Waitlist Update',
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      Tour2WaitlistEmail({
+        firstName: recipient.firstName ?? '',
+        eventYear,
+      }),
+    );
+  },
+  renderText: ({ recipient }) => {
+    const greetingName =
+      recipient.firstName?.trim() || 'AutoPack Summit Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      'Thank you for your interest in the Clemson University Packaging Science Facilities Tour, scheduled for Friday, October 2, from 11:00 AM to 12:00 PM.',
+      '',
+      'The tour is currently at capacity, and your name remains on the waitlist. If a space becomes available, we will contact attendees in waitlist order and provide the complete tour, parking, and meeting instructions.',
+      '',
+      'Please do not go to the Clemson campus for this tour unless you receive a separate email confirming that a spot has become available for you. This does not affect your AutoPack Summit registration.',
+      '',
+      'If you are no longer interested in this tour, please reply to this email so we can remove your name from the waitlist.',
+      '',
+      'Thank you for your understanding. We hope to be able to accommodate you!',
+      '',
+      'Best regards,',
+      '',
+      'The AutoPack Summit Team',
+      'bianca@packagingschool.com',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
 const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [welcomeTemplate.key]: welcomeTemplate,
   [appAccessTemplate.key]: appAccessTemplate,
   [attendeeInfoTemplate.key]: attendeeInfoTemplate,
+  [tour1ConfirmedTemplate.key]: tour1ConfirmedTemplate,
+  [tour2ConfirmedTemplate.key]: tour2ConfirmedTemplate,
+  [tour2WaitlistTemplate.key]: tour2WaitlistTemplate,
 };
 
 export function listEmailTemplates(): EmailTemplateDefinition[] {

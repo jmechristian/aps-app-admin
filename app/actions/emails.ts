@@ -12,6 +12,10 @@ import {
 } from '@/lib/email-scheduler';
 import { sendHtmlEmail } from '@/lib/ses';
 import {
+  fetchAddOnRequestsByAddOnId,
+  fetchAddOnsByEventId,
+} from '@/app/actions/add-ons';
+import {
   fetchLatestTempCredentialByRegistrantId,
   fetchRegistrantById,
   fetchRegistrantsByApsId,
@@ -43,6 +47,8 @@ export type RegistrantTypeFilter =
   | 'STAFF'
   | 'EXHIBITOR';
 
+export type AddOnRequestStatusFilter = 'PENDING' | 'APPROVED';
+
 export type EmailCampaign = {
   id: string;
   eventId: string;
@@ -51,6 +57,8 @@ export type EmailCampaign = {
   subject: string;
   audienceStatuses?: RegistrantStatusFilter[] | null;
   audienceTypes?: RegistrantTypeFilter[] | null;
+  audienceAddOnIds?: string[] | null;
+  audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
   status: EmailCampaignStatus;
   scheduledAt?: string | null;
   startedAt?: string | null;
@@ -231,6 +239,13 @@ function normalizeStatuses(
   return statuses;
 }
 
+function normalizeAddOnRequestStatuses(
+  statuses?: AddOnRequestStatusFilter[] | null,
+): AddOnRequestStatusFilter[] {
+  if (!statuses || statuses.length === 0) return ['PENDING', 'APPROVED'];
+  return statuses;
+}
+
 function filterAudience(
   registrants: Registrant[],
   statuses?: RegistrantStatusFilter[] | null,
@@ -254,6 +269,91 @@ function filterAudience(
   }
 
   return result;
+}
+
+function encodeCampaignTemplateKey(
+  templateKey: string,
+  addOnIds?: string[] | null,
+  requestStatuses?: AddOnRequestStatusFilter[] | null,
+) {
+  if (!addOnIds?.length) return templateKey;
+  const statuses = normalizeAddOnRequestStatuses(requestStatuses).join(',');
+  return `${templateKey}::addon::${addOnIds.join(',')}::${statuses}`;
+}
+
+function decodeCampaignTemplateKey(raw: string): {
+  templateKey: string;
+  audienceAddOnIds: string[] | null;
+  audienceAddOnRequestStatuses: AddOnRequestStatusFilter[] | null;
+} {
+  const marker = '::addon::';
+  const idx = raw.indexOf(marker);
+  if (idx === -1) {
+    return {
+      templateKey: raw,
+      audienceAddOnIds: null,
+      audienceAddOnRequestStatuses: null,
+    };
+  }
+  const templateKey = raw.slice(0, idx);
+  const rest = raw.slice(idx + marker.length);
+  const [idsPart, statusesPart] = rest.split('::');
+  const audienceAddOnIds = (idsPart || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const audienceAddOnRequestStatuses = (statusesPart || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is AddOnRequestStatusFilter => s === 'PENDING' || s === 'APPROVED');
+  return {
+    templateKey,
+    audienceAddOnIds: audienceAddOnIds.length ? audienceAddOnIds : null,
+    audienceAddOnRequestStatuses: audienceAddOnRequestStatuses.length
+      ? audienceAddOnRequestStatuses
+      : null,
+  };
+}
+
+async function applyAddOnAudienceFilter(
+  registrants: Registrant[],
+  addOnIds?: string[] | null,
+  requestStatuses?: AddOnRequestStatusFilter[] | null,
+): Promise<Registrant[]> {
+  if (!addOnIds?.length) return registrants;
+
+  const statusSet = new Set(normalizeAddOnRequestStatuses(requestStatuses));
+  const matchingIds = new Set<string>();
+
+  for (const addOnId of addOnIds) {
+    const requests = await fetchAddOnRequestsByAddOnId(addOnId);
+    for (const request of requests) {
+      if (!statusSet.has(request.status as AddOnRequestStatusFilter)) continue;
+      if (request.registrantId) matchingIds.add(request.registrantId);
+    }
+  }
+
+  return registrants.filter((r) => matchingIds.has(r.id));
+}
+
+async function resolveCampaignAudience(params: {
+  eventId: string;
+  audienceStatuses?: RegistrantStatusFilter[] | null;
+  audienceTypes?: RegistrantTypeFilter[] | null;
+  audienceAddOnIds?: string[] | null;
+  audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
+}): Promise<Registrant[]> {
+  const all = await fetchRegistrantsByApsId(params.eventId);
+  const byRegistrant = filterAudience(
+    all,
+    params.audienceStatuses,
+    params.audienceTypes,
+  );
+  return applyAddOnAudienceFilter(
+    byRegistrant,
+    params.audienceAddOnIds,
+    params.audienceAddOnRequestStatuses,
+  );
 }
 
 async function mapWithConcurrency<T, R>(
@@ -528,17 +628,36 @@ export async function sendTestEmail(params: {
   };
 }
 
+export async function listEmailAudienceAddOns(eventId: string): Promise<
+  Array<{
+    id: string;
+    title: string;
+    pendingCount: number;
+    approvedCount: number;
+  }>
+> {
+  const addOns = await fetchAddOnsByEventId(eventId);
+  return Promise.all(
+    addOns.map(async (addOn) => {
+      const requests = await fetchAddOnRequestsByAddOnId(addOn.id);
+      return {
+        id: addOn.id,
+        title: addOn.title,
+        pendingCount: requests.filter((r) => r.status === 'PENDING').length,
+        approvedCount: requests.filter((r) => r.status === 'APPROVED').length,
+      };
+    }),
+  );
+}
+
 export async function previewCampaignAudience(params: {
   eventId: string;
   audienceStatuses?: RegistrantStatusFilter[] | null;
   audienceTypes?: RegistrantTypeFilter[] | null;
+  audienceAddOnIds?: string[] | null;
+  audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
 }): Promise<{ count: number; sample: Array<{ id: string; email: string; name: string }> }> {
-  const all = await fetchRegistrantsByApsId(params.eventId);
-  const filtered = filterAudience(
-    all,
-    params.audienceStatuses,
-    params.audienceTypes,
-  );
+  const filtered = await resolveCampaignAudience(params);
 
   return {
     count: filtered.length,
@@ -628,6 +747,8 @@ export async function createEmailCampaign(input: {
   subject?: string;
   audienceStatuses?: RegistrantStatusFilter[] | null;
   audienceTypes?: RegistrantTypeFilter[] | null;
+  audienceAddOnIds?: string[] | null;
+  audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
 }): Promise<EmailCampaign> {
   const template = assertEmailTemplate(input.templateKey);
   const eventYear = await getEventYear(input.eventId);
@@ -641,7 +762,11 @@ export async function createEmailCampaign(input: {
     input: {
       eventId: input.eventId,
       name: input.name.trim(),
-      templateKey: input.templateKey,
+      templateKey: encodeCampaignTemplateKey(
+        input.templateKey,
+        input.audienceAddOnIds,
+        input.audienceAddOnRequestStatuses,
+      ),
       subject,
       audienceStatuses: normalizeStatuses(input.audienceStatuses),
       audienceTypes: input.audienceTypes?.length
@@ -822,14 +947,16 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     throw new Error('Campaign has already been sent');
   }
 
-  const template = assertEmailTemplate(campaign.templateKey);
+  const decoded = decodeCampaignTemplateKey(campaign.templateKey);
+  const template = assertEmailTemplate(decoded.templateKey);
   const eventYear = await getEventYear(campaign.eventId);
-  const all = await fetchRegistrantsByApsId(campaign.eventId);
-  const audience = filterAudience(
-    all,
-    campaign.audienceStatuses,
-    campaign.audienceTypes,
-  );
+  const audience = await resolveCampaignAudience({
+    eventId: campaign.eventId,
+    audienceStatuses: campaign.audienceStatuses,
+    audienceTypes: campaign.audienceTypes,
+    audienceAddOnIds: decoded.audienceAddOnIds,
+    audienceAddOnRequestStatuses: decoded.audienceAddOnRequestStatuses,
+  });
 
   if (audience.length === 0) {
     throw new Error('No recipients match the campaign audience filters');

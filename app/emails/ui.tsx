@@ -13,10 +13,12 @@ import {
   scheduleEmailCampaign,
   sendEmailCampaignNow,
   sendTestEmail,
+  listEmailAudienceAddOns,
   type EmailCampaign,
   type EmailSend,
   type RegistrantStatusFilter,
   type RegistrantTypeFilter,
+  type AddOnRequestStatusFilter,
 } from '@/app/actions/emails';
 
 type APS = { id: string; year: string };
@@ -45,6 +47,14 @@ const TYPE_OPTIONS: RegistrantTypeFilter[] = [
 ];
 
 const COMPLETE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const ADDON_STATUS_OPTIONS: Array<{
+  id: AddOnRequestStatusFilter;
+  label: string;
+}> = [
+  { id: 'APPROVED', label: 'Approved' },
+  { id: 'PENDING', label: 'Requested (not yet approved)' },
+];
 
 function getGraphQLData<T>(res: unknown): T {
   const data = (res as { data?: T }).data;
@@ -114,6 +124,17 @@ export default function EmailsClient() {
   const [audienceTypes, setAudienceTypes] = useState<RegistrantTypeFilter[]>(
     [],
   );
+  const [audienceAddOnIds, setAudienceAddOnIds] = useState<string[]>([]);
+  const [audienceAddOnRequestStatuses, setAudienceAddOnRequestStatuses] =
+    useState<AddOnRequestStatusFilter[]>(['APPROVED', 'PENDING']);
+  const [eventAddOns, setEventAddOns] = useState<
+    Array<{
+      id: string;
+      title: string;
+      pendingCount: number;
+      approvedCount: number;
+    }>
+  >([]);
   const [audienceCount, setAudienceCount] = useState<number | null>(null);
   const [audienceSample, setAudienceSample] = useState<
     Array<{ id: string; email: string; name: string }>
@@ -216,7 +237,27 @@ export default function EmailsClient() {
     void refreshCampaigns(eventId);
     setSelectedCampaignId(null);
     setSends([]);
+    setAudienceAddOnIds([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  useEffect(() => {
+    if (!eventId) {
+      setEventAddOns([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const rows = await listEmailAudienceAddOns(eventId);
+        if (!cancelled) setEventAddOns(rows);
+      } catch {
+        if (!cancelled) setEventAddOns([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [eventId]);
 
   useEffect(() => {
@@ -233,6 +274,10 @@ export default function EmailsClient() {
           eventId,
           audienceStatuses,
           audienceTypes,
+          audienceAddOnIds: audienceAddOnIds.length ? audienceAddOnIds : null,
+          audienceAddOnRequestStatuses: audienceAddOnRequestStatuses.length
+            ? audienceAddOnRequestStatuses
+            : null,
         });
         if (!cancelled) {
           setAudienceCount(result.count);
@@ -249,7 +294,13 @@ export default function EmailsClient() {
     return () => {
       cancelled = true;
     };
-  }, [eventId, audienceStatuses, audienceTypes]);
+  }, [
+    eventId,
+    audienceStatuses,
+    audienceTypes,
+    audienceAddOnIds,
+    audienceAddOnRequestStatuses,
+  ]);
 
   const previewLookupEmail = COMPLETE_EMAIL_RE.test(previewEmail.trim())
     ? previewEmail.trim()
@@ -313,6 +364,24 @@ export default function EmailsClient() {
     );
   }
 
+  function toggleAddOn(addOnId: string) {
+    setAudienceAddOnIds((prev) =>
+      prev.includes(addOnId)
+        ? prev.filter((id) => id !== addOnId)
+        : [...prev, addOnId],
+    );
+  }
+
+  function toggleAddOnRequestStatus(status: AddOnRequestStatusFilter) {
+    setAudienceAddOnRequestStatuses((prev) => {
+      if (prev.includes(status)) {
+        const next = prev.filter((s) => s !== status);
+        return next.length ? next : prev;
+      }
+      return [...prev, status];
+    });
+  }
+
   async function openSendLog(campaignId: string) {
     setSelectedCampaignId(campaignId);
     setSendsLoading(true);
@@ -350,6 +419,10 @@ export default function EmailsClient() {
       subject: subject.trim() || undefined,
       audienceStatuses,
       audienceTypes: audienceTypes.length ? audienceTypes : null,
+      audienceAddOnIds: audienceAddOnIds.length ? audienceAddOnIds : null,
+      audienceAddOnRequestStatuses: audienceAddOnIds.length
+        ? audienceAddOnRequestStatuses
+        : null,
     });
 
     if (scheduleEnabled) {
@@ -507,7 +580,8 @@ export default function EmailsClient() {
               </div>
               <p className="mt-1 text-xs text-slate-600">
                 Defaults to APPROVED registrants for the selected event. Leave
-                types unchecked to include all attendee types.
+                types unchecked to include all attendee types. Add-ons are
+                optional and further limit the list to request/approval status.
               </p>
 
               <div className="mt-4">
@@ -549,6 +623,64 @@ export default function EmailsClient() {
                       {type}
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Add-ons
+                </div>
+                <p className="mt-1 text-xs text-slate-600">
+                  Leave unchecked to ignore add-ons. Check one or more to limit
+                  the audience to people with those add-on requests.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {ADDON_STATUS_OPTIONS.map((option) => (
+                    <label
+                      key={option.id}
+                      className="inline-flex items-center gap-2 text-sm text-slate-700"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={audienceAddOnRequestStatuses.includes(
+                          option.id,
+                        )}
+                        onChange={() => toggleAddOnRequestStatus(option.id)}
+                        disabled={audienceAddOnIds.length === 0}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-3 max-h-48 space-y-2 overflow-y-auto">
+                  {eventAddOns.length === 0 ? (
+                    <p className="text-xs text-slate-500">
+                      No add-ons found for this event.
+                    </p>
+                  ) : (
+                    eventAddOns.map((addOn) => (
+                      <label
+                        key={addOn.id}
+                        className="flex items-start gap-2 text-sm text-slate-700"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={audienceAddOnIds.includes(addOn.id)}
+                          onChange={() => toggleAddOn(addOn.id)}
+                        />
+                        <span>
+                          <span className="font-medium text-slate-900">
+                            {addOn.title}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            {addOn.approvedCount} approved · {addOn.pendingCount}{' '}
+                            requested
+                          </span>
+                        </span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -642,6 +774,12 @@ export default function EmailsClient() {
                         audienceStatuses,
                         audienceTypes: audienceTypes.length
                           ? audienceTypes
+                          : null,
+                        audienceAddOnIds: audienceAddOnIds.length
+                          ? audienceAddOnIds
+                          : null,
+                        audienceAddOnRequestStatuses: audienceAddOnIds.length
+                          ? audienceAddOnRequestStatuses
                           : null,
                       });
                       setStatusMessage('Draft saved.');
@@ -867,7 +1005,8 @@ export default function EmailsClient() {
                       </div>
                       <div className="mt-2 space-y-1 text-xs text-slate-500">
                         <div>
-                          Template: {campaign.templateKey}
+                          Template:{' '}
+                          {campaign.templateKey.split('::addon::')[0]}
                           {' · '}
                           Recipients: {campaign.totalRecipients ?? '—'}
                           {' · '}

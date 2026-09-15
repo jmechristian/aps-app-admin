@@ -211,7 +211,7 @@ export const AttendeeInfoEmail = ({
                   ...font,
                 }}
               >
-                Important information for Greenville
+                Important Information for Attendees
               </Text>
               <Text
                 style={{
@@ -323,13 +323,22 @@ export const AttendeeInfoEmail = ({
                 }}
               >
                 <Text style={labelStyle}>Event dates and location</Text>
-                <Text style={headingStyle}>Hyatt Regency Greenville</Text>
-                <Text style={metaLabelStyle}>Dates</Text>
-                <Text style={metaValueStyle}>
+                <Text style={headingStyle}>
                   September 30–October 2, {eventYear}
                 </Text>
-                <Text style={metaLabelStyle}>Address</Text>
-                <Text style={{ ...metaValueStyle, margin: '0 0 4px' }}>
+                <Text
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: DARK_TEXT,
+                    margin: '0 0 4px',
+                    lineHeight: '1.35',
+                    ...font,
+                  }}
+                >
+                  Hyatt Regency Greenville
+                </Text>
+                <Text style={{ ...metaValueStyle, fontWeight: 600, margin: '0 0 16px' }}>
                   <Link
                     href={HYATT_MAPS}
                     style={{ color: APS_BLUE, textDecoration: 'none' }}
@@ -382,7 +391,7 @@ export const AttendeeInfoEmail = ({
                 }}
               >
                 <Text style={labelStyle}>Wednesday evening</Text>
-                <Text style={headingStyle}>Kickoff cocktail hour</Text>
+                <Text style={headingStyle}>Kickoff Cocktail Hour</Text>
                 <Text style={bodyStyle}>
                   All registered attendees are invited to the official kickoff
                   at New Realm Brewing. Enjoy drinks, heavy hors d&apos;oeuvres,
@@ -436,7 +445,7 @@ export const AttendeeInfoEmail = ({
                 >
                   Spots still available
                 </Text>
-                <Text style={headingStyle}>Wednesday Clemson ICAR tour</Text>
+                <Text style={headingStyle}>Wednesday Clemson ICAR Tour</Text>
                 <Text style={bodyStyle}>
                   A limited number of spaces remain for the Clemson University
                   ICAR and Deep Orange Facility Tour — a behind-the-scenes look
@@ -503,7 +512,7 @@ export const AttendeeInfoEmail = ({
                   fontSize: '22px',
                 }}
               >
-                Download the AutoPack Summit app
+                Download the AutoPack Summit App
               </Text>
               <Text
                 style={{
@@ -516,6 +525,60 @@ export const AttendeeInfoEmail = ({
                 and exhibitors, get event updates, and join activities
                 throughout the Summit.
               </Text>
+              <div
+                style={{
+                  border: `1px solid ${GRAY_BORDER}`,
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  margin: '0 0 20px',
+                  textAlign: 'left' as const,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: DARK_TEXT,
+                    margin: '0 0 6px',
+                    lineHeight: '1.4',
+                    ...font,
+                  }}
+                >
+                  iPhone users: use the link — the app is not in the public App
+                  Store
+                </Text>
+                <Text
+                  style={{
+                    fontSize: '13px',
+                    color: MUTED_TEXT,
+                    margin: 0,
+                    lineHeight: '1.55',
+                    ...font,
+                  }}
+                >
+                  Searching the App Store will not find it. Tap the iOS button
+                  below, or open this install link on your iPhone:
+                </Text>
+                {appStoreUrl ? (
+                  <Text
+                    style={{
+                      fontSize: '12px',
+                      margin: '8px 0 0',
+                      lineHeight: '1.5',
+                      wordBreak: 'break-all',
+                      ...font,
+                    }}
+                  >
+                    <Link
+                      href={appStoreUrl}
+                      style={{ color: APS_BLUE, fontWeight: 600 }}
+                    >
+                      {appStoreUrl}
+                    </Link>
+                  </Text>
+                ) : null}
+              </div>
 
               <StoreButton
                 href={appStoreUrl || '#'}
@@ -668,7 +731,7 @@ export const AttendeeInfoEmail = ({
                     }}
                   >
                     Sign in with the credentials associated with your
-                    registration. Need a walkthrough?{' '}
+                    registration. Need a walk-through?{' '}
                     <Link
                       href={APP_GUIDE_URL}
                       style={{ color: APS_BLUE, fontWeight: 700 }}
@@ -684,7 +747,7 @@ export const AttendeeInfoEmail = ({
             <Section style={{ padding: '32px 32px 0' }}>
               <Hr style={{ borderColor: GRAY_BORDER, margin: '0 0 28px' }} />
               <Text style={labelStyle}>Thursday, October 1</Text>
-              <Text style={headingStyle}>Meals and reception</Text>
+              <Text style={headingStyle}>Meals and Reception</Text>
               <Text style={{ ...bodyStyle, margin: 0 }}>
                 Thursday&apos;s program includes a continental breakfast, lunch,
                 networking breaks with refreshments, and an evening cocktail
@@ -720,8 +783,9 @@ export const AttendeeInfoEmail = ({
                         ...font,
                       }}
                     >
-                      Business casual is recommended. For a facility tour, wear
-                      comfortable clothing and walking shoes.
+                      Business casual is recommended. If you are participating
+                      in a facility tour, wear comfortable clothing and walking
+                      shoes.
                     </Text>
                   </div>
                 </Column>
@@ -752,7 +816,7 @@ export const AttendeeInfoEmail = ({
                       Self-parking in the Hyatt garage is{' '}
                       <strong style={{ color: DARK_TEXT }}>$10/day</strong>.
                       Park front-in — reverse parking is not permitted. Rates
-                      may change.
+                      are subject to change.
                     </Text>
                   </div>
                 </Column>
@@ -776,7 +840,7 @@ export const AttendeeInfoEmail = ({
                   ...font,
                 }}
               >
-                We look forward to seeing you in Greenville
+                We look forward to seeing you in Greenville!
               </Text>
               <Text
                 style={{
