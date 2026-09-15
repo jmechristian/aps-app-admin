@@ -6448,6 +6448,11 @@ export const deleteApsEmailSend = /* GraphQL */ `mutation DeleteApsEmailSend(
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename
@@ -9672,6 +9677,11 @@ export const createApsEmailSend = /* GraphQL */ `mutation CreateApsEmailSend(
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename
@@ -9695,6 +9705,11 @@ export const updateApsEmailSend = /* GraphQL */ `mutation UpdateApsEmailSend(
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename

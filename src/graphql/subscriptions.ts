@@ -8994,6 +8994,11 @@ export const onCreateApsEmailSend = /* GraphQL */ `subscription OnCreateApsEmail
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename
@@ -9016,6 +9021,11 @@ export const onUpdateApsEmailSend = /* GraphQL */ `subscription OnUpdateApsEmail
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename
@@ -9038,6 +9048,11 @@ export const onDeleteApsEmailSend = /* GraphQL */ `subscription OnDeleteApsEmail
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename

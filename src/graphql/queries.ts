@@ -8336,6 +8336,11 @@ export const getApsEmailSend = /* GraphQL */ `query GetApsEmailSend($id: ID!) {
     sesMessageId
     error
     sentAt
+    openedAt
+    openCount
+    clickedAt
+    clickCount
+    lastClickedUrl
     createdAt
     updatedAt
     __typename
@@ -8361,6 +8366,11 @@ export const listApsEmailSends = /* GraphQL */ `query ListApsEmailSends(
       sesMessageId
       error
       sentAt
+      openedAt
+      openCount
+      clickedAt
+      clickCount
+      lastClickedUrl
       createdAt
       updatedAt
       __typename
@@ -8399,6 +8409,11 @@ export const apsEmailSendsByCampaignIdAndCreatedAt = /* GraphQL */ `query ApsEma
       sesMessageId
       error
       sentAt
+      openedAt
+      openCount
+      clickedAt
+      clickCount
+      lastClickedUrl
       createdAt
       updatedAt
       __typename
