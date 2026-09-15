@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { ensureAmplifyConfigured, graphqlClient } from '@/src/amplify-client';
-import WysiwygEditor from '@/app/components/wysiwyg-editor';
+import WysiwygEditor, { sanitizeHtml } from '@/app/components/wysiwyg-editor';
 import {
   createApsAgenda,
   createApsAppSession,
@@ -106,6 +106,10 @@ export default function SessionModal({
   const [submitting, setSubmitting] = useState(false);
   const [loadingLinks, setLoadingLinks] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const descriptionRef = useRef('');
+  const skipLinksLoadRef = useRef(false);
 
   const [form, setForm] = useState({
     title: '',
@@ -124,7 +128,8 @@ export default function SessionModal({
 
   // On first open in edit mode, load existing links so checkboxes prefill.
   // (Kept minimal: loads once per open)
-  const sessionId = initialSession?.id ?? null;
+  const sessionId = activeSessionId ?? initialSession?.id ?? null;
+  const isNew = !sessionId;
 
   const filteredSpeakers = useMemo(() => {
     const q = form.speakerQuery.trim().toLowerCase();
@@ -144,11 +149,19 @@ export default function SessionModal({
 
   // Sync form values whenever we open the modal or switch which session we're editing.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setActiveSessionId(null);
+      setMessage(null);
+      setError(null);
+      return;
+    }
 
     setError(null);
+    setMessage(null);
+    setActiveSessionId(mode === 'edit' ? initialSession?.id ?? null : null);
 
     if (mode === 'create') {
+      descriptionRef.current = '';
       setForm({
         title: '',
         date: '',
@@ -166,15 +179,15 @@ export default function SessionModal({
       return;
     }
 
-    // Edit mode: hydrate from the clicked session immediately,
-    // then a separate effect will load speaker/sponsor links.
+    const description = sanitizeHtml(initialSession?.description ?? '');
+    descriptionRef.current = description;
     setForm({
       title: initialSession?.title ?? '',
       date: initialSession?.date ?? '',
       startTime: initialSession?.startTime ?? '',
       endTime: initialSession?.endTime ?? '',
       location: initialSession?.location ?? '',
-      description: initialSession?.description ?? '',
+      description,
       embedUrl: initialSession?.embedUrl ?? '',
       draft: initialSession?.draft ?? false,
       speakerQuery: '',
@@ -187,8 +200,11 @@ export default function SessionModal({
   // Load speakers/sponsors joins for the active session whenever it changes.
   useEffect(() => {
     if (!isOpen) return;
-    if (mode !== 'edit') return;
     if (!sessionId) return;
+    if (skipLinksLoadRef.current) {
+      skipLinksLoadRef.current = false;
+      return;
+    }
 
     let cancelled = false;
 
@@ -249,6 +265,9 @@ export default function SessionModal({
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setMessage(null);
+
+    const description = sanitizeHtml(descriptionRef.current);
 
     try {
       ensureAmplifyConfigured();
@@ -258,7 +277,7 @@ export default function SessionModal({
 
       let effectiveSessionId: string;
 
-      if (mode === 'create') {
+      if (!sessionId) {
         const createdSession = await graphqlClient.graphql({
           query: createApsAppSession,
           variables: {
@@ -269,7 +288,7 @@ export default function SessionModal({
               startTime: form.startTime || null,
               endTime: form.endTime || null,
               location: form.location || null,
-              description: form.description || null,
+              description: description || null,
               embedUrl: form.embedUrl || null,
               draft: form.draft,
             },
@@ -283,7 +302,6 @@ export default function SessionModal({
         if (!id) throw new Error('Failed to create session');
         effectiveSessionId = id;
       } else {
-        if (!sessionId) throw new Error('Missing session id');
         await graphqlClient.graphql({
           query: updateApsAppSession,
           variables: {
@@ -294,7 +312,7 @@ export default function SessionModal({
               startTime: form.startTime || null,
               endTime: form.endTime || null,
               location: form.location || null,
-              description: form.description || null,
+              description: description || null,
               embedUrl: form.embedUrl || null,
               draft: form.draft,
             },
@@ -303,7 +321,6 @@ export default function SessionModal({
         });
         effectiveSessionId = sessionId;
 
-        // Re-sync joins: delete existing, then recreate.
         const [speakerLinks, sponsorLinks] = await Promise.all([
           graphqlClient.graphql({
             query: sessionSpeakersByApsAppSessionId,
@@ -367,7 +384,11 @@ export default function SessionModal({
         ),
       ]);
 
-      onClose();
+      if (!sessionId) {
+        skipLinksLoadRef.current = true;
+        setActiveSessionId(effectiveSessionId);
+      }
+      setMessage('Saved.');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -377,7 +398,7 @@ export default function SessionModal({
   }
 
   async function handleDelete() {
-    if (mode !== 'edit' || !sessionId) return;
+    if (!sessionId) return;
     const confirmed = window.confirm(
       'Delete this session? This will remove its speaker/sponsor links and questions.'
     );
@@ -471,7 +492,7 @@ export default function SessionModal({
         <div className='sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4'>
           <div>
             <h2 className='text-2xl font-bold text-slate-900'>
-              {mode === 'create' ? 'Create session' : 'Edit session'}
+              {isNew ? 'Create session' : 'Edit session'}
             </h2>
             <p className='mt-1 text-sm text-slate-600'>
               Time fields are stored as strings and treated as{' '}
@@ -496,6 +517,11 @@ export default function SessionModal({
               {error}
             </div>
           )}
+          {message ? (
+            <div className='mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800'>
+              {message}
+            </div>
+          ) : null}
 
           {loadingLinks ? (
             <div className='rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700'>
@@ -576,7 +602,10 @@ export default function SessionModal({
                 </label>
                 <WysiwygEditor
                   value={form.description}
-                  onChange={(html) => setForm((p) => ({ ...p, description: html }))}
+                  onChange={(html) => {
+                    descriptionRef.current = html;
+                    setForm((p) => ({ ...p, description: html }));
+                  }}
                   placeholder='Write session description…'
                   disabled={submitting}
                 />
@@ -713,7 +742,7 @@ export default function SessionModal({
           </div>
 
           <div className='mt-6 flex items-center justify-between gap-3'>
-            {mode === 'edit' ? (
+            {sessionId ? (
               <button
                 type='button'
                 onClick={handleDelete}
@@ -732,14 +761,14 @@ export default function SessionModal({
                 className='rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
                 disabled={submitting}
               >
-                Cancel
+                Close
               </button>
               <button
                 type='submit'
                 disabled={submitting}
                 className='rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md disabled:opacity-60'
               >
-                {submitting ? 'Saving…' : mode === 'create' ? 'Create session' : 'Save changes'}
+                {submitting ? 'Saving…' : isNew ? 'Create session' : 'Save changes'}
               </button>
             </div>
           </div>

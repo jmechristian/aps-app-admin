@@ -11,6 +11,7 @@ import {
   upsertEmailCampaignSchedule,
 } from '@/lib/email-scheduler';
 import { sendHtmlEmail } from '@/lib/ses';
+import { applyEmailTracking } from '@/lib/email-tracking';
 import {
   fetchAddOnRequestsByAddOnId,
   fetchAddOnsByEventId,
@@ -80,6 +81,11 @@ export type EmailSend = {
   sesMessageId?: string | null;
   error?: string | null;
   sentAt?: string | null;
+  openedAt?: string | null;
+  openCount?: number | null;
+  clickedAt?: string | null;
+  clickCount?: number | null;
+  lastClickedUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -190,6 +196,28 @@ const UPDATE_SEND = /* GraphQL */ `
   }
 `;
 
+const SEND_FIELDS = `
+  id
+  campaignId
+  eventId
+  registrantId
+  email
+  status
+  sesMessageId
+  error
+  sentAt
+  createdAt
+  updatedAt
+`;
+
+const SEND_TRACKING_FIELDS = `
+  openedAt
+  openCount
+  clickedAt
+  clickCount
+  lastClickedUrl
+`;
+
 const LIST_SENDS_BY_CAMPAIGN = /* GraphQL */ `
   query ApsEmailSendsByCampaignIdAndCreatedAt(
     $campaignId: ID!
@@ -204,17 +232,29 @@ const LIST_SENDS_BY_CAMPAIGN = /* GraphQL */ `
       nextToken: $nextToken
     ) {
       items {
-        id
-        campaignId
-        eventId
-        registrantId
-        email
-        status
-        sesMessageId
-        error
-        sentAt
-        createdAt
-        updatedAt
+        ${SEND_FIELDS}
+      }
+      nextToken
+    }
+  }
+`;
+
+const LIST_SENDS_BY_CAMPAIGN_WITH_TRACKING = /* GraphQL */ `
+  query ApsEmailSendsByCampaignIdAndCreatedAt(
+    $campaignId: ID!
+    $sortDirection: ModelSortDirection
+    $limit: Int
+    $nextToken: String
+  ) {
+    apsEmailSendsByCampaignIdAndCreatedAt(
+      campaignId: $campaignId
+      sortDirection: $sortDirection
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        ${SEND_FIELDS}
+        ${SEND_TRACKING_FIELDS}
       }
       nextToken
     }
@@ -720,21 +760,30 @@ export async function listSendsByCampaignId(
 ): Promise<EmailSend[]> {
   const rows: EmailSend[] = [];
   let nextToken: string | null | undefined = null;
+  let query = LIST_SENDS_BY_CAMPAIGN_WITH_TRACKING;
 
   do {
-    const data: SendListPage = await requestGraphQL<SendListPage>(
-      LIST_SENDS_BY_CAMPAIGN,
-      {
+    try {
+      const data: SendListPage = await requestGraphQL<SendListPage>(query, {
         campaignId,
         sortDirection: 'DESC',
         limit: 200,
         nextToken: nextToken || undefined,
-      },
-    );
+      });
 
-    const page = data.apsEmailSendsByCampaignIdAndCreatedAt;
-    rows.push(...((page?.items ?? []).filter(Boolean) as EmailSend[]));
-    nextToken = page?.nextToken;
+      const page = data.apsEmailSendsByCampaignIdAndCreatedAt;
+      rows.push(...((page?.items ?? []).filter(Boolean) as EmailSend[]));
+      nextToken = page?.nextToken;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (query === LIST_SENDS_BY_CAMPAIGN_WITH_TRACKING) {
+        query = LIST_SENDS_BY_CAMPAIGN;
+        nextToken = null;
+        rows.length = 0;
+        continue;
+      }
+      throw error instanceof Error ? error : new Error(message);
+    }
   } while (nextToken);
 
   return rows;
@@ -1017,11 +1066,14 @@ export async function runEmailCampaign(campaignId: string): Promise<{
       const recipient = await toTemplateRecipient(record.registrant, {
         includeTempPassword: Boolean(template.requiresTempPassword),
       });
-      const html = await template.renderHtml({
-        recipient,
-        eventYear,
-        subject: campaign.subject,
-      });
+      const html = applyEmailTracking(
+        await template.renderHtml({
+          recipient,
+          eventYear,
+          subject: campaign.subject,
+        }),
+        record.send.id,
+      );
       const text = template.renderText?.({
         recipient,
         eventYear,

@@ -95,6 +95,17 @@ function sendStatusClassName(status: EmailSend['status']) {
   }
 }
 
+function shortUrl(url?: string | null): string {
+  if (!url) return '—';
+  try {
+    const parsed = new URL(url);
+    const path = `${parsed.hostname}${parsed.pathname}`.replace(/\/$/, '');
+    return path.length > 42 ? `${path.slice(0, 41)}…` : path;
+  } catch {
+    return url.length > 42 ? `${url.slice(0, 41)}…` : url;
+  }
+}
+
 const LIST_APS = /* GraphQL */ `
   query ListAPS($limit: Int) {
     listAPS(limit: $limit) {
@@ -173,6 +184,17 @@ export default function EmailsClient() {
     () => templates.find((t) => t.key === templateKey),
     [templates, templateKey],
   );
+
+  const sendTrackingStats = useMemo(() => {
+    const sent = sends.filter((s) => s.status === 'SENT');
+    const opened = sent.filter((s) => Boolean(s.openedAt) || (s.openCount ?? 0) > 0);
+    const clicked = sent.filter((s) => (s.clickCount ?? 0) > 0);
+    return {
+      sent: sent.length,
+      opened: opened.length,
+      clicked: clicked.length,
+    };
+  }, [sends]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1126,6 +1148,25 @@ export default function EmailsClient() {
                 <p className="font-mono text-xs text-slate-500">
                   {selectedCampaignId}
                 </p>
+                {sends.length ? (
+                  <p className="mt-2 text-xs text-slate-600">
+                    Opened {sendTrackingStats.opened}/{sendTrackingStats.sent}
+                    {sendTrackingStats.sent
+                      ? ` (${Math.round(
+                          (sendTrackingStats.opened / sendTrackingStats.sent) *
+                            100,
+                        )}%)`
+                      : ''}
+                    {' · '}
+                    Clicked {sendTrackingStats.clicked}/{sendTrackingStats.sent}
+                    {sendTrackingStats.sent
+                      ? ` (${Math.round(
+                          (sendTrackingStats.clicked / sendTrackingStats.sent) *
+                            100,
+                        )}%)`
+                      : ''}
+                  </p>
+                ) : null}
               </div>
               <button
                 type="button"
@@ -1153,6 +1194,9 @@ export default function EmailsClient() {
                       <th className="px-3 py-2">Email</th>
                       <th className="px-3 py-2">Status</th>
                       <th className="px-3 py-2">Sent at</th>
+                      <th className="px-3 py-2">Opened</th>
+                      <th className="px-3 py-2">Clicks</th>
+                      <th className="px-3 py-2">Last click</th>
                       <th className="px-3 py-2">SES / Error</th>
                     </tr>
                   </thead>
@@ -1176,6 +1220,20 @@ export default function EmailsClient() {
                           {send.sentAt
                             ? new Date(send.sentAt).toLocaleString()
                             : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-slate-500">
+                          {send.openedAt
+                            ? new Date(send.openedAt).toLocaleString()
+                            : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-slate-500">
+                          {send.clickCount ?? 0}
+                        </td>
+                        <td
+                          className="max-w-[180px] truncate px-3 py-2 text-xs text-slate-500"
+                          title={send.lastClickedUrl || ''}
+                        >
+                          {shortUrl(send.lastClickedUrl)}
                         </td>
                         <td className="px-3 py-2 text-xs text-slate-500">
                           {send.error || send.sesMessageId || '—'}

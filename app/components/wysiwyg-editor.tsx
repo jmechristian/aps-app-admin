@@ -65,7 +65,7 @@ function unwrap(el: Element) {
 }
 
 /** Drop comments, inline styles, classes, and non-semantic tags. Keep visible text. */
-function sanitizeHtml(html: string) {
+export function sanitizeHtml(html: string) {
   const template = document.createElement('template');
   template.innerHTML = html;
 
@@ -150,7 +150,6 @@ export default function WysiwygEditor({
 
     el.innerHTML = next;
     lastAppliedValueRef.current = next;
-    if (next !== (value ?? '')) onChange(next);
   }, [value, focused]);
 
   function emit(rewrite = false) {

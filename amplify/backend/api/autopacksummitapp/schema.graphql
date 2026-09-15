@@ -1401,6 +1401,11 @@ type ApsEmailSend
   sesMessageId: String
   error: String
   sentAt: AWSDateTime
+  openedAt: AWSDateTime
+  openCount: Int
+  clickedAt: AWSDateTime
+  clickCount: Int
+  lastClickedUrl: String
 
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
