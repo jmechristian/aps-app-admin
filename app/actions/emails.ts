@@ -614,6 +614,15 @@ function findRegistrantByEmail(
   );
 }
 
+function stripTestSubjectPrefix(subject: string): string {
+  return subject.replace(/^\s*\[TEST\]\s*/i, '').trim();
+}
+
+function testInboxSubject(subject: string): string {
+  const base = stripTestSubjectPrefix(subject);
+  return base ? `[TEST] ${base}` : '[TEST]';
+}
+
 async function resolveTemplateSubject(params: {
   templateKey: string;
   eventId: string;
@@ -621,7 +630,9 @@ async function resolveTemplateSubject(params: {
 }) {
   const template = assertEmailTemplate(params.templateKey);
   const eventYear = await getEventYear(params.eventId);
-  const subject = params.subject?.trim() || template.defaultSubject({ eventYear });
+  const subject =
+    stripTestSubjectPrefix(params.subject ?? '') ||
+    template.defaultSubject({ eventYear });
   return { template, eventYear, subject };
 }
 
@@ -757,9 +768,7 @@ export async function sendTestEmail(params: {
     subject,
   });
 
-  const testSubject = subject.startsWith('[TEST]')
-    ? subject
-    : `[TEST] ${subject}`;
+  const testSubject = testInboxSubject(subject);
 
   await sendHtmlEmail({
     to: recipient.email.trim(),
@@ -923,7 +932,7 @@ export async function createEmailCampaign(input: {
   const template = assertEmailTemplate(input.templateKey);
   const eventYear = await getEventYear(input.eventId);
   const subject =
-    input.subject?.trim() ||
+    stripTestSubjectPrefix(input.subject ?? '') ||
     template.defaultSubject({ eventYear });
 
   const data = await requestGraphQL<{
@@ -978,7 +987,9 @@ export async function updateEmailCampaign(input: {
       id: input.id,
       ...(input.name != null ? { name: input.name.trim() } : {}),
       ...(input.templateKey != null ? { templateKey: input.templateKey } : {}),
-      ...(input.subject != null ? { subject: input.subject.trim() } : {}),
+      ...(input.subject != null
+        ? { subject: stripTestSubjectPrefix(input.subject) }
+        : {}),
       ...(input.audienceStatuses !== undefined
         ? { audienceStatuses: normalizeStatuses(input.audienceStatuses) }
         : {}),
@@ -1167,6 +1178,9 @@ export async function runEmailCampaign(campaignId: string): Promise<{
   const decoded = decodeCampaignTemplateKey(campaign.templateKey);
   const template = assertEmailTemplate(decoded.templateKey);
   const eventYear = await getEventYear(campaign.eventId);
+  const subject =
+    stripTestSubjectPrefix(campaign.subject) ||
+    template.defaultSubject({ eventYear });
   const { matches: audience } = await resolveCampaignAudience({
     eventId: campaign.eventId,
     audienceStatuses: campaign.audienceStatuses,
@@ -1242,19 +1256,19 @@ export async function runEmailCampaign(campaignId: string): Promise<{
         await template.renderHtml({
           recipient,
           eventYear,
-          subject: campaign.subject,
+          subject,
         }),
         record.send.id,
       );
       const text = template.renderText?.({
         recipient,
         eventYear,
-        subject: campaign.subject,
+        subject,
       });
 
       const result = await sendHtmlEmail({
         to: recipient.email,
-        subject: campaign.subject,
+        subject,
         html,
         text,
       });

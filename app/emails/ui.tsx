@@ -645,7 +645,9 @@ export default function EmailsClient() {
               <input
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-slate-400"
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) =>
+                  setSubject(e.target.value.replace(/^\s*\[TEST\]\s*/i, ''))
+                }
                 placeholder={
                   selectedTemplate?.defaultSubjectHint || 'Email subject'
                 }
