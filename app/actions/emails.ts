@@ -270,12 +270,27 @@ const GET_APS_YEAR = /* GraphQL */ `
   }
 `;
 
-const SEND_CONCURRENCY = 5;
+const SEND_CONCURRENCY = 3;
+const SES_MAX_PER_SECOND = 10;
+
+function createSesRateLimiter(perSecond: number) {
+  const gapMs = Math.ceil(1000 / Math.max(1, perSecond));
+  let nextAllowed = 0;
+  return async function waitForSesSlot() {
+    const now = Date.now();
+    const scheduled = Math.max(nextAllowed, now);
+    nextAllowed = scheduled + gapMs;
+    const wait = scheduled - now;
+    if (wait > 0) {
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  };
+}
 
 function normalizeStatuses(
   statuses?: RegistrantStatusFilter[] | null,
 ): RegistrantStatusFilter[] {
-  if (!statuses || statuses.length === 0) return ['APPROVED'];
+  if (statuses == null) return ['APPROVED'];
   return statuses;
 }
 
@@ -311,32 +326,77 @@ function filterAudience(
   return result;
 }
 
+const EMAIL_EXTRACT_RE = /[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/gi;
+
+function normalizeAudienceEmails(
+  emails?: string[] | string | null,
+): string[] {
+  if (!emails) return [];
+  const chunks = Array.isArray(emails) ? emails : [emails];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const chunk of chunks) {
+    const matches = String(chunk).toLowerCase().match(EMAIL_EXTRACT_RE) ?? [];
+    for (const email of matches) {
+      if (seen.has(email)) continue;
+      seen.add(email);
+      result.push(email);
+    }
+  }
+  return result;
+}
+
 function encodeCampaignTemplateKey(
   templateKey: string,
   addOnIds?: string[] | null,
   requestStatuses?: AddOnRequestStatusFilter[] | null,
+  testEmails?: string[] | string | null,
+  useTestGroup?: boolean,
 ) {
-  if (!addOnIds?.length) return templateKey;
-  const statuses = normalizeAddOnRequestStatuses(requestStatuses).join(',');
-  return `${templateKey}::addon::${addOnIds.join(',')}::${statuses}`;
+  let encoded = templateKey;
+  if (addOnIds?.length && !useTestGroup) {
+    const statuses = normalizeAddOnRequestStatuses(requestStatuses).join(',');
+    encoded = `${encoded}::addon::${addOnIds.join(',')}::${statuses}`;
+  }
+  if (useTestGroup) {
+    encoded = `${encoded}::test::${normalizeAudienceEmails(testEmails).join(',')}`;
+  }
+  return encoded;
 }
 
 function decodeCampaignTemplateKey(raw: string): {
   templateKey: string;
   audienceAddOnIds: string[] | null;
   audienceAddOnRequestStatuses: AddOnRequestStatusFilter[] | null;
+  audienceTestEmails: string[] | null;
+  useTestGroup: boolean;
 } {
+  let working = raw;
+  let audienceTestEmails: string[] | null = null;
+  let useTestGroup = false;
+  const testMarker = '::test::';
+  const testIdx = working.indexOf(testMarker);
+  if (testIdx !== -1) {
+    useTestGroup = true;
+    audienceTestEmails = normalizeAudienceEmails(
+      working.slice(testIdx + testMarker.length).split(','),
+    );
+    working = working.slice(0, testIdx);
+  }
+
   const marker = '::addon::';
-  const idx = raw.indexOf(marker);
+  const idx = working.indexOf(marker);
   if (idx === -1) {
     return {
-      templateKey: raw,
+      templateKey: working,
       audienceAddOnIds: null,
       audienceAddOnRequestStatuses: null,
+      audienceTestEmails: audienceTestEmails?.length ? audienceTestEmails : null,
+      useTestGroup,
     };
   }
-  const templateKey = raw.slice(0, idx);
-  const rest = raw.slice(idx + marker.length);
+  const templateKey = working.slice(0, idx);
+  const rest = working.slice(idx + marker.length);
   const [idsPart, statusesPart] = rest.split('::');
   const audienceAddOnIds = (idsPart || '')
     .split(',')
@@ -352,6 +412,8 @@ function decodeCampaignTemplateKey(raw: string): {
     audienceAddOnRequestStatuses: audienceAddOnRequestStatuses.length
       ? audienceAddOnRequestStatuses
       : null,
+    audienceTestEmails: audienceTestEmails?.length ? audienceTestEmails : null,
+    useTestGroup,
   };
 }
 
@@ -376,24 +438,54 @@ async function applyAddOnAudienceFilter(
   return registrants.filter((r) => matchingIds.has(r.id));
 }
 
+function applyTestEmailFilter(
+  registrants: Registrant[],
+  emails?: string[] | string | null,
+): { matches: Registrant[]; missingEmails: string[] } {
+  const allow = normalizeAudienceEmails(emails);
+  if (!allow.length) return { matches: [], missingEmails: [] };
+
+  const byEmail = new Map<string, Registrant>();
+  for (const r of registrants) {
+    const email = (r.email || '').trim().toLowerCase();
+    if (email && !byEmail.has(email)) byEmail.set(email, r);
+  }
+
+  const matches: Registrant[] = [];
+  const missingEmails: string[] = [];
+  for (const email of allow) {
+    const registrant = byEmail.get(email);
+    if (registrant) matches.push(registrant);
+    else missingEmails.push(email);
+  }
+  return { matches, missingEmails };
+}
+
 async function resolveCampaignAudience(params: {
   eventId: string;
   audienceStatuses?: RegistrantStatusFilter[] | null;
   audienceTypes?: RegistrantTypeFilter[] | null;
   audienceAddOnIds?: string[] | null;
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
-}): Promise<Registrant[]> {
+  audienceTestEmails?: string[] | string | null;
+  useTestGroup?: boolean;
+}): Promise<{ matches: Registrant[]; missingEmails: string[] }> {
   const all = await fetchRegistrantsByApsId(params.eventId);
+  if (params.useTestGroup) {
+    return applyTestEmailFilter(all, params.audienceTestEmails);
+  }
+
   const byRegistrant = filterAudience(
     all,
     params.audienceStatuses,
     params.audienceTypes,
   );
-  return applyAddOnAudienceFilter(
+  const byAddOn = await applyAddOnAudienceFilter(
     byRegistrant,
     params.audienceAddOnIds,
     params.audienceAddOnRequestStatuses,
   );
+  return { matches: byAddOn, missingEmails: [] };
 }
 
 async function mapWithConcurrency<T, R>(
@@ -696,16 +788,27 @@ export async function previewCampaignAudience(params: {
   audienceTypes?: RegistrantTypeFilter[] | null;
   audienceAddOnIds?: string[] | null;
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
-}): Promise<{ count: number; sample: Array<{ id: string; email: string; name: string }> }> {
-  const filtered = await resolveCampaignAudience(params);
+  audienceTestEmails?: string[] | string | null;
+  useTestGroup?: boolean;
+}): Promise<{
+  count: number;
+  sample: Array<{ id: string; email: string; name: string }>;
+  missingEmails: string[];
+  testGroupActive: boolean;
+}> {
+  const { matches, missingEmails } = await resolveCampaignAudience(params);
+  const testGroupActive = Boolean(params.useTestGroup);
+  const listed = testGroupActive ? matches : matches.slice(0, 8);
 
   return {
-    count: filtered.length,
-    sample: filtered.slice(0, 8).map((r) => ({
+    count: matches.length,
+    sample: listed.map((r) => ({
       id: r.id,
       email: r.email,
       name: [r.firstName, r.lastName].filter(Boolean).join(' ') || r.email,
     })),
+    missingEmails,
+    testGroupActive,
   };
 }
 
@@ -798,6 +901,8 @@ export async function createEmailCampaign(input: {
   audienceTypes?: RegistrantTypeFilter[] | null;
   audienceAddOnIds?: string[] | null;
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
+  audienceTestEmails?: string[] | string | null;
+  useTestGroup?: boolean;
 }): Promise<EmailCampaign> {
   const template = assertEmailTemplate(input.templateKey);
   const eventYear = await getEventYear(input.eventId);
@@ -815,6 +920,8 @@ export async function createEmailCampaign(input: {
         input.templateKey,
         input.audienceAddOnIds,
         input.audienceAddOnRequestStatuses,
+        input.audienceTestEmails,
+        input.useTestGroup,
       ),
       subject,
       audienceStatuses: normalizeStatuses(input.audienceStatuses),
@@ -999,12 +1106,14 @@ export async function runEmailCampaign(campaignId: string): Promise<{
   const decoded = decodeCampaignTemplateKey(campaign.templateKey);
   const template = assertEmailTemplate(decoded.templateKey);
   const eventYear = await getEventYear(campaign.eventId);
-  const audience = await resolveCampaignAudience({
+  const { matches: audience } = await resolveCampaignAudience({
     eventId: campaign.eventId,
     audienceStatuses: campaign.audienceStatuses,
     audienceTypes: campaign.audienceTypes,
     audienceAddOnIds: decoded.audienceAddOnIds,
     audienceAddOnRequestStatuses: decoded.audienceAddOnRequestStatuses,
+    audienceTestEmails: decoded.audienceTestEmails,
+    useTestGroup: decoded.useTestGroup,
   });
 
   if (audience.length === 0) {
@@ -1055,6 +1164,7 @@ export async function runEmailCampaign(campaignId: string): Promise<{
 
   let sentCount = 0;
   let failedCount = 0;
+  const waitForSesSlot = createSesRateLimiter(SES_MAX_PER_SECOND);
 
   await mapWithConcurrency(sendRecords, SEND_CONCURRENCY, async (record) => {
     if (!record.send) {
@@ -1063,6 +1173,7 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     }
 
     try {
+      await waitForSesSlot();
       const recipient = await toTemplateRecipient(record.registrant, {
         includeTempPassword: Boolean(template.requiresTempPassword),
       });

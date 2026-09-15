@@ -48,6 +48,18 @@ const TYPE_OPTIONS: RegistrantTypeFilter[] = [
 
 const COMPLETE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function parseAudienceEmails(raw: string): string[] {
+  const seen = new Set<string>();
+  const emails: string[] = [];
+  const matches = raw.toLowerCase().match(/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/g) ?? [];
+  for (const email of matches) {
+    if (seen.has(email)) continue;
+    seen.add(email);
+    emails.push(email);
+  }
+  return emails;
+}
+
 const ADDON_STATUS_OPTIONS: Array<{
   id: AddOnRequestStatusFilter;
   label: string;
@@ -138,6 +150,12 @@ export default function EmailsClient() {
   const [audienceAddOnIds, setAudienceAddOnIds] = useState<string[]>([]);
   const [audienceAddOnRequestStatuses, setAudienceAddOnRequestStatuses] =
     useState<AddOnRequestStatusFilter[]>(['APPROVED', 'PENDING']);
+  const [audienceTestEmailsText, setAudienceTestEmailsText] = useState('');
+  const [useTestGroup, setUseTestGroup] = useState(false);
+  const audienceTestEmails = useMemo(
+    () => parseAudienceEmails(audienceTestEmailsText),
+    [audienceTestEmailsText],
+  );
   const [eventAddOns, setEventAddOns] = useState<
     Array<{
       id: string;
@@ -150,6 +168,9 @@ export default function EmailsClient() {
   const [audienceSample, setAudienceSample] = useState<
     Array<{ id: string; email: string; name: string }>
   >([]);
+  const [audienceMissingEmails, setAudienceMissingEmails] = useState<string[]>(
+    [],
+  );
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
 
@@ -286,35 +307,43 @@ export default function EmailsClient() {
     if (!eventId) {
       setAudienceCount(null);
       setAudienceSample([]);
+      setAudienceMissingEmails([]);
       return;
     }
 
     let cancelled = false;
-    async function preview() {
-      try {
-        const result = await previewCampaignAudience({
-          eventId,
-          audienceStatuses,
-          audienceTypes,
-          audienceAddOnIds: audienceAddOnIds.length ? audienceAddOnIds : null,
-          audienceAddOnRequestStatuses: audienceAddOnRequestStatuses.length
-            ? audienceAddOnRequestStatuses
-            : null,
-        });
-        if (!cancelled) {
-          setAudienceCount(result.count);
-          setAudienceSample(result.sample);
-        }
-      } catch {
-        if (!cancelled) {
-          setAudienceCount(null);
-          setAudienceSample([]);
+    const timer = window.setTimeout(() => {
+      async function preview() {
+        try {
+          const result = await previewCampaignAudience({
+            eventId,
+            audienceStatuses,
+            audienceTypes,
+            audienceAddOnIds: audienceAddOnIds.length ? audienceAddOnIds : null,
+            audienceAddOnRequestStatuses: audienceAddOnRequestStatuses.length
+              ? audienceAddOnRequestStatuses
+              : null,
+            audienceTestEmails: audienceTestEmailsText || null,
+            useTestGroup,
+          });
+          if (!cancelled) {
+            setAudienceCount(result.count);
+            setAudienceSample(result.sample);
+            setAudienceMissingEmails(result.missingEmails ?? []);
+          }
+        } catch {
+          if (!cancelled) {
+            setAudienceCount(null);
+            setAudienceSample([]);
+            setAudienceMissingEmails([]);
+          }
         }
       }
-    }
-    void preview();
+      void preview();
+    }, 250);
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
   }, [
     eventId,
@@ -322,6 +351,8 @@ export default function EmailsClient() {
     audienceTypes,
     audienceAddOnIds,
     audienceAddOnRequestStatuses,
+    audienceTestEmailsText,
+    useTestGroup,
   ]);
 
   const previewLookupEmail = COMPLETE_EMAIL_RE.test(previewEmail.trim())
@@ -371,12 +402,21 @@ export default function EmailsClient() {
   }, [eventId, templateKey, subject, previewLookupEmail]);
 
   function toggleStatus(status: RegistrantStatusFilter) {
-    setAudienceStatuses((prev) => {
-      if (prev.includes(status)) {
-        const next = prev.filter((s) => s !== status);
-        return next.length ? next : prev;
+    setAudienceStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status],
+    );
+  }
+
+  function toggleTestGroup() {
+    setUseTestGroup((on) => {
+      if (on) {
+        setAudienceStatuses(['APPROVED']);
+        return false;
       }
-      return [...prev, status];
+      setAudienceStatuses([]);
+      return true;
     });
   }
 
@@ -434,6 +474,17 @@ export default function EmailsClient() {
       }
     }
 
+    if (useTestGroup) {
+      if (!audienceTestEmails.length) {
+        throw new Error('Add at least one test-group email, or uncheck Test group.');
+      }
+      if ((audienceCount ?? 0) > audienceTestEmails.length) {
+        throw new Error(
+          'Test group still matches too many people. Refresh and confirm the recipient list before sending.',
+        );
+      }
+    }
+
     const campaign = await createEmailCampaign({
       eventId,
       name: name.trim(),
@@ -445,6 +496,8 @@ export default function EmailsClient() {
       audienceAddOnRequestStatuses: audienceAddOnIds.length
         ? audienceAddOnRequestStatuses
         : null,
+      audienceTestEmails: audienceTestEmailsText || null,
+      useTestGroup,
     });
 
     if (scheduleEnabled) {
@@ -601,9 +654,8 @@ export default function EmailsClient() {
                 Audience
               </div>
               <p className="mt-1 text-xs text-slate-600">
-                Defaults to APPROVED registrants for the selected event. Leave
-                types unchecked to include all attendee types. Add-ons are
-                optional and further limit the list to request/approval status.
+                Check Approved for the full list, or uncheck it and check Test
+                group to send only to the emails you paste.
               </p>
 
               <div className="mt-4">
@@ -624,6 +676,14 @@ export default function EmailsClient() {
                       {status}
                     </label>
                   ))}
+                  <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <input
+                      type="checkbox"
+                      checked={useTestGroup}
+                      onChange={toggleTestGroup}
+                    />
+                    Test group
+                  </label>
                 </div>
               </div>
 
@@ -706,21 +766,61 @@ export default function EmailsClient() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+              {useTestGroup ? (
+              <div className="mt-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Test group emails
+                </div>
+                <p className="mt-1 text-xs text-slate-600">
+                  Only these registrant emails will be sent this campaign.
+                </p>
+                <textarea
+                  className="mt-2 min-h-[88px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none focus:border-slate-400"
+                  value={audienceTestEmailsText}
+                  onChange={(e) => setAudienceTestEmailsText(e.target.value)}
+                  placeholder="one@company.com, two@company.com"
+                />
+                {audienceTestEmails.length ? (
+                  <p className="mt-1 text-xs text-slate-500">
+                    {audienceTestEmails.length} email
+                    {audienceTestEmails.length === 1 ? '' : 's'} entered
+                  </p>
+                ) : null}
+              </div>
+              ) : null}
+
+              <div
+                className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+                  useTestGroup
+                    ? 'border-orange-200 bg-orange-50 text-slate-800'
+                    : 'border-slate-200 bg-white text-slate-700'
+                }`}
+              >
                 <span className="font-semibold">
                   {audienceCount == null ? '…' : audienceCount}
                 </span>{' '}
-                recipient{audienceCount === 1 ? '' : 's'} match
+                {useTestGroup ? 'test-group recipient' : 'recipient'}
+                {audienceCount === 1 ? '' : 's'}
+                {useTestGroup ? ' will receive this send' : ' match'}
                 {audienceSample.length ? (
-                  <span className="mt-1 block text-xs text-slate-500">
-                    Sample:{' '}
-                    {audienceSample
-                      .map((r) => r.name || r.email)
-                      .join(', ')}
-                    {audienceCount != null && audienceCount > audienceSample.length
-                      ? '…'
-                      : ''}
-                  </span>
+                  <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-xs text-slate-600">
+                    {audienceSample.map((r) => (
+                      <li key={r.id}>
+                        <span className="font-medium text-slate-800">
+                          {r.name || r.email}
+                        </span>
+                        {r.name ? (
+                          <span className="text-slate-500"> · {r.email}</span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {audienceMissingEmails.length ? (
+                  <p className="mt-2 text-xs text-rose-700">
+                    Not on this event:{' '}
+                    {audienceMissingEmails.join(', ')}
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -803,6 +903,8 @@ export default function EmailsClient() {
                         audienceAddOnRequestStatuses: audienceAddOnIds.length
                           ? audienceAddOnRequestStatuses
                           : null,
+                        audienceTestEmails: audienceTestEmailsText || null,
+                        useTestGroup,
                       });
                       setStatusMessage('Draft saved.');
                       setName('');
@@ -1028,7 +1130,11 @@ export default function EmailsClient() {
                       <div className="mt-2 space-y-1 text-xs text-slate-500">
                         <div>
                           Template:{' '}
-                          {campaign.templateKey.split('::addon::')[0]}
+                          {
+                            campaign.templateKey
+                              .split('::addon::')[0]
+                              .split('::test::')[0]
+                          }
                           {' · '}
                           Recipients: {campaign.totalRecipients ?? '—'}
                           {' · '}
