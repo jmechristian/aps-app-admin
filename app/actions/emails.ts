@@ -921,41 +921,48 @@ export async function createEmailCampaign(input: {
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
   audienceTestEmails?: string[] | string | null;
   useTestGroup?: boolean;
-}): Promise<EmailCampaign> {
-  const template = assertEmailTemplate(input.templateKey);
-  const eventYear = await getEventYear(input.eventId);
-  const subject =
-    stripTestSubjectPrefix(input.subject ?? '') ||
-    template.defaultSubject({ eventYear });
+}): Promise<{ ok: true; campaign: EmailCampaign } | { ok: false; error: string }> {
+  try {
+    const template = assertEmailTemplate(input.templateKey);
+    const eventYear = await getEventYear(input.eventId);
+    const subject =
+      stripTestSubjectPrefix(input.subject ?? '') ||
+      template.defaultSubject({ eventYear });
 
-  const data = await requestGraphQL<{
-    createApsEmailCampaign?: EmailCampaign | null;
-  }>(CREATE_CAMPAIGN, {
-    input: {
-      eventId: input.eventId,
-      name: input.name.trim(),
-      templateKey: encodeCampaignTemplateKey(
-        input.templateKey,
-        input.audienceAddOnIds,
-        input.audienceAddOnRequestStatuses,
-        input.audienceTestEmails,
-        input.useTestGroup,
-      ),
-      subject,
-      audienceStatuses: normalizeStatuses(input.audienceStatuses),
-      audienceTypes: input.audienceTypes?.length
-        ? input.audienceTypes
-        : null,
-      status: 'DRAFT',
-      totalRecipients: 0,
-      sentCount: 0,
-      failedCount: 0,
-    },
-  });
+    const data = await requestGraphQL<{
+      createApsEmailCampaign?: EmailCampaign | null;
+    }>(CREATE_CAMPAIGN, {
+      input: {
+        eventId: input.eventId,
+        name: input.name.trim(),
+        templateKey: encodeCampaignTemplateKey(
+          input.templateKey,
+          input.audienceAddOnIds,
+          input.audienceAddOnRequestStatuses,
+          input.audienceTestEmails,
+          input.useTestGroup,
+        ),
+        subject,
+        audienceStatuses: normalizeStatuses(input.audienceStatuses),
+        audienceTypes: input.audienceTypes?.length
+          ? input.audienceTypes
+          : null,
+        status: 'DRAFT',
+        totalRecipients: 0,
+        sentCount: 0,
+        failedCount: 0,
+      },
+    });
 
-  const campaign = data.createApsEmailCampaign;
-  if (!campaign) throw new Error('Failed to create campaign');
-  return campaign;
+    const campaign = data.createApsEmailCampaign;
+    if (!campaign) return { ok: false, error: 'Failed to create campaign' };
+    return { ok: true, campaign };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Failed to create campaign',
+    };
+  }
 }
 
 export async function updateEmailCampaign(input: {
@@ -1015,22 +1022,44 @@ async function getCampaignOrThrow(id: string): Promise<EmailCampaign> {
 export async function scheduleEmailCampaign(params: {
   campaignId: string;
   scheduledAt: string;
-}): Promise<{ campaign: EmailCampaign; message: string; scheduleOk: boolean }> {
+}): Promise<{
+  ok: boolean;
+  campaign?: EmailCampaign;
+  message: string;
+  scheduleOk: boolean;
+  error?: string;
+}> {
+  try {
   const campaign = await getCampaignOrThrow(params.campaignId);
   if (
     campaign.status !== 'DRAFT' &&
     campaign.status !== 'CANCELLED' &&
     campaign.status !== 'SCHEDULED'
   ) {
-    throw new Error('Campaign cannot be scheduled in its current status');
+    return {
+      ok: false,
+      message: '',
+      scheduleOk: false,
+      error: 'Campaign cannot be scheduled in its current status',
+    };
   }
 
   const scheduledDate = new Date(params.scheduledAt);
   if (Number.isNaN(scheduledDate.getTime())) {
-    throw new Error('Invalid schedule date');
+    return {
+      ok: false,
+      message: '',
+      scheduleOk: false,
+      error: 'Invalid schedule date',
+    };
   }
   if (scheduledDate.getTime() <= Date.now()) {
-    throw new Error('Schedule time must be in the future');
+    return {
+      ok: false,
+      message: '',
+      scheduleOk: false,
+      error: 'Schedule time must be in the future',
+    };
   }
 
   const scheduledAt = scheduledDate.toISOString();
@@ -1046,7 +1075,14 @@ export async function scheduleEmailCampaign(params: {
   });
 
   const updated = data.updateApsEmailCampaign;
-  if (!updated) throw new Error('Failed to schedule campaign');
+  if (!updated) {
+    return {
+      ok: false,
+      message: '',
+      scheduleOk: false,
+      error: 'Failed to schedule campaign',
+    };
+  }
 
   let scheduleResult: {
     ok: boolean;
@@ -1077,6 +1113,7 @@ export async function scheduleEmailCampaign(params: {
   ) {
     const sent = await runEmailCampaign(campaign.id);
     return {
+      ok: true,
       campaign: sent.campaign,
       message: 'Schedule was due immediately; campaign send started.',
       scheduleOk: true,
@@ -1084,10 +1121,19 @@ export async function scheduleEmailCampaign(params: {
   }
 
   return {
+    ok: true,
     campaign: updated,
     message: scheduleResult.message || 'It will send at the scheduled time.',
     scheduleOk: true,
   };
+  } catch (error) {
+    return {
+      ok: false,
+      message: '',
+      scheduleOk: false,
+      error: error instanceof Error ? error.message : 'Schedule failed',
+    };
+  }
 }
 
 export async function cancelEmailCampaignSchedule(params: {
@@ -1154,11 +1200,23 @@ export async function deleteEmailCampaign(params: {
 export async function sendEmailCampaignNow(params: {
   campaignId: string;
 }): Promise<{
-  campaign: EmailCampaign;
+  ok: boolean;
+  campaign?: EmailCampaign;
   sentCount: number;
   failedCount: number;
+  error?: string;
 }> {
-  return runEmailCampaign(params.campaignId);
+  try {
+    const result = await runEmailCampaign(params.campaignId);
+    return { ok: true, ...result };
+  } catch (error) {
+    return {
+      ok: false,
+      sentCount: 0,
+      failedCount: 0,
+      error: error instanceof Error ? error.message : 'Send failed',
+    };
+  }
 }
 
 /**
@@ -1199,21 +1257,17 @@ export async function runEmailCampaign(campaignId: string): Promise<{
   }
 
   const startedAt = new Date().toISOString();
-  await requestGraphQL(
-    UPDATE_CAMPAIGN,
-    {
-      input: {
-        id: campaign.id,
-        status: 'SENDING',
-        startedAt,
-        totalRecipients: audience.length,
-        sentCount: 0,
-        failedCount: 0,
-        scheduledAt: campaign.scheduledAt ?? null,
-      },
+  await requestGraphQL(UPDATE_CAMPAIGN, {
+    input: {
+      id: campaign.id,
+      status: 'SENDING',
+      startedAt,
+      totalRecipients: audience.length,
+      sentCount: 0,
+      failedCount: 0,
+      scheduledAt: campaign.scheduledAt ?? null,
     },
-    { authMode: 'apiKey' },
-  );
+  });
 
   // Best-effort: remove any one-shot schedule once send starts.
   try {
@@ -1226,11 +1280,10 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     audience,
     SEND_CONCURRENCY,
     async (registrant) => {
-      const created = await requestGraphQL<{
-        createApsEmailSend?: EmailSend | null;
-      }>(
-        CREATE_SEND,
-        {
+      try {
+        const created = await requestGraphQL<{
+          createApsEmailSend?: EmailSend | null;
+        }>(CREATE_SEND, {
           input: {
             campaignId: campaign.id,
             eventId: campaign.eventId,
@@ -1238,13 +1291,15 @@ export async function runEmailCampaign(campaignId: string): Promise<{
             email: registrant.email.trim(),
             status: 'PENDING',
           },
-        },
-        { authMode: 'apiKey' },
-      );
-      return {
-        registrant,
-        send: created.createApsEmailSend,
-      };
+        });
+        return {
+          registrant,
+          send: created.createApsEmailSend,
+        };
+      } catch (error) {
+        console.error('Failed to create send log row:', error);
+        return { registrant, send: null };
+      }
     },
   );
 
@@ -1285,18 +1340,14 @@ export async function runEmailCampaign(campaignId: string): Promise<{
       });
 
       try {
-        await requestGraphQL(
-          UPDATE_SEND,
-          {
-            input: {
-              id: record.send.id,
-              status: 'SENT',
-              sesMessageId: result.messageId ?? undefined,
-              sentAt: new Date().toISOString(),
-            },
+        await requestGraphQL(UPDATE_SEND, {
+          input: {
+            id: record.send.id,
+            status: 'SENT',
+            sesMessageId: result.messageId ?? undefined,
+            sentAt: new Date().toISOString(),
           },
-          { authMode: 'apiKey' },
-        );
+        });
       } catch (updateError) {
         console.error(
           'SES delivered but send log could not be marked SENT:',
@@ -1322,18 +1373,14 @@ export async function runEmailCampaign(campaignId: string): Promise<{
       const message =
         error instanceof Error ? error.message : 'Failed to send email';
       try {
-        await requestGraphQL(
-          UPDATE_SEND,
-          {
-            input: {
-              id: record.send.id,
-              status: 'FAILED',
-              error: message.slice(0, 1000),
-              sentAt: new Date().toISOString(),
-            },
+        await requestGraphQL(UPDATE_SEND, {
+          input: {
+            id: record.send.id,
+            status: 'FAILED',
+            error: message.slice(0, 1000),
+            sentAt: new Date().toISOString(),
           },
-          { authMode: 'apiKey' },
-        );
+        });
       } catch (updateError) {
         console.error('Failed to record send failure:', updateError);
       }
@@ -1348,11 +1395,10 @@ export async function runEmailCampaign(campaignId: string): Promise<{
         ? 'SENT'
         : 'SENT';
 
-  const data = await requestGraphQL<{
-    updateApsEmailCampaign?: EmailCampaign | null;
-  }>(
-    UPDATE_CAMPAIGN,
-    {
+  try {
+    const data = await requestGraphQL<{
+      updateApsEmailCampaign?: EmailCampaign | null;
+    }>(UPDATE_CAMPAIGN, {
       input: {
         id: campaign.id,
         status: finalStatus,
@@ -1361,14 +1407,16 @@ export async function runEmailCampaign(campaignId: string): Promise<{
         failedCount,
         totalRecipients: audience.length,
       },
-    },
-    { authMode: 'apiKey' },
-  );
-
-  const updated = data.updateApsEmailCampaign;
-  if (!updated) throw new Error('Failed to finalize campaign');
-
-  return { campaign: updated, sentCount, failedCount };
+    });
+    return {
+      campaign: data.updateApsEmailCampaign ?? campaign,
+      sentCount,
+      failedCount,
+    };
+  } catch (error) {
+    console.error('Failed to finalize campaign status:', error);
+    return { campaign, sentCount, failedCount };
+  }
 }
 
 export async function processDueEmailCampaigns(): Promise<{

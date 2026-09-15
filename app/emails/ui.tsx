@@ -486,7 +486,7 @@ export default function EmailsClient() {
       }
     }
 
-    const campaign = await createEmailCampaign({
+    const created = await createEmailCampaign({
       eventId,
       name: name.trim(),
       templateKey,
@@ -500,6 +500,11 @@ export default function EmailsClient() {
       audienceTestEmails: audienceTestEmailsText || null,
       useTestGroup,
     });
+    if (!created.ok) {
+      setError(created.error);
+      return;
+    }
+    const campaign = created.campaign;
 
     if (scheduleEnabled) {
       const result = await scheduleEmailCampaign({
@@ -508,6 +513,11 @@ export default function EmailsClient() {
         // does not treat it as UTC and 500 on "must be in the future".
         scheduledAt: new Date(scheduledAt).toISOString(),
       });
+      if (!result.ok) {
+        setError(result.error || 'Schedule failed');
+        await refreshCampaigns(eventId);
+        return;
+      }
       setStatusMessage(
         `Campaign scheduled. ${result.message} Recipients at send time will be resolved from current filters (${audienceCount ?? 0} now).`,
       );
@@ -523,6 +533,11 @@ export default function EmailsClient() {
         return;
       }
       const result = await sendEmailCampaignNow({ campaignId: campaign.id });
+      if (!result.ok) {
+        setError(result.error || 'Send failed');
+        await refreshCampaigns(eventId);
+        return;
+      }
       setStatusMessage(
         `Campaign sent. ${result.sentCount} delivered, ${result.failedCount} failed.`,
       );
@@ -893,7 +908,7 @@ export default function EmailsClient() {
                       if (!name.trim()) {
                         throw new Error('Campaign name is required.');
                       }
-                      await createEmailCampaign({
+                      const created = await createEmailCampaign({
                         eventId,
                         name: name.trim(),
                         templateKey,
@@ -911,6 +926,9 @@ export default function EmailsClient() {
                         audienceTestEmails: audienceTestEmailsText || null,
                         useTestGroup,
                       });
+                      if (!created.ok) {
+                        throw new Error(created.error);
+                      }
                       setStatusMessage('Draft saved.');
                       setName('');
                       setSubject('');
@@ -1184,6 +1202,9 @@ export default function EmailsClient() {
                               const result = await sendEmailCampaignNow({
                                 campaignId: campaign.id,
                               });
+                              if (!result.ok) {
+                                throw new Error(result.error || 'Send failed');
+                              }
                               setStatusMessage(
                                 `Sent ${result.sentCount}, failed ${result.failedCount}.`,
                               );
