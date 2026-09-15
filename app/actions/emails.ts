@@ -117,10 +117,18 @@ const CREATE_CAMPAIGN = /* GraphQL */ `
   }
 `;
 
-const UPDATE_CAMPAIGN = /* GraphQL */ `
-  mutation UpdateApsEmailCampaign($input: UpdateApsEmailCampaignInput!) {
-    updateApsEmailCampaign(input: $input) {
-      ${CAMPAIGN_FIELDS}
+const DELETE_CAMPAIGN = /* GraphQL */ `
+  mutation DeleteApsEmailCampaign($input: DeleteApsEmailCampaignInput!) {
+    deleteApsEmailCampaign(input: $input) {
+      id
+    }
+  }
+`;
+
+const DELETE_SEND = /* GraphQL */ `
+  mutation DeleteApsEmailSend($input: DeleteApsEmailSendInput!) {
+    deleteApsEmailSend(input: $input) {
+      id
     }
   }
 `;
@@ -995,7 +1003,7 @@ async function getCampaignOrThrow(id: string): Promise<EmailCampaign> {
 export async function scheduleEmailCampaign(params: {
   campaignId: string;
   scheduledAt: string;
-}): Promise<{ campaign: EmailCampaign; message: string }> {
+}): Promise<{ campaign: EmailCampaign; message: string; scheduleOk: boolean }> {
   const campaign = await getCampaignOrThrow(params.campaignId);
   if (
     campaign.status !== 'DRAFT' &&
@@ -1028,13 +1036,30 @@ export async function scheduleEmailCampaign(params: {
   const updated = data.updateApsEmailCampaign;
   if (!updated) throw new Error('Failed to schedule campaign');
 
-  const scheduleResult = await upsertEmailCampaignSchedule({
-    campaignId: campaign.id,
-    scheduledAt,
-  });
+  let scheduleResult: {
+    ok: boolean;
+    configured: boolean;
+    message: string;
+  };
+  try {
+    scheduleResult = await upsertEmailCampaignSchedule({
+      campaignId: campaign.id,
+      scheduledAt,
+    });
+  } catch (error) {
+    scheduleResult = {
+      ok: false,
+      configured: true,
+      message:
+        error instanceof Error
+          ? `Campaign saved as scheduled, but EventBridge did not create the fire time. ${error.message}`
+          : 'Campaign saved as scheduled, but EventBridge did not create the fire time.',
+    };
+  }
 
   // If schedule time is effectively "now" per scheduler helper, send immediately.
   if (
+    scheduleResult.ok &&
     scheduleResult.configured &&
     scheduleResult.message.includes('past')
   ) {
@@ -1042,12 +1067,14 @@ export async function scheduleEmailCampaign(params: {
     return {
       campaign: sent.campaign,
       message: 'Schedule was due immediately; campaign send started.',
+      scheduleOk: true,
     };
   }
 
   return {
     campaign: updated,
-    message: scheduleResult.message,
+    message: scheduleResult.message || 'It will send at the scheduled time.',
+    scheduleOk: true,
   };
 }
 
@@ -1074,6 +1101,32 @@ export async function cancelEmailCampaignSchedule(params: {
   const updated = data.updateApsEmailCampaign;
   if (!updated) throw new Error('Failed to cancel campaign');
   return updated;
+}
+
+export async function deleteEmailCampaign(params: {
+  campaignId: string;
+}): Promise<void> {
+  const campaign = await getCampaignOrThrow(params.campaignId);
+  if (campaign.status === 'SENDING' || campaign.status === 'SENT') {
+    throw new Error('Sent or in-progress campaigns cannot be deleted.');
+  }
+
+  try {
+    await deleteEmailCampaignSchedule(campaign.id);
+  } catch {
+    // ignore missing EventBridge schedule
+  }
+
+  const sends = await listSendsByCampaignId(campaign.id);
+  for (const send of sends) {
+    try {
+      await requestGraphQL(DELETE_SEND, { input: { id: send.id } });
+    } catch {
+      // keep going so the campaign can still be removed
+    }
+  }
+
+  await requestGraphQL(DELETE_CAMPAIGN, { input: { id: campaign.id } });
 }
 
 export async function sendEmailCampaignNow(params: {

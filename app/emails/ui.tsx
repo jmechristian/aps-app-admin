@@ -5,6 +5,7 @@ import { graphqlClient as client } from '@/src/amplify-client';
 import {
   cancelEmailCampaignSchedule,
   createEmailCampaign,
+  deleteEmailCampaign,
   getEmailTemplateOptions,
   listCampaignsByEventId,
   listSendsByCampaignId,
@@ -503,10 +504,12 @@ export default function EmailsClient() {
     if (scheduleEnabled) {
       const result = await scheduleEmailCampaign({
         campaignId: campaign.id,
-        scheduledAt,
+        // datetime-local is the browser's local time; send UTC so Vercel
+        // does not treat it as UTC and 500 on "must be in the future".
+        scheduledAt: new Date(scheduledAt).toISOString(),
       });
       setStatusMessage(
-        `Campaign scheduled. ${result.message} Recipients at schedule time will be resolved from current filters (${audienceCount ?? 0} now).`,
+        `Campaign scheduled. ${result.message} Recipients at send time will be resolved from current filters (${audienceCount ?? 0} now).`,
       );
     } else {
       const confirmed = window.confirm(
@@ -1225,6 +1228,49 @@ export default function EmailsClient() {
                           }}
                         >
                           Cancel schedule
+                        </button>
+                      )}
+
+                      {(campaign.status === 'DRAFT' ||
+                        campaign.status === 'CANCELLED' ||
+                        campaign.status === 'SCHEDULED' ||
+                        campaign.status === 'FAILED') && (
+                        <button
+                          type="button"
+                          className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                          disabled={loading}
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                `Delete "${campaign.name}"? This cannot be undone.`,
+                              )
+                            ) {
+                              return;
+                            }
+                            setLoading(true);
+                            setError(null);
+                            try {
+                              await deleteEmailCampaign({
+                                campaignId: campaign.id,
+                              });
+                              if (selectedCampaignId === campaign.id) {
+                                setSelectedCampaignId(null);
+                                setSends([]);
+                              }
+                              setStatusMessage('Campaign deleted.');
+                              await refreshCampaigns(eventId);
+                            } catch (e) {
+                              setError(
+                                e instanceof Error
+                                  ? e.message
+                                  : 'Delete failed',
+                              );
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                        >
+                          Delete
                         </button>
                       )}
 

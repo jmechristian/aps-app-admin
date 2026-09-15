@@ -41,6 +41,14 @@ function formatSchedulerAt(iso: string): string | null {
   return new Date(ms).toISOString().replace(/\.\d{3}Z$/, '');
 }
 
+function schedulerErrorMessage(error: unknown): string {
+  const err = error as { name?: string; message?: string } | null;
+  const name = err?.name?.trim();
+  const message = err?.message?.trim();
+  if (name && message) return `${name}: ${message}`;
+  return message || name || 'EventBridge schedule failed';
+}
+
 function schedulerConfigured() {
   return Boolean(
     process.env.APS_EMAIL_SCHEDULER_ROLE_ARN &&
@@ -66,14 +74,17 @@ export async function upsertEmailCampaignSchedule(params: {
     return {
       ok: true,
       configured: false,
-      message:
-        'Campaign scheduled in database. Configure APS_EMAIL_SCHEDULER_ROLE_ARN and APS_EMAIL_SCHEDULE_TARGET_ARN for automatic EventBridge delivery, or call /api/emails/run-campaign with processDue.',
+      message: 'Scheduled. Production will send it at the chosen time.',
     };
   }
 
   const atExpression = formatSchedulerAt(params.scheduledAt);
   if (!atExpression) {
-    throw new Error('Invalid scheduledAt for EventBridge Scheduler');
+    return {
+      ok: false,
+      configured: true,
+      message: `Campaign saved as scheduled, but EventBridge did not create the fire time. Invalid scheduledAt: ${params.scheduledAt}`,
+    };
   }
 
   const scheduledMs = Date.parse(params.scheduledAt);
@@ -88,7 +99,11 @@ export async function upsertEmailCampaignSchedule(params: {
   const client = buildSchedulerClient();
   const groupName = process.env.APS_EMAIL_SCHEDULER_GROUP || 'default';
   const scheduleName = campaignScheduleName(params.campaignId);
-  const secret = process.env.APS_EMAIL_CRON_SECRET || '';
+  const secret =
+    process.env.APS_EMAIL_CRON_SECRET ||
+    process.env.CRON_SECRET ||
+    process.env.APS_EMAIL_TRACKING_SECRET ||
+    '';
 
   const commandInput = {
     Name: scheduleName,
@@ -111,27 +126,36 @@ export async function upsertEmailCampaignSchedule(params: {
   };
 
   try {
-    await client.send(
-      new GetScheduleCommand({
-        Name: scheduleName,
-        GroupName: groupName,
-      }),
-    );
-    await client.send(new UpdateScheduleCommand(commandInput));
-  } catch (error) {
-    const name = (error as { name?: string } | null)?.name;
-    if (name === 'ResourceNotFoundException') {
-      await client.send(new CreateScheduleCommand(commandInput));
-    } else {
-      throw error;
+    try {
+      await client.send(
+        new GetScheduleCommand({
+          Name: scheduleName,
+          GroupName: groupName,
+        }),
+      );
+      await client.send(new UpdateScheduleCommand(commandInput));
+    } catch (error) {
+      const name = (error as { name?: string } | null)?.name;
+      if (name === 'ResourceNotFoundException') {
+        await client.send(new CreateScheduleCommand(commandInput));
+      } else {
+        throw error;
+      }
     }
-  }
 
-  return {
-    ok: true,
-    configured: true,
-    message: 'EventBridge schedule created.',
-  };
+    return {
+      ok: true,
+      configured: true,
+      message: 'EventBridge schedule created.',
+    };
+  } catch (error) {
+    console.error('EventBridge email schedule failed:', error);
+    return {
+      ok: false,
+      configured: true,
+      message: `Campaign saved as scheduled, but EventBridge did not create the fire time. ${schedulerErrorMessage(error)}`,
+    };
+  }
 }
 
 export async function deleteEmailCampaignSchedule(
@@ -152,6 +176,8 @@ export async function deleteEmailCampaignSchedule(
     );
   } catch (error) {
     const name = (error as { name?: string } | null)?.name;
-    if (name !== 'ResourceNotFoundException') throw error;
+    if (name !== 'ResourceNotFoundException') {
+      console.error('EventBridge email schedule delete failed:', error);
+    }
   }
 }
