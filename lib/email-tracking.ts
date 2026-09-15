@@ -103,6 +103,24 @@ export function verifyImageToken(
   }
 }
 
+export function isAllowedTrackingImage(destination: string): boolean {
+  try {
+    const parsed = new URL(destination);
+    if (parsed.protocol !== 'https:') return false;
+    const host = parsed.hostname.toLowerCase();
+    return (
+      host === 'packschool.s3.amazonaws.com' ||
+      host === 'packschool.s3.us-east-1.amazonaws.com' ||
+      host.endsWith('.s3.amazonaws.com') ||
+      host.endsWith('.s3.us-east-1.amazonaws.com') ||
+      host === 'autopacksummit.com' ||
+      host === 'www.autopacksummit.com'
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function isAllowedRedirect(destination: string): boolean {
   try {
     const parsed = new URL(destination);
@@ -160,12 +178,7 @@ function shouldTrackImg(src: string): boolean {
   if (!src) return false;
   const trimmed = src.trim();
   if (trimmed.includes('/api/email/t/')) return false;
-  try {
-    const parsed = new URL(trimmed);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-  } catch {
-    return false;
-  }
+  return isAllowedTrackingImage(trimmed);
 }
 
 function rewriteImgs(html: string, sendId: string): string {
