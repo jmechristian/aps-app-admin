@@ -15,13 +15,13 @@ enum RegistrantType {
   SPEAKER
   STAFF
   EXHIBITOR
-  WAITLIST
 }
 
 enum RegistrantStatus {
   PENDING
   APPROVED
   REJECTED
+  WAITLIST
 }
 
 enum SponsorType {
