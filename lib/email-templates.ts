@@ -177,7 +177,7 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
       'BMW iFACTORY Tour: Heritage meets Innovation at Plant Spartanburg',
       'Newly added to Friday’s agenda. Friday, October 2 · four time slots: 9:00–10:30 AM, 11:00 AM–12:30 PM, 12:00–1:30 PM, 2:00–3:30 PM',
       "An immersive look at the history, innovation, and people behind BMW's largest production facility — exhibits on BMW X models built in Spartanburg, advanced manufacturing technology, and the stories connecting BMW with generations of drivers.",
-      'View Agenda to Register: https://www.autopacksummit.com/agenda',
+      'View Agenda to Register: https://www.autopacksummit.com/agenda?day=friday',
       '',
       'DOWNLOAD THE EVENT APP',
       'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',

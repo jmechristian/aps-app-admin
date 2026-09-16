@@ -34,6 +34,7 @@ const DARK_TEXT = '#111827';
 const MUTED_TEXT = '#6b7280';
 
 const AGENDA_URL = 'https://www.autopacksummit.com/agenda';
+const AGENDA_FRIDAY_URL = 'https://www.autopacksummit.com/agenda?day=friday';
 const APP_GUIDE_URL = 'https://www.autopacksummit.com/appguide';
 const SITE_URL = 'https://www.autopacksummit.com';
 const BIANCA_EMAIL = 'bianca@packagingschool.com';
@@ -657,7 +658,7 @@ export const AttendeeInfoEmail = ({
                   Register for a time slot on the event agenda.
                 </Text>
                 <Button
-                  href={AGENDA_URL}
+                  href={AGENDA_FRIDAY_URL}
                   style={{
                     backgroundColor: APS_BLUE,
                     color: '#ffffff',
