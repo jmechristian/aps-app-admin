@@ -672,17 +672,6 @@ export const AttendeeInfoEmail = ({
                 >
                   View Agenda to Register
                 </Button>
-                <Text
-                  style={{
-                    fontSize: '13px',
-                    color: MUTED_TEXT,
-                    margin: '14px 0 8px',
-                    lineHeight: '1.5',
-                    ...font,
-                  }}
-                >
-                  autopacksummit.com/agenda
-                </Text>
               </div>
             </Section>
 

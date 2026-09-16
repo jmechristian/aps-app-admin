@@ -1021,23 +1021,27 @@ export default function EmailsClient() {
                   {previewError}
                 </div>
               ) : null}
-              {previewHtml ? (
-                <iframe
-                  key={`${templateKey}-${previewMeta?.recipientEmail ?? 'sample'}-${previewMeta?.tempPassword ?? 'none'}`}
-                  title="Email preview"
-                  sandbox=""
-                  srcDoc={previewHtml}
-                  className="h-[min(80vh,880px)] w-full bg-slate-100"
-                />
-              ) : (
-                <div className="p-8 text-center text-sm text-slate-500">
-                  {eventId
-                    ? previewError
-                      ? 'Enter a registered email or clear the field to preview sample data.'
-                      : 'Rendering preview…'
-                    : 'Choose an event to preview.'}
-                </div>
-              )}
+              <div className="relative min-h-[min(80vh,880px)]">
+                {previewHtml ? (
+                  <iframe
+                    title="Email preview"
+                    sandbox=""
+                    srcDoc={previewHtml}
+                    className="h-[min(80vh,880px)] w-full bg-slate-100"
+                  />
+                ) : (
+                  <div className="flex h-[min(80vh,880px)] items-center justify-center p-8 text-center text-sm text-slate-500">
+                    {eventId
+                      ? previewError
+                        ? 'Enter a registered email or clear the field to preview sample data.'
+                        : 'Rendering preview…'
+                      : 'Choose an event to preview.'}
+                  </div>
+                )}
+                {previewLoading && previewHtml ? (
+                  <div className="pointer-events-none absolute inset-0 bg-white/40" />
+                ) : null}
+              </div>
             </div>
 
             <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
