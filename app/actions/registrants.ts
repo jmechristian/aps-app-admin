@@ -558,6 +558,11 @@ const LIST_REGISTRANTS_BY_APS = /* GraphQL */ `
             apcProgress
           }
         }
+        seatingChartRegistrant {
+          id
+          tableNumber
+          seatingChartID
+        }
         createdAt
         updatedAt
       }

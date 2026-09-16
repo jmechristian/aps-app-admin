@@ -194,6 +194,7 @@ export default function EmailsClient() {
   );
   const [sends, setSends] = useState<EmailSend[]>([]);
   const [sendsLoading, setSendsLoading] = useState(false);
+  const [sendLogQuery, setSendLogQuery] = useState('');
 
   const minScheduleValue = useMemo(() => toDatetimeLocalValue(new Date()), []);
 
@@ -217,6 +218,31 @@ export default function EmailsClient() {
       clicked: clicked.length,
     };
   }, [sends]);
+
+  const selectedCampaign = useMemo(
+    () => campaigns.find((c) => c.id === selectedCampaignId) ?? null,
+    [campaigns, selectedCampaignId],
+  );
+
+  const filteredSends = useMemo(() => {
+    const q = sendLogQuery.trim().toLowerCase();
+    if (!q) return sends;
+    return sends.filter((send) => {
+      const haystack = [
+        send.email,
+        send.status,
+        send.error,
+        send.sesMessageId,
+        send.lastClickedUrl,
+        send.openedAt ? 'opened' : '',
+        (send.clickCount ?? 0) > 0 ? 'clicked' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [sends, sendLogQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -447,6 +473,7 @@ export default function EmailsClient() {
 
   async function openSendLog(campaignId: string) {
     setSelectedCampaignId(campaignId);
+    setSendLogQuery('');
     setSendsLoading(true);
     setError(null);
     try {
@@ -458,6 +485,21 @@ export default function EmailsClient() {
       setSendsLoading(false);
     }
   }
+
+  function closeSendLog() {
+    setSelectedCampaignId(null);
+    setSends([]);
+    setSendLogQuery('');
+  }
+
+  useEffect(() => {
+    if (!selectedCampaignId) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') closeSendLog();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedCampaignId]);
 
   async function handleCreateAndMaybeSend() {
     if (!eventId) return;
@@ -1277,8 +1319,7 @@ export default function EmailsClient() {
                                 campaignId: campaign.id,
                               });
                               if (selectedCampaignId === campaign.id) {
-                                setSelectedCampaignId(null);
-                                setSends([]);
+                                closeSendLog();
                               }
                               setStatusMessage('Campaign deleted.');
                               await refreshCampaigns(eventId);
@@ -1314,112 +1355,148 @@ export default function EmailsClient() {
         </section>
 
         {selectedCampaignId ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
-                  Send log
-                </h2>
-                <p className="font-mono text-xs text-slate-500">
-                  {selectedCampaignId}
-                </p>
-                {sends.length ? (
-                  <p className="mt-2 text-xs text-slate-600">
-                    Opened {sendTrackingStats.opened}/{sendTrackingStats.sent}
-                    {sendTrackingStats.sent
-                      ? ` (${Math.round(
-                          (sendTrackingStats.opened / sendTrackingStats.sent) *
-                            100,
-                        )}%)`
-                      : ''}
-                    {' · '}
-                    Clicked {sendTrackingStats.clicked}/{sendTrackingStats.sent}
-                    {sendTrackingStats.sent
-                      ? ` (${Math.round(
-                          (sendTrackingStats.clicked / sendTrackingStats.sent) *
-                            100,
-                        )}%)`
-                      : ''}
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="send-log-title"
+            onClick={closeSendLog}
+          >
+            <div
+              className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-6 py-5">
+                <div>
+                  <h2
+                    id="send-log-title"
+                    className="text-xl font-semibold text-slate-900"
+                  >
+                    Send log
+                    {selectedCampaign ? ` · ${selectedCampaign.name}` : ''}
+                  </h2>
+                  <p className="mt-1 font-mono text-xs text-slate-500">
+                    {selectedCampaignId}
                   </p>
-                ) : null}
+                  {sends.length ? (
+                    <p className="mt-2 text-xs text-slate-600">
+                      Opened {sendTrackingStats.opened}/{sendTrackingStats.sent}
+                      {sendTrackingStats.sent
+                        ? ` (${Math.round(
+                            (sendTrackingStats.opened /
+                              sendTrackingStats.sent) *
+                              100,
+                          )}%)`
+                        : ''}
+                      {' · '}
+                      Clicked {sendTrackingStats.clicked}/
+                      {sendTrackingStats.sent}
+                      {sendTrackingStats.sent
+                        ? ` (${Math.round(
+                            (sendTrackingStats.clicked /
+                              sendTrackingStats.sent) *
+                              100,
+                          )}%)`
+                        : ''}
+                      {' · '}
+                      {filteredSends.length === sends.length
+                        ? `${sends.length} recipients`
+                        : `${filteredSends.length} of ${sends.length} recipients`}
+                    </p>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  onClick={closeSendLog}
+                >
+                  Close
+                </button>
               </div>
-              <button
-                type="button"
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                onClick={() => {
-                  setSelectedCampaignId(null);
-                  setSends([]);
-                }}
-              >
-                Close
-              </button>
-            </div>
 
-            {sendsLoading ? (
-              <div className="mt-6 text-sm text-slate-600">Loading sends…</div>
-            ) : sends.length === 0 ? (
-              <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-                No send records yet for this campaign.
+              <div className="border-b border-slate-100 px-6 py-3">
+                <input
+                  type="search"
+                  autoFocus
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:bg-white"
+                  placeholder="Search email, status, clicks, SES id…"
+                  value={sendLogQuery}
+                  onChange={(e) => setSendLogQuery(e.target.value)}
+                />
               </div>
-            ) : (
-              <div className="mt-6 overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
-                  <thead className="text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                      <th className="px-3 py-2">Email</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th className="px-3 py-2">Sent at</th>
-                      <th className="px-3 py-2">Opened</th>
-                      <th className="px-3 py-2">Clicks</th>
-                      <th className="px-3 py-2">Last click</th>
-                      <th className="px-3 py-2">SES / Error</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sends.map((send) => (
-                      <tr
-                        key={send.id}
-                        className="border-t border-slate-100 text-slate-700"
-                      >
-                        <td className="px-3 py-2 font-mono text-xs">
-                          {send.email}
-                        </td>
-                        <td className="px-3 py-2">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${sendStatusClassName(send.status)}`}
-                          >
-                            {send.status}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-xs text-slate-500">
-                          {send.sentAt
-                            ? new Date(send.sentAt).toLocaleString()
-                            : '—'}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-slate-500">
-                          {send.openedAt
-                            ? new Date(send.openedAt).toLocaleString()
-                            : '—'}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-slate-500">
-                          {send.clickCount ?? 0}
-                        </td>
-                        <td
-                          className="max-w-[180px] truncate px-3 py-2 text-xs text-slate-500"
-                          title={send.lastClickedUrl || ''}
-                        >
-                          {shortUrl(send.lastClickedUrl)}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-slate-500">
-                          {send.error || send.sesMessageId || '—'}
-                        </td>
+
+              <div className="min-h-0 flex-1 overflow-auto px-2 pb-4">
+                {sendsLoading ? (
+                  <div className="px-4 py-8 text-sm text-slate-600">
+                    Loading sends…
+                  </div>
+                ) : sends.length === 0 ? (
+                  <div className="mx-4 mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+                    No send records yet for this campaign.
+                  </div>
+                ) : filteredSends.length === 0 ? (
+                  <div className="mx-4 mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+                    No recipients match “{sendLogQuery.trim()}”.
+                  </div>
+                ) : (
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="sticky top-0 bg-white text-xs uppercase tracking-wide text-slate-500">
+                      <tr>
+                        <th className="px-4 py-2">Email</th>
+                        <th className="px-4 py-2">Status</th>
+                        <th className="px-4 py-2">Sent at</th>
+                        <th className="px-4 py-2">Opened</th>
+                        <th className="px-4 py-2">Clicks</th>
+                        <th className="px-4 py-2">Last click</th>
+                        <th className="px-4 py-2">SES / Error</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredSends.map((send) => (
+                        <tr
+                          key={send.id}
+                          className="border-t border-slate-100 text-slate-700"
+                        >
+                          <td className="px-4 py-2 font-mono text-xs">
+                            {send.email}
+                          </td>
+                          <td className="px-4 py-2">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${sendStatusClassName(send.status)}`}
+                            >
+                              {send.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-xs text-slate-500">
+                            {send.sentAt
+                              ? new Date(send.sentAt).toLocaleString()
+                              : '—'}
+                          </td>
+                          <td className="px-4 py-2 text-xs text-slate-500">
+                            {send.openedAt
+                              ? new Date(send.openedAt).toLocaleString()
+                              : '—'}
+                          </td>
+                          <td className="px-4 py-2 text-xs text-slate-500">
+                            {send.clickCount ?? 0}
+                          </td>
+                          <td
+                            className="max-w-[180px] truncate px-4 py-2 text-xs text-slate-500"
+                            title={send.lastClickedUrl || ''}
+                          >
+                            {shortUrl(send.lastClickedUrl)}
+                          </td>
+                          <td className="px-4 py-2 text-xs text-slate-500">
+                            {send.error || send.sesMessageId || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
-            )}
-          </section>
+            </div>
+          </div>
         ) : null}
       </main>
     </div>

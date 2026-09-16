@@ -65,6 +65,7 @@ export async function GET(
     'First Name',
     'Last Name',
     'Company',
+    'Table Number',
     'Email',
     'Phone',
     'Count',
@@ -86,6 +87,11 @@ export async function GET(
         escapeCsv(row.firstName ?? ''),
         escapeCsv(row.lastName ?? ''),
         escapeCsv(row.company?.name ?? ''),
+        escapeCsv(
+          row.seatingChartRegistrant?.tableNumber == null
+            ? ''
+            : String(row.seatingChartRegistrant.tableNumber),
+        ),
         escapeCsv(row.email ?? ''),
         escapeCsv(row.phone ?? ''),
         '',
