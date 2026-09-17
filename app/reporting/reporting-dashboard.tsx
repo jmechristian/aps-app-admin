@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type {
   ContactRequestRow,
@@ -67,6 +67,39 @@ function RequestsIcon() {
         strokeLinecap='round'
       />
     </svg>
+  );
+}
+
+function ScrollToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 320);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      type='button'
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className='fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-[#E4A800] px-4 py-3 text-sm font-black text-[#041c2e] shadow-xl ring-2 ring-white/40 transition hover:-translate-y-0.5 hover:bg-[#f3c84a]'
+      aria-label='Scroll to top'
+    >
+      <svg viewBox='0 0 24 24' fill='none' className='h-5 w-5' aria-hidden='true'>
+        <path
+          d='M12 19V6M6.5 11.5 12 6l5.5 5.5'
+          stroke='currentColor'
+          strokeWidth='2.2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
+      </svg>
+      Top
+    </button>
   );
 }
 
@@ -560,6 +593,7 @@ export default function ReportingDashboard({
           )}
         </section>
       </main>
+      <ScrollToTopButton />
     </div>
   );
 }

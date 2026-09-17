@@ -252,6 +252,14 @@ function unknownPerson(userId: string | null): ReportingPerson {
   };
 }
 
+function isKnownAttendee(person: ReportingPerson): boolean {
+  if (person.registrantId || person.email) return true;
+  const name = person.name?.trim() ?? '';
+  if (!name || name === 'Unknown attendee') return false;
+  if (/^User [0-9a-f-]{8}/i.test(name)) return false;
+  return true;
+}
+
 function hasLoggedInOnce(status?: string | null) {
   return (
     status === 'CONFIRMED' ||
@@ -540,6 +548,7 @@ export async function fetchReportingDashboard(
         resolvedAt,
       };
     })
+    .filter((row) => isKnownAttendee(row.from) && isKnownAttendee(row.to))
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
