@@ -134,6 +134,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <Link className="hover:text-slate-900" href="/emails">
                 Emails
               </Link>
+              <Link
+                className={
+                  pathname === '/reporting' || pathname.startsWith('/reporting')
+                    ? 'text-slate-900'
+                    : 'hover:text-slate-900'
+                }
+                href="/reporting"
+              >
+                Reporting
+              </Link>
             </nav>
           </div>
           <button
