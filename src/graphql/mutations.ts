@@ -1226,6 +1226,7 @@ export const createApsAppUserNote = /* GraphQL */ `mutation CreateApsAppUserNote
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -1405,6 +1406,7 @@ export const updateApsAppUserNote = /* GraphQL */ `mutation UpdateApsAppUserNote
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -1584,6 +1586,7 @@ export const deleteApsAppUserNote = /* GraphQL */ `mutation DeleteApsAppUserNote
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -2272,6 +2275,7 @@ export const createApsAppSession = /* GraphQL */ `mutation CreateApsAppSession(
       __typename
     }
     draft
+    speakerOrder
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -2324,6 +2328,7 @@ export const updateApsAppSession = /* GraphQL */ `mutation UpdateApsAppSession(
       __typename
     }
     draft
+    speakerOrder
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -2376,6 +2381,7 @@ export const deleteApsAppSession = /* GraphQL */ `mutation DeleteApsAppSession(
       __typename
     }
     draft
+    speakerOrder
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -2404,6 +2410,7 @@ export const createApsAppSessionQuestion = /* GraphQL */ `mutation CreateApsAppS
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -2447,6 +2454,7 @@ export const updateApsAppSessionQuestion = /* GraphQL */ `mutation UpdateApsAppS
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -2490,6 +2498,7 @@ export const deleteApsAppSessionQuestion = /* GraphQL */ `mutation DeleteApsAppS
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -4694,6 +4703,7 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -4778,6 +4788,7 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -4862,6 +4873,7 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7065,6 +7077,7 @@ export const createSessionSpeakers = /* GraphQL */ `mutation CreateSessionSpeake
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7109,6 +7122,7 @@ export const updateSessionSpeakers = /* GraphQL */ `mutation UpdateSessionSpeake
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7153,6 +7167,7 @@ export const deleteSessionSpeakers = /* GraphQL */ `mutation DeleteSessionSpeake
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7197,6 +7212,7 @@ export const createSessionSponsors = /* GraphQL */ `mutation CreateSessionSponso
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7241,6 +7257,7 @@ export const updateSessionSponsors = /* GraphQL */ `mutation UpdateSessionSponso
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -7285,6 +7302,7 @@ export const deleteSessionSponsors = /* GraphQL */ `mutation DeleteSessionSponso
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId

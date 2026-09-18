@@ -126,6 +126,7 @@ export const getApsAppUserNote = /* GraphQL */ `query GetApsAppUserNote($id: ID!
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -906,6 +907,7 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -5931,6 +5933,7 @@ export const getApsAppSession = /* GraphQL */ `query GetApsAppSession($id: ID!) 
       __typename
     }
     draft
+    speakerOrder
     createdAt
     updatedAt
     apsAgendaItemsId
@@ -5958,6 +5961,7 @@ export const listApsAppSessions = /* GraphQL */ `query ListApsAppSessions(
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -5996,6 +6000,7 @@ export const apsAppSessionsByAgendaId = /* GraphQL */ `query ApsAppSessionsByAge
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -6024,6 +6029,7 @@ export const getApsAppSessionQuestion = /* GraphQL */ `query GetApsAppSessionQue
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -8704,6 +8710,7 @@ export const getSessionSpeakers = /* GraphQL */ `query GetSessionSpeakers($id: I
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
@@ -8827,6 +8834,7 @@ export const getSessionSponsors = /* GraphQL */ `query GetSessionSponsors($id: I
       embedUrl
       agendaId
       draft
+      speakerOrder
       createdAt
       updatedAt
       apsAgendaItemsId
