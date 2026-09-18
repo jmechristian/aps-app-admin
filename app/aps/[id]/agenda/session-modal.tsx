@@ -6,6 +6,11 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { ensureAmplifyConfigured, graphqlClient } from '@/src/amplify-client';
 import WysiwygEditor, { sanitizeHtml } from '@/app/components/wysiwyg-editor';
 import {
+  isUnknownSpeakerOrderError,
+  moveId,
+  orderIds,
+} from '@/lib/speaker-order';
+import {
   createApsAgenda,
   createApsAppSession,
   createSessionSpeakers,
@@ -45,6 +50,7 @@ export type AgendaSessionRow = {
   draft?: boolean | null;
   speakerNames?: string[] | null;
   sponsorNames?: string[] | null;
+  speakerOrder?: string[] | null;
 };
 
 function displaySpeaker(s: SpeakerOption) {
@@ -58,6 +64,38 @@ function displaySponsor(s: SponsorOption) {
 
 function toggle(id: string, arr: string[]) {
   return arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id];
+}
+
+async function mutateSessionRecord(
+  query: string,
+  input: Record<string, unknown>
+) {
+  const run = (nextInput: Record<string, unknown>) =>
+    graphqlClient.graphql({
+      query,
+      variables: { input: nextInput },
+      authMode: 'userPool',
+    });
+
+  try {
+    const result = (await run(input)) as { errors?: Array<{ message?: string } | null> | null };
+    if (result.errors?.length) {
+      if (isUnknownSpeakerOrderError(result) && 'speakerOrder' in input) {
+        const { speakerOrder: _ignored, ...rest } = input;
+        return run(rest);
+      }
+      throw new Error(
+        result.errors.map((item) => item?.message || 'GraphQL error').join(', ')
+      );
+    }
+    return result;
+  } catch (err) {
+    if (!isUnknownSpeakerOrderError(err) || !('speakerOrder' in input)) {
+      throw err;
+    }
+    const { speakerOrder: _ignored, ...rest } = input;
+    return run(rest);
+  }
 }
 
 async function ensureAgendaId(eventId: string, agendaId: string | null) {
@@ -234,9 +272,9 @@ export default function SessionModal({
           (sponsorLinks as any).data?.sessionSponsorsByApsAppSessionId?.items ??
           [];
 
-        const speakerIds = speakerItems
+        const rawSpeakerIds = speakerItems
           .map((x: any) => x?.aPSSpeakerId)
-          .filter(Boolean);
+          .filter(Boolean) as string[];
         const sponsorIds = sponsorItems
           .map((x: any) => x?.apsSponsorId)
           .filter(Boolean);
@@ -244,7 +282,7 @@ export default function SessionModal({
         if (cancelled) return;
         setForm((p) => ({
           ...p,
-          speakerIds,
+          speakerIds: orderIds(rawSpeakerIds, initialSession?.speakerOrder),
           sponsorIds,
         }));
       } catch (e) {
@@ -259,7 +297,7 @@ export default function SessionModal({
     return () => {
       cancelled = true;
     };
-  }, [isOpen, mode, sessionId]);
+  }, [isOpen, mode, sessionId, initialSession?.speakerOrder]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -275,25 +313,24 @@ export default function SessionModal({
 
       const actualAgendaId = await ensureAgendaId(eventId, agendaId);
 
+      const sessionFields = {
+        title: form.title || null,
+        date: form.date || null,
+        startTime: form.startTime || null,
+        endTime: form.endTime || null,
+        location: form.location || null,
+        description: description || null,
+        embedUrl: form.embedUrl || null,
+        draft: form.draft,
+        speakerOrder: form.speakerIds,
+      };
+
       let effectiveSessionId: string;
 
       if (!sessionId) {
-        const createdSession = await graphqlClient.graphql({
-          query: createApsAppSession,
-          variables: {
-            input: {
-              agendaId: actualAgendaId,
-              title: form.title || null,
-              date: form.date || null,
-              startTime: form.startTime || null,
-              endTime: form.endTime || null,
-              location: form.location || null,
-              description: description || null,
-              embedUrl: form.embedUrl || null,
-              draft: form.draft,
-            },
-          },
-          authMode: 'userPool',
+        const createdSession = await mutateSessionRecord(createApsAppSession, {
+          agendaId: actualAgendaId,
+          ...sessionFields,
         });
 
         const id = (createdSession as any).data?.createApsAppSession?.id as
@@ -302,22 +339,9 @@ export default function SessionModal({
         if (!id) throw new Error('Failed to create session');
         effectiveSessionId = id;
       } else {
-        await graphqlClient.graphql({
-          query: updateApsAppSession,
-          variables: {
-            input: {
-              id: sessionId,
-              title: form.title || null,
-              date: form.date || null,
-              startTime: form.startTime || null,
-              endTime: form.endTime || null,
-              location: form.location || null,
-              description: description || null,
-              embedUrl: form.embedUrl || null,
-              draft: form.draft,
-            },
-          },
-          authMode: 'userPool',
+        await mutateSessionRecord(updateApsAppSession, {
+          id: sessionId,
+          ...sessionFields,
         });
         effectiveSessionId = sessionId;
 
@@ -384,8 +408,8 @@ export default function SessionModal({
         ),
       ]);
 
+      skipLinksLoadRef.current = true;
       if (!sessionId) {
-        skipLinksLoadRef.current = true;
         setActiveSessionId(effectiveSessionId);
       }
       setMessage('Saved.');
@@ -652,6 +676,65 @@ export default function SessionModal({
                     {form.speakerIds.length} selected
                   </span>
                 </div>
+                {form.speakerIds.length > 0 ? (
+                  <div className='mt-2 rounded-xl border border-slate-200'>
+                    <div className='border-b border-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
+                      Display order
+                    </div>
+                    <p className='border-b border-slate-100 px-3 py-2 text-xs text-slate-500'>
+                      First in this list is shown first in the app.
+                    </p>
+                    {form.speakerIds.map((id, index) => {
+                      const speaker = speakers.find((s) => s.id === id);
+                      return (
+                        <div
+                          key={id}
+                          className='flex items-center gap-3 border-b border-slate-100 px-3 py-2 last:border-b-0'
+                        >
+                          <span className='w-6 shrink-0 text-xs font-semibold text-slate-500'>
+                            {index + 1}
+                          </span>
+                          <span className='min-w-0 flex-1 truncate text-sm font-semibold text-slate-900'>
+                            {speaker ? displaySpeaker(speaker) : id}
+                          </span>
+                          <div className='flex shrink-0 items-center gap-1'>
+                            <button
+                              type='button'
+                              aria-label='Move speaker up'
+                              disabled={index === 0 || submitting}
+                              onClick={() =>
+                                setForm((p) => ({
+                                  ...p,
+                                  speakerIds: moveId(p.speakerIds, id, -1),
+                                }))
+                              }
+                              className='rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40'
+                            >
+                              Up
+                            </button>
+                            <button
+                              type='button'
+                              aria-label='Move speaker down'
+                              disabled={
+                                index === form.speakerIds.length - 1 ||
+                                submitting
+                              }
+                              onClick={() =>
+                                setForm((p) => ({
+                                  ...p,
+                                  speakerIds: moveId(p.speakerIds, id, 1),
+                                }))
+                              }
+                              className='rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40'
+                            >
+                              Down
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 <input
                   value={form.speakerQuery}
                   onChange={(e) =>

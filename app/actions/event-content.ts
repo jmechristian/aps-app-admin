@@ -2,6 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
+import {
+  isUnknownSpeakerOrderError,
+  orderIds,
+  queryWithoutSpeakerOrder,
+} from '@/lib/speaker-order';
 import { fetchCompaniesByEventId, fetchRegistrantsByApsId } from './registrants';
 
 async function sleep(ms: number) {
@@ -517,6 +522,7 @@ export type AgendaSessionListItem = {
   draft?: boolean | null;
   speakerNames?: string[] | null;
   sponsorNames?: string[] | null;
+  speakerOrder?: string[] | null;
 };
 
 const LIST_SESSIONS_BY_AGENDA = /* GraphQL */ `
@@ -545,6 +551,7 @@ const LIST_SESSIONS_BY_AGENDA = /* GraphQL */ `
         description
         embedUrl
         draft
+        speakerOrder
         speakers(limit: 1000) {
           items {
             id
@@ -580,7 +587,11 @@ const LIST_SESSIONS_BY_AGENDA = /* GraphQL */ `
 `;
 
 export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
-  type SessionQueryItem = Omit<AgendaSessionListItem, 'speakerNames' | 'sponsorNames'> & {
+  type SessionQueryItem = Omit<
+    AgendaSessionListItem,
+    'speakerNames' | 'sponsorNames'
+  > & {
+    speakerOrder?: Array<string | null> | null;
     speakers?: {
       items?: Array<
         | {
@@ -612,41 +623,60 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
     } | null;
   };
 
-  let items: SessionQueryItem[];
-  try {
-    items = await paginate<SessionQueryItem>({
-      query: LIST_SESSIONS_BY_AGENDA,
-      variables: { agendaId },
-      getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (message.includes('APSSpeaker') && message.includes('SessionSpeakers')) {
-      const { cleanupOrphanedSessionSpeakers } = await import(
-        '@/app/actions/speakers'
-      );
-      await cleanupOrphanedSessionSpeakers();
-      items = await paginate<SessionQueryItem>({
-        query: LIST_SESSIONS_BY_AGENDA,
+  async function paginateSessions(query: string) {
+    try {
+      return await paginate<SessionQueryItem>({
+        query,
         variables: { agendaId },
         getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
       });
-    } else {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('APSSpeaker') && message.includes('SessionSpeakers')) {
+        const { cleanupOrphanedSessionSpeakers } = await import(
+          '@/app/actions/speakers'
+        );
+        await cleanupOrphanedSessionSpeakers();
+        return paginate<SessionQueryItem>({
+          query,
+          variables: { agendaId },
+          getPage: (data) => data.apsAppSessionsByAgendaId ?? null,
+        });
+      }
       throw error;
     }
   }
 
+  let items: SessionQueryItem[];
+  try {
+    items = await paginateSessions(LIST_SESSIONS_BY_AGENDA);
+  } catch (error) {
+    if (!isUnknownSpeakerOrderError(error)) throw error;
+    items = await paginateSessions(
+      queryWithoutSpeakerOrder(LIST_SESSIONS_BY_AGENDA)
+    );
+  }
+
   const withNames: AgendaSessionListItem[] = items.map((s) => {
-    const speakerNames =
+    const speakerOrder = (s.speakerOrder ?? []).filter(
+      (id): id is string => !!id
+    );
+    const speakerRecords =
       s.speakers?.items
         ?.map((x) => x?.aPSSpeaker)
-        .filter(Boolean)
-        .map((sp) => {
-          const first = sp?.profile?.firstName?.trim() ?? '';
-          const last = sp?.profile?.lastName?.trim() ?? '';
-          const name = `${first} ${last}`.trim();
-          return name || sp?.profile?.email || sp?.id || '—';
-        }) ?? [];
+        .filter((sp): sp is NonNullable<typeof sp> => !!sp) ?? [];
+    const orderedSpeakerIds = orderIds(
+      speakerRecords.map((sp) => sp.id),
+      speakerOrder
+    );
+    const speakerById = new Map(speakerRecords.map((sp) => [sp.id, sp]));
+    const speakerNames = orderedSpeakerIds.map((id) => {
+      const sp = speakerById.get(id);
+      const first = sp?.profile?.firstName?.trim() ?? '';
+      const last = sp?.profile?.lastName?.trim() ?? '';
+      const name = `${first} ${last}`.trim();
+      return name || sp?.profile?.email || sp?.id || '—';
+    });
 
     const sponsorNames =
       s.sponsors?.items
@@ -667,6 +697,7 @@ export async function fetchAgendaSessionsByAgendaId(agendaId: string) {
       draft: s.draft ?? null,
       speakerNames,
       sponsorNames,
+      speakerOrder: speakerOrder.length ? speakerOrder : null,
     };
   });
 

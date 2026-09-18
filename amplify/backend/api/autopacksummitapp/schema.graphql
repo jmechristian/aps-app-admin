@@ -646,6 +646,8 @@ type ApsAppSession
   favoriteByUsers: [ApsAppUserFavoriteSession]
     @hasMany(indexName: "bySession", fields: ["id"])
   draft: Boolean
+  # Ordered APSSpeaker ids for this session. Optional so existing sessions keep working.
+  speakerOrder: [ID]
 }
 
 # Session Questions
