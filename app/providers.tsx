@@ -136,6 +136,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               </Link>
               <Link
                 className={
+                  pathname === '/invoices' || pathname.startsWith('/invoices/')
+                    ? 'text-slate-900'
+                    : 'hover:text-slate-900'
+                }
+                href="/invoices"
+              >
+                Invoices
+              </Link>
+              <Link
+                className={
                   pathname === '/reporting' || pathname.startsWith('/reporting')
                     ? 'text-slate-900'
                     : 'hover:text-slate-900'
