@@ -239,6 +239,7 @@ export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
       nextToken
       __typename
     }
+    postEventSurveyOpen
     createdAt
     updatedAt
     aPSAgendaId
@@ -347,6 +348,7 @@ export const deleteAPS = /* GraphQL */ `mutation DeleteAPS(
       nextToken
       __typename
     }
+    postEventSurveyOpen
     createdAt
     updatedAt
     aPSAgendaId
@@ -376,6 +378,7 @@ export const createAPSCode = /* GraphQL */ `mutation CreateAPSCode(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -412,6 +415,7 @@ export const deleteAPSCode = /* GraphQL */ `mutation DeleteAPSCode(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -447,6 +451,7 @@ export const createApsAgenda = /* GraphQL */ `mutation CreateApsAgenda(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -483,6 +488,7 @@ export const updateApsAgenda = /* GraphQL */ `mutation UpdateApsAgenda(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -519,6 +525,7 @@ export const deleteApsAgenda = /* GraphQL */ `mutation DeleteApsAgenda(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -555,6 +562,7 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2171,6 +2179,7 @@ export const createApsAppUserPhoto = /* GraphQL */ `mutation CreateApsAppUserPho
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2217,6 +2226,7 @@ export const deleteApsAppUserPhoto = /* GraphQL */ `mutation DeleteApsAppUserPho
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2576,6 +2586,7 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2651,6 +2662,7 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2726,6 +2738,7 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2788,6 +2801,7 @@ export const createApsSponsor = /* GraphQL */ `mutation CreateApsSponsor(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2870,6 +2884,7 @@ export const updateApsSponsor = /* GraphQL */ `mutation UpdateApsSponsor(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -2952,6 +2967,7 @@ export const deleteApsSponsor = /* GraphQL */ `mutation DeleteApsSponsor(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3240,6 +3256,7 @@ export const createApsAppExhibitorProfile = /* GraphQL */ `mutation CreateApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3346,6 +3363,7 @@ export const deleteApsAppExhibitorProfile = /* GraphQL */ `mutation DeleteApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3471,6 +3489,7 @@ export const createApsAppUserExhibitorView = /* GraphQL */ `mutation CreateApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3557,6 +3576,7 @@ export const updateApsAppUserExhibitorView = /* GraphQL */ `mutation UpdateApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3643,6 +3663,7 @@ export const deleteApsAppUserExhibitorView = /* GraphQL */ `mutation DeleteApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3729,6 +3750,7 @@ export const createApsAppUserPassportStamp = /* GraphQL */ `mutation CreateApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3816,6 +3838,7 @@ export const updateApsAppUserPassportStamp = /* GraphQL */ `mutation UpdateApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3903,6 +3926,7 @@ export const deleteApsAppUserPassportStamp = /* GraphQL */ `mutation DeleteApsAp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3990,6 +4014,7 @@ export const createApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation CreateA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4076,6 +4101,7 @@ export const updateApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation UpdateA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4162,6 +4188,7 @@ export const deleteApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation DeleteA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4241,6 +4268,7 @@ export const createApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation CreateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4320,6 +4348,7 @@ export const updateApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation UpdateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4399,6 +4428,7 @@ export const deleteApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation DeleteAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4478,6 +4508,7 @@ export const createApsAppUserFavoriteSponsor = /* GraphQL */ `mutation CreateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4557,6 +4588,7 @@ export const updateApsAppUserFavoriteSponsor = /* GraphQL */ `mutation UpdateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4636,6 +4668,7 @@ export const deleteApsAppUserFavoriteSponsor = /* GraphQL */ `mutation DeleteAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4721,6 +4754,7 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4806,6 +4840,7 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4891,6 +4926,7 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4990,6 +5026,7 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5089,6 +5126,7 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5188,6 +5226,7 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5231,6 +5270,7 @@ export const createApsAddOn = /* GraphQL */ `mutation CreateApsAddOn(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5279,6 +5319,7 @@ export const updateApsAddOn = /* GraphQL */ `mutation UpdateApsAddOn(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5327,6 +5368,7 @@ export const deleteApsAddOn = /* GraphQL */ `mutation DeleteApsAddOn(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7024,6 +7066,7 @@ export const deleteAPSCompanyEvents = /* GraphQL */ `mutation DeleteAPSCompanyEv
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7426,6 +7469,7 @@ export const createAPS = /* GraphQL */ `mutation CreateAPS(
       nextToken
       __typename
     }
+    postEventSurveyOpen
     createdAt
     updatedAt
     aPSAgendaId
@@ -7455,6 +7499,7 @@ export const updateAPSCode = /* GraphQL */ `mutation UpdateAPSCode(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7556,6 +7601,7 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7700,6 +7746,7 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8565,6 +8612,7 @@ export const updateApsAppUserPhoto = /* GraphQL */ `mutation UpdateApsAppUserPho
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8780,6 +8828,7 @@ export const updateApsAppExhibitorProfile = /* GraphQL */ `mutation UpdateApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8874,6 +8923,7 @@ export const createApsAppExhibitorPromotion = /* GraphQL */ `mutation CreateApsA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8929,6 +8979,7 @@ export const updateApsAppExhibitorPromotion = /* GraphQL */ `mutation UpdateApsA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8984,6 +9035,7 @@ export const deleteApsAppExhibitorPromotion = /* GraphQL */ `mutation DeleteApsA
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9048,6 +9100,7 @@ export const createApsAppExhibitorDeal = /* GraphQL */ `mutation CreateApsAppExh
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9113,6 +9166,7 @@ export const updateApsAppExhibitorDeal = /* GraphQL */ `mutation UpdateApsAppExh
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9178,6 +9232,7 @@ export const deleteApsAppExhibitorDeal = /* GraphQL */ `mutation DeleteApsAppExh
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9235,6 +9290,7 @@ export const createApsAppExhibitorPhoto = /* GraphQL */ `mutation CreateApsAppEx
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9291,6 +9347,7 @@ export const updateApsAppExhibitorPhoto = /* GraphQL */ `mutation UpdateApsAppEx
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9347,6 +9404,7 @@ export const deleteApsAppExhibitorPhoto = /* GraphQL */ `mutation DeleteApsAppEx
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9401,6 +9459,7 @@ export const createApsAppExhibitorHandout = /* GraphQL */ `mutation CreateApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9455,6 +9514,7 @@ export const updateApsAppExhibitorHandout = /* GraphQL */ `mutation UpdateApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9509,6 +9569,7 @@ export const deleteApsAppExhibitorHandout = /* GraphQL */ `mutation DeleteApsApp
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9756,6 +9817,7 @@ export const createAPSCompanyEvents = /* GraphQL */ `mutation CreateAPSCompanyEv
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -9809,6 +9871,7 @@ export const updateAPSCompanyEvents = /* GraphQL */ `mutation UpdateAPSCompanyEv
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId

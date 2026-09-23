@@ -373,6 +373,7 @@ export const getApsAppUserExhibitorView = /* GraphQL */ `query GetApsAppUserExhi
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -486,6 +487,7 @@ export const getApsAppUserPassportStamp = /* GraphQL */ `query GetApsAppUserPass
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -601,6 +603,7 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -707,6 +710,7 @@ export const getApsAppUserFavoriteSpeaker = /* GraphQL */ `query GetApsAppUserFa
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -813,6 +817,7 @@ export const getApsAppUserFavoriteSponsor = /* GraphQL */ `query GetApsAppUserFa
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -925,6 +930,7 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -1051,6 +1057,7 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3923,6 +3930,7 @@ export const getAPS = /* GraphQL */ `query GetAPS($id: ID!) {
       nextToken
       __typename
     }
+    postEventSurveyOpen
     createdAt
     updatedAt
     aPSAgendaId
@@ -3943,6 +3951,7 @@ export const listAPS = /* GraphQL */ `query ListAPS($filter: ModelAPSFilterInput
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -3969,6 +3978,7 @@ export const getAPSCode = /* GraphQL */ `query GetAPSCode($id: ID!) {
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4105,6 +4115,7 @@ export const getApsAgenda = /* GraphQL */ `query GetApsAgenda($id: ID!) {
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -4188,6 +4199,7 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -5781,6 +5793,7 @@ export const getApsAppUserPhoto = /* GraphQL */ `query GetApsAppUserPhoto($id: I
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -6196,6 +6209,7 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -6348,6 +6362,7 @@ export const getApsSponsor = /* GraphQL */ `query GetApsSponsor($id: ID!) {
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -6736,6 +6751,7 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7023,6 +7039,7 @@ export const getApsAppExhibitorPromotion = /* GraphQL */ `query GetApsAppExhibit
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7182,6 +7199,7 @@ export const getApsAppExhibitorDeal = /* GraphQL */ `query GetApsAppExhibitorDea
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7376,6 +7394,7 @@ export const getApsAppExhibitorPhoto = /* GraphQL */ `query GetApsAppExhibitorPh
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7528,6 +7547,7 @@ export const getApsAppExhibitorHandout = /* GraphQL */ `query GetApsAppExhibitor
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -7663,6 +7683,7 @@ export const getApsAddOn = /* GraphQL */ `query GetApsAddOn($id: ID!) {
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
@@ -8578,6 +8599,7 @@ export const getAPSCompanyEvents = /* GraphQL */ `query GetAPSCompanyEvents($id:
       state
       zip
       website
+      postEventSurveyOpen
       createdAt
       updatedAt
       aPSAgendaId
