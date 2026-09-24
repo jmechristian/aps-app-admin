@@ -1438,10 +1438,13 @@ async function handleSendModeratedDmMessage(event) {
   // Fast-path DM push (near-instant): send immediately from mutation path
   // instead of waiting for DynamoDB stream fanout latency.
   try {
-    const recipientTokens = await listTokensByUser(recipientUserId);
+    const [recipientTokens, senderLabel] = await Promise.all([
+      listTokensByUser(recipientUserId),
+      getUserDisplayLabel(senderUserId),
+    ]);
     const dmPushMessages = recipientTokens.map((token) => ({
       to: token,
-      title: 'New message',
+      title: senderLabel || 'New message',
       body: safeSlice(messageItem.body, 120) || 'You have a new message',
       priority: 'high',
       badge: 1,

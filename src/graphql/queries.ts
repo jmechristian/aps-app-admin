@@ -374,6 +374,8 @@ export const getApsAppUserExhibitorView = /* GraphQL */ `query GetApsAppUserExhi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -488,6 +490,8 @@ export const getApsAppUserPassportStamp = /* GraphQL */ `query GetApsAppUserPass
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -604,6 +608,8 @@ export const getApsAppUserFavoriteExhibitor = /* GraphQL */ `query GetApsAppUser
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -711,6 +717,8 @@ export const getApsAppUserFavoriteSpeaker = /* GraphQL */ `query GetApsAppUserFa
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -818,6 +826,8 @@ export const getApsAppUserFavoriteSponsor = /* GraphQL */ `query GetApsAppUserFa
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -931,6 +941,8 @@ export const getApsAppUserFavoriteSession = /* GraphQL */ `query GetApsAppUserFa
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1058,6 +1070,8 @@ export const getApsAppUserFavoriteContact = /* GraphQL */ `query GetApsAppUserFa
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3931,6 +3945,8 @@ export const getAPS = /* GraphQL */ `query GetAPS($id: ID!) {
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -3952,6 +3968,8 @@ export const listAPS = /* GraphQL */ `query ListAPS($filter: ModelAPSFilterInput
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3979,6 +3997,8 @@ export const getAPSCode = /* GraphQL */ `query GetAPSCode($id: ID!) {
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4116,6 +4136,8 @@ export const getApsAgenda = /* GraphQL */ `query GetApsAgenda($id: ID!) {
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4200,6 +4222,8 @@ export const getApsRegistrant = /* GraphQL */ `query GetApsRegistrant($id: ID!) 
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5794,6 +5818,8 @@ export const getApsAppUserPhoto = /* GraphQL */ `query GetApsAppUserPhoto($id: I
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6210,6 +6236,8 @@ export const getAPSSpeaker = /* GraphQL */ `query GetAPSSpeaker($id: ID!) {
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6363,6 +6391,8 @@ export const getApsSponsor = /* GraphQL */ `query GetApsSponsor($id: ID!) {
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6752,6 +6782,8 @@ export const getApsAppExhibitorProfile = /* GraphQL */ `query GetApsAppExhibitor
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7040,6 +7072,8 @@ export const getApsAppExhibitorPromotion = /* GraphQL */ `query GetApsAppExhibit
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7200,6 +7234,8 @@ export const getApsAppExhibitorDeal = /* GraphQL */ `query GetApsAppExhibitorDea
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7395,6 +7431,8 @@ export const getApsAppExhibitorPhoto = /* GraphQL */ `query GetApsAppExhibitorPh
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7548,6 +7586,8 @@ export const getApsAppExhibitorHandout = /* GraphQL */ `query GetApsAppExhibitor
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7684,6 +7724,8 @@ export const getApsAddOn = /* GraphQL */ `query GetApsAddOn($id: ID!) {
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8600,6 +8642,8 @@ export const getAPSCompanyEvents = /* GraphQL */ `query GetAPSCompanyEvents($id:
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId

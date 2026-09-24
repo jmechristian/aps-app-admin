@@ -240,6 +240,8 @@ export const updateAPS = /* GraphQL */ `mutation UpdateAPS(
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -349,6 +351,8 @@ export const deleteAPS = /* GraphQL */ `mutation DeleteAPS(
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -379,6 +383,8 @@ export const createAPSCode = /* GraphQL */ `mutation CreateAPSCode(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -416,6 +422,8 @@ export const deleteAPSCode = /* GraphQL */ `mutation DeleteAPSCode(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -452,6 +460,8 @@ export const createApsAgenda = /* GraphQL */ `mutation CreateApsAgenda(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -489,6 +499,8 @@ export const updateApsAgenda = /* GraphQL */ `mutation UpdateApsAgenda(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -526,6 +538,8 @@ export const deleteApsAgenda = /* GraphQL */ `mutation DeleteApsAgenda(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -563,6 +577,8 @@ export const deleteApsRegistrant = /* GraphQL */ `mutation DeleteApsRegistrant(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2180,6 +2196,8 @@ export const createApsAppUserPhoto = /* GraphQL */ `mutation CreateApsAppUserPho
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2227,6 +2245,8 @@ export const deleteApsAppUserPhoto = /* GraphQL */ `mutation DeleteApsAppUserPho
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2587,6 +2607,8 @@ export const createAPSSpeaker = /* GraphQL */ `mutation CreateAPSSpeaker(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2663,6 +2685,8 @@ export const updateAPSSpeaker = /* GraphQL */ `mutation UpdateAPSSpeaker(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2739,6 +2763,8 @@ export const deleteAPSSpeaker = /* GraphQL */ `mutation DeleteAPSSpeaker(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2802,6 +2828,8 @@ export const createApsSponsor = /* GraphQL */ `mutation CreateApsSponsor(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2885,6 +2913,8 @@ export const updateApsSponsor = /* GraphQL */ `mutation UpdateApsSponsor(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2968,6 +2998,8 @@ export const deleteApsSponsor = /* GraphQL */ `mutation DeleteApsSponsor(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3257,6 +3289,8 @@ export const createApsAppExhibitorProfile = /* GraphQL */ `mutation CreateApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3364,6 +3398,8 @@ export const deleteApsAppExhibitorProfile = /* GraphQL */ `mutation DeleteApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3490,6 +3526,8 @@ export const createApsAppUserExhibitorView = /* GraphQL */ `mutation CreateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3577,6 +3615,8 @@ export const updateApsAppUserExhibitorView = /* GraphQL */ `mutation UpdateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3664,6 +3704,8 @@ export const deleteApsAppUserExhibitorView = /* GraphQL */ `mutation DeleteApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3751,6 +3793,8 @@ export const createApsAppUserPassportStamp = /* GraphQL */ `mutation CreateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3839,6 +3883,8 @@ export const updateApsAppUserPassportStamp = /* GraphQL */ `mutation UpdateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3927,6 +3973,8 @@ export const deleteApsAppUserPassportStamp = /* GraphQL */ `mutation DeleteApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4015,6 +4063,8 @@ export const createApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation CreateA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4102,6 +4152,8 @@ export const updateApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation UpdateA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4189,6 +4241,8 @@ export const deleteApsAppUserFavoriteExhibitor = /* GraphQL */ `mutation DeleteA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4269,6 +4323,8 @@ export const createApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation CreateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4349,6 +4405,8 @@ export const updateApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation UpdateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4429,6 +4487,8 @@ export const deleteApsAppUserFavoriteSpeaker = /* GraphQL */ `mutation DeleteAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4509,6 +4569,8 @@ export const createApsAppUserFavoriteSponsor = /* GraphQL */ `mutation CreateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4589,6 +4651,8 @@ export const updateApsAppUserFavoriteSponsor = /* GraphQL */ `mutation UpdateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4669,6 +4733,8 @@ export const deleteApsAppUserFavoriteSponsor = /* GraphQL */ `mutation DeleteAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4755,6 +4821,8 @@ export const createApsAppUserFavoriteSession = /* GraphQL */ `mutation CreateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4841,6 +4909,8 @@ export const updateApsAppUserFavoriteSession = /* GraphQL */ `mutation UpdateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4927,6 +4997,8 @@ export const deleteApsAppUserFavoriteSession = /* GraphQL */ `mutation DeleteAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5027,6 +5099,8 @@ export const createApsAppUserFavoriteContact = /* GraphQL */ `mutation CreateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5127,6 +5201,8 @@ export const updateApsAppUserFavoriteContact = /* GraphQL */ `mutation UpdateAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5227,6 +5303,8 @@ export const deleteApsAppUserFavoriteContact = /* GraphQL */ `mutation DeleteAps
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5271,6 +5349,8 @@ export const createApsAddOn = /* GraphQL */ `mutation CreateApsAddOn(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5320,6 +5400,8 @@ export const updateApsAddOn = /* GraphQL */ `mutation UpdateApsAddOn(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5369,6 +5451,8 @@ export const deleteApsAddOn = /* GraphQL */ `mutation DeleteApsAddOn(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7067,6 +7151,8 @@ export const deleteAPSCompanyEvents = /* GraphQL */ `mutation DeleteAPSCompanyEv
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7470,6 +7556,8 @@ export const createAPS = /* GraphQL */ `mutation CreateAPS(
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -7500,6 +7588,8 @@ export const updateAPSCode = /* GraphQL */ `mutation UpdateAPSCode(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7602,6 +7692,8 @@ export const createApsRegistrant = /* GraphQL */ `mutation CreateApsRegistrant(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7747,6 +7839,8 @@ export const updateApsRegistrant = /* GraphQL */ `mutation UpdateApsRegistrant(
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8613,6 +8707,8 @@ export const updateApsAppUserPhoto = /* GraphQL */ `mutation UpdateApsAppUserPho
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8829,6 +8925,8 @@ export const updateApsAppExhibitorProfile = /* GraphQL */ `mutation UpdateApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8924,6 +9022,8 @@ export const createApsAppExhibitorPromotion = /* GraphQL */ `mutation CreateApsA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8980,6 +9080,8 @@ export const updateApsAppExhibitorPromotion = /* GraphQL */ `mutation UpdateApsA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9036,6 +9138,8 @@ export const deleteApsAppExhibitorPromotion = /* GraphQL */ `mutation DeleteApsA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9101,6 +9205,8 @@ export const createApsAppExhibitorDeal = /* GraphQL */ `mutation CreateApsAppExh
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9167,6 +9273,8 @@ export const updateApsAppExhibitorDeal = /* GraphQL */ `mutation UpdateApsAppExh
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9233,6 +9341,8 @@ export const deleteApsAppExhibitorDeal = /* GraphQL */ `mutation DeleteApsAppExh
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9291,6 +9401,8 @@ export const createApsAppExhibitorPhoto = /* GraphQL */ `mutation CreateApsAppEx
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9348,6 +9460,8 @@ export const updateApsAppExhibitorPhoto = /* GraphQL */ `mutation UpdateApsAppEx
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9405,6 +9519,8 @@ export const deleteApsAppExhibitorPhoto = /* GraphQL */ `mutation DeleteApsAppEx
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9460,6 +9576,8 @@ export const createApsAppExhibitorHandout = /* GraphQL */ `mutation CreateApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9515,6 +9633,8 @@ export const updateApsAppExhibitorHandout = /* GraphQL */ `mutation UpdateApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9570,6 +9690,8 @@ export const deleteApsAppExhibitorHandout = /* GraphQL */ `mutation DeleteApsApp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9818,6 +9940,8 @@ export const createAPSCompanyEvents = /* GraphQL */ `mutation CreateAPSCompanyEv
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9872,6 +9996,8 @@ export const updateAPSCompanyEvents = /* GraphQL */ `mutation UpdateAPSCompanyEv
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId

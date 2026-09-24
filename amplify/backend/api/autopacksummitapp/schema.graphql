@@ -239,6 +239,9 @@ type APS
   # Null or false keeps the in-app post-event survey locked.
   # Admins flip this from the Post-Event Survey admin screen.
   postEventSurveyOpen: Boolean
+  # Null or false keeps the certificate card locked. Url is the external test page.
+  certificateOfCompletionOpen: Boolean
+  certificateOfCompletionUrl: String
 }
 
 type APSCode

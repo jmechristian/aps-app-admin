@@ -682,6 +682,8 @@ export const onCreateApsAppUserExhibitorView = /* GraphQL */ `subscription OnCre
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -769,6 +771,8 @@ export const onUpdateApsAppUserExhibitorView = /* GraphQL */ `subscription OnUpd
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -856,6 +860,8 @@ export const onDeleteApsAppUserExhibitorView = /* GraphQL */ `subscription OnDel
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -943,6 +949,8 @@ export const onCreateApsAppUserPassportStamp = /* GraphQL */ `subscription OnCre
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1031,6 +1039,8 @@ export const onUpdateApsAppUserPassportStamp = /* GraphQL */ `subscription OnUpd
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1119,6 +1129,8 @@ export const onDeleteApsAppUserPassportStamp = /* GraphQL */ `subscription OnDel
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1207,6 +1219,8 @@ export const onCreateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1294,6 +1308,8 @@ export const onUpdateApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1381,6 +1397,8 @@ export const onDeleteApsAppUserFavoriteExhibitor = /* GraphQL */ `subscription O
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1461,6 +1479,8 @@ export const onCreateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1541,6 +1561,8 @@ export const onUpdateApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnU
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1621,6 +1643,8 @@ export const onDeleteApsAppUserFavoriteSpeaker = /* GraphQL */ `subscription OnD
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1701,6 +1725,8 @@ export const onCreateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1781,6 +1807,8 @@ export const onUpdateApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnU
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1861,6 +1889,8 @@ export const onDeleteApsAppUserFavoriteSponsor = /* GraphQL */ `subscription OnD
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -1947,6 +1977,8 @@ export const onCreateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2033,6 +2065,8 @@ export const onUpdateApsAppUserFavoriteSession = /* GraphQL */ `subscription OnU
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2119,6 +2153,8 @@ export const onDeleteApsAppUserFavoriteSession = /* GraphQL */ `subscription OnD
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2219,6 +2255,8 @@ export const onCreateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2319,6 +2357,8 @@ export const onUpdateApsAppUserFavoriteContact = /* GraphQL */ `subscription OnU
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -2419,6 +2459,8 @@ export const onDeleteApsAppUserFavoriteContact = /* GraphQL */ `subscription OnD
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3509,6 +3551,8 @@ export const onCreateAPS = /* GraphQL */ `subscription OnCreateAPS($filter: Mode
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -3615,6 +3659,8 @@ export const onUpdateAPS = /* GraphQL */ `subscription OnUpdateAPS($filter: Mode
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -3721,6 +3767,8 @@ export const onDeleteAPS = /* GraphQL */ `subscription OnDeleteAPS($filter: Mode
       __typename
     }
     postEventSurveyOpen
+    certificateOfCompletionOpen
+    certificateOfCompletionUrl
     createdAt
     updatedAt
     aPSAgendaId
@@ -3748,6 +3796,8 @@ export const onCreateAPSCode = /* GraphQL */ `subscription OnCreateAPSCode($filt
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3782,6 +3832,8 @@ export const onUpdateAPSCode = /* GraphQL */ `subscription OnUpdateAPSCode($filt
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3816,6 +3868,8 @@ export const onDeleteAPSCode = /* GraphQL */ `subscription OnDeleteAPSCode($filt
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3906,6 +3960,8 @@ export const onCreateApsAgenda = /* GraphQL */ `subscription OnCreateApsAgenda($
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3940,6 +3996,8 @@ export const onUpdateApsAgenda = /* GraphQL */ `subscription OnUpdateApsAgenda($
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -3974,6 +4032,8 @@ export const onDeleteApsAgenda = /* GraphQL */ `subscription OnDeleteApsAgenda($
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4010,6 +4070,8 @@ export const onCreateApsRegistrant = /* GraphQL */ `subscription OnCreateApsRegi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4154,6 +4216,8 @@ export const onUpdateApsRegistrant = /* GraphQL */ `subscription OnUpdateApsRegi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -4298,6 +4362,8 @@ export const onDeleteApsRegistrant = /* GraphQL */ `subscription OnDeleteApsRegi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -5996,6 +6062,8 @@ export const onCreateApsAppUserPhoto = /* GraphQL */ `subscription OnCreateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6042,6 +6110,8 @@ export const onUpdateApsAppUserPhoto = /* GraphQL */ `subscription OnUpdateApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6088,6 +6158,8 @@ export const onDeleteApsAppUserPhoto = /* GraphQL */ `subscription OnDeleteApsAp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6441,6 +6513,8 @@ export const onCreateAPSSpeaker = /* GraphQL */ `subscription OnCreateAPSSpeaker
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6516,6 +6590,8 @@ export const onUpdateAPSSpeaker = /* GraphQL */ `subscription OnUpdateAPSSpeaker
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6591,6 +6667,8 @@ export const onDeleteAPSSpeaker = /* GraphQL */ `subscription OnDeleteAPSSpeaker
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6653,6 +6731,8 @@ export const onCreateApsSponsor = /* GraphQL */ `subscription OnCreateApsSponsor
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6735,6 +6815,8 @@ export const onUpdateApsSponsor = /* GraphQL */ `subscription OnUpdateApsSponsor
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -6817,6 +6899,8 @@ export const onDeleteApsSponsor = /* GraphQL */ `subscription OnDeleteApsSponsor
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7247,6 +7331,8 @@ export const onCreateApsAppExhibitorProfile = /* GraphQL */ `subscription OnCrea
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7353,6 +7439,8 @@ export const onUpdateApsAppExhibitorProfile = /* GraphQL */ `subscription OnUpda
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7459,6 +7547,8 @@ export const onDeleteApsAppExhibitorProfile = /* GraphQL */ `subscription OnDele
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7553,6 +7643,8 @@ export const onCreateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnCr
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7608,6 +7700,8 @@ export const onUpdateApsAppExhibitorPromotion = /* GraphQL */ `subscription OnUp
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7663,6 +7757,8 @@ export const onDeleteApsAppExhibitorPromotion = /* GraphQL */ `subscription OnDe
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7727,6 +7823,8 @@ export const onCreateApsAppExhibitorDeal = /* GraphQL */ `subscription OnCreateA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7792,6 +7890,8 @@ export const onUpdateApsAppExhibitorDeal = /* GraphQL */ `subscription OnUpdateA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7857,6 +7957,8 @@ export const onDeleteApsAppExhibitorDeal = /* GraphQL */ `subscription OnDeleteA
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7914,6 +8016,8 @@ export const onCreateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnCreate
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -7970,6 +8074,8 @@ export const onUpdateApsAppExhibitorPhoto = /* GraphQL */ `subscription OnUpdate
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8026,6 +8132,8 @@ export const onDeleteApsAppExhibitorPhoto = /* GraphQL */ `subscription OnDelete
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8080,6 +8188,8 @@ export const onCreateApsAppExhibitorHandout = /* GraphQL */ `subscription OnCrea
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8134,6 +8244,8 @@ export const onUpdateApsAppExhibitorHandout = /* GraphQL */ `subscription OnUpda
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8188,6 +8300,8 @@ export const onDeleteApsAppExhibitorHandout = /* GraphQL */ `subscription OnDele
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8229,6 +8343,8 @@ export const onCreateApsAddOn = /* GraphQL */ `subscription OnCreateApsAddOn($fi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8275,6 +8391,8 @@ export const onUpdateApsAddOn = /* GraphQL */ `subscription OnUpdateApsAddOn($fi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -8321,6 +8439,8 @@ export const onDeleteApsAddOn = /* GraphQL */ `subscription OnDeleteApsAddOn($fi
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9222,6 +9342,8 @@ export const onCreateAPSCompanyEvents = /* GraphQL */ `subscription OnCreateAPSC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9275,6 +9397,8 @@ export const onUpdateAPSCompanyEvents = /* GraphQL */ `subscription OnUpdateAPSC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
@@ -9328,6 +9452,8 @@ export const onDeleteAPSCompanyEvents = /* GraphQL */ `subscription OnDeleteAPSC
       zip
       website
       postEventSurveyOpen
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
       createdAt
       updatedAt
       aPSAgendaId
