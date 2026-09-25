@@ -37,13 +37,12 @@ export const TYPE_COLORS: Record<BadgeAttendeeType, string> = {
   SOLUTIONPROVIDER: BRAND.yellow,
 };
 
-export const BADGE_DESIGNS = ['classic', 'rail', 'signal'] as const;
+export const BADGE_DESIGNS = ['sticker', 'rail'] as const;
 export type BadgeDesign = (typeof BADGE_DESIGNS)[number];
 
 export const BADGE_DESIGN_LABELS: Record<BadgeDesign, string> = {
-  classic: 'Classic',
+  sticker: 'Sticker',
   rail: 'Rail',
-  signal: 'Signal',
 };
 
 /** Print page includes 0.125" bleed on every side around a 4" x 5" trim. */
@@ -56,8 +55,11 @@ export const BADGE_PAGE = {
   trimPt: { w: 4 * 72, h: 5 * 72 },
 } as const;
 
-/** Color band starts at ~64.5% of trim height, matching the sample PDF. */
-export const CLASSIC_SPLIT = 0.645;
+/** Sticker stock: 2 3/7" wide × 3 1/2" tall. The page is the sticker. */
+export const STICKER_PAGE = {
+  pageIn: { w: 2 + 3 / 7, h: 3.5 },
+  pagePt: { w: (2 + 3 / 7) * 72, h: 3.5 * 72 },
+} as const;
 
 export const APS_LOGO_SVG = '/images/AutoPackSummit-Color-Vector.svg';
 
@@ -105,6 +107,28 @@ export function getPackIqVariant(type: string): 'white' | 'black' {
 
 export function formatTableLabel(tableNumber: number | null): string {
   return tableNumber == null ? '#' : String(tableNumber);
+}
+
+/** Shrink the rail attach-area lockup to the sticker content width. */
+export function stickerLockupScale(): number {
+  const railContentPt =
+    BADGE_PAGE.pagePt.w - (BADGE_PAGE.bleedPt + 52) - 14 - (BADGE_PAGE.bleedPt + 9);
+  const stickerInnerPt = STICKER_PAGE.pagePt.w - 24;
+  return stickerInnerPt / railContentPt;
+}
+
+export function sortBadgePeople(people: BadgePerson[]): BadgePerson[] {
+  return [...people].sort((a, b) => {
+    const last = a.lastName.localeCompare(b.lastName, undefined, {
+      sensitivity: 'base',
+    });
+    if (last !== 0) return last;
+    const first = a.firstName.localeCompare(b.firstName, undefined, {
+      sensitivity: 'base',
+    });
+    if (first !== 0) return first;
+    return a.email.localeCompare(b.email, undefined, { sensitivity: 'base' });
+  });
 }
 
 export function firstNameFontSizePt(name: string): number {

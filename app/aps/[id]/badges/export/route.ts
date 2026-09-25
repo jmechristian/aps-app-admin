@@ -5,6 +5,7 @@ import {
   createBlankBadgePeople,
   groupBadgePeople,
   isBadgeDesign,
+  sortBadgePeople,
   toBadgePerson,
   type BadgeDesign,
   type BadgePerson,
@@ -40,7 +41,7 @@ async function mapPool<T, R>(
 async function toPdfPerson(person: BadgePerson): Promise<BadgePdfPerson> {
   const qrDataUrl = await QRCode.toDataURL(attendeeQrPayload(person.id), {
     type: 'image/png',
-    width: 384,
+    width: 600,
     margin: 1,
     errorCorrectionLevel: 'M',
   });
@@ -86,8 +87,12 @@ async function exportBadges(params: {
     });
   }
 
-  const ordered = groupBadgePeople(selected).flatMap((group) => group.people);
-  const includeBlanks = selected.length === approved.length;
+  const ordered =
+    params.design === 'sticker'
+      ? sortBadgePeople(selected)
+      : groupBadgePeople(selected).flatMap((group) => group.people);
+  const includeBlanks =
+    params.design !== 'sticker' && selected.length === approved.length;
   const pdfPeople = [
     ...(await mapPool(ordered, 8, toPdfPerson)),
     ...(includeBlanks
@@ -117,7 +122,7 @@ export async function GET(
   const { id } = await context.params;
   const url = new URL(req.url);
   const designParam = url.searchParams.get('design');
-  const design = isBadgeDesign(designParam) ? designParam : 'classic';
+  const design = isBadgeDesign(designParam) ? designParam : 'sticker';
   return exportBadges({
     eventId: id,
     design,
@@ -134,7 +139,7 @@ export async function POST(
     design?: string;
     ids?: unknown;
   } | null;
-  const design = isBadgeDesign(body?.design) ? body.design : 'classic';
+  const design = isBadgeDesign(body?.design) ? body.design : 'sticker';
   return exportBadges({
     eventId: id,
     design,

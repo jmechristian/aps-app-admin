@@ -1,15 +1,14 @@
 import {
   APS_LOGO_SVG,
   BADGE_PAGE,
-  CLASSIC_SPLIT,
+  STICKER_PAGE,
   firstNameFontSizePt,
   formatTableLabel,
-  getPackIqVariant,
   getTypeColor,
   getTypeLabel,
   isBlankBadge,
   previewPx,
-  typeLabelFontSizePt,
+  stickerLockupScale,
   type BadgeDesign,
   type BadgePerson,
 } from '@/lib/badges';
@@ -39,13 +38,7 @@ function ApsLogo({
   );
 }
 
-function PunchGuide({
-  onDark,
-  cardWidth,
-}: {
-  onDark?: boolean;
-  cardWidth: number;
-}) {
+function PunchGuide({ cardWidth }: { cardWidth: number }) {
   const size = previewPx(16, cardWidth);
   return (
     <div
@@ -56,7 +49,7 @@ function PunchGuide({
         height: size,
         top: previewPx(BADGE_PAGE.bleedPt + 10, cardWidth),
         transform: 'translateX(-50%)',
-        borderColor: onDark ? 'rgba(255,255,255,0.45)' : 'rgba(15,23,42,0.28)',
+        borderColor: 'rgba(15,23,42,0.28)',
       }}
     />
   );
@@ -101,89 +94,84 @@ function QrImage({ url, size }: { url: string | null; size: number }) {
   );
 }
 
-function ClassicCard({
+function stickerPx(pt: number, cardWidth: number) {
+  return (pt / STICKER_PAGE.pagePt.w) * cardWidth;
+}
+
+function StickerCard({
   person,
   cardWidth,
 }: {
   person: BadgePerson;
   cardWidth: number;
 }) {
-  const color = getTypeColor(person.attendeeType);
-  const typeLabel = getTypeLabel(person.attendeeType);
   const first = person.firstName || 'Guest';
-  const packiq =
-    getPackIqVariant(person.attendeeType) === 'white'
-      ? '/images/PackIQ_white.png'
-      : '/images/PackIQ_black.png';
-  const whitePct =
-    ((BADGE_PAGE.bleedPt + CLASSIC_SPLIT * BADGE_PAGE.trimPt.h) /
-      BADGE_PAGE.pagePt.h) *
-    100;
-  const px = (pt: number) => previewPx(pt, cardWidth);
+  const scale = stickerLockupScale();
+  const px = (pt: number) => stickerPx(pt * scale, cardWidth);
   const blank = isBlankBadge(person);
 
   return (
     <div
       className='relative overflow-hidden bg-white text-slate-900 shadow-md'
-      style={{ width: cardWidth, aspectRatio: '4.25 / 5.25' }}
+      style={{
+        width: cardWidth,
+        aspectRatio: `${STICKER_PAGE.pageIn.w} / ${STICKER_PAGE.pageIn.h}`,
+      }}
     >
       <div
-        className='flex flex-col px-[7.5%] pt-[12%]'
-        style={{ height: `${whitePct}%` }}
+        className='flex h-full flex-col'
+        style={{
+          paddingTop: px(16),
+          paddingRight: px(18),
+          paddingBottom: px(16),
+          paddingLeft: px(14),
+        }}
       >
-        <div className='flex items-start justify-between gap-2'>
-          <ApsLogo width={px(118)} />
-          {blank ? null : <QrImage url={person.qrCodeUrl} size={px(50)} />}
-        </div>
-        <div className='flex flex-1 flex-col items-center justify-center pb-2 text-center'>
+        <div className='flex flex-1 flex-col justify-center'>
           <p
             className='font-bold leading-none'
-            style={{ fontSize: px(firstNameFontSizePt(first)) }}
+            style={{ fontSize: px(firstNameFontSizePt(first) + 2) }}
           >
             {first}
           </p>
           {person.lastName ? (
-            <p className='mt-1 leading-tight' style={{ fontSize: px(13) }}>
+            <p
+              className='font-bold leading-tight'
+              style={{ fontSize: px(22), marginTop: px(6) }}
+            >
               {person.lastName}
             </p>
           ) : null}
           {person.company ? (
             <p
-              className='mt-2 leading-tight text-slate-800'
-              style={{ fontSize: px(11) }}
+              className='leading-tight text-slate-800'
+              style={{ fontSize: px(20), marginTop: px(8) }}
             >
               {person.company}
             </p>
           ) : null}
           {person.tableNumber == null ? null : (
             <p
-              className='mt-2 font-bold tracking-[0.16em] text-slate-500'
-              style={{ fontSize: px(8) }}
+              className='font-bold tracking-[0.16em] text-slate-500'
+              style={{ fontSize: px(12), marginTop: px(24) }}
             >
               TABLE  {formatTableLabel(person.tableNumber)}
             </p>
           )}
         </div>
-      </div>
-      <div
-        className='flex flex-col items-center justify-center px-3 pb-3 text-center text-white'
-        style={{ height: `${100 - whitePct}%`, backgroundColor: color }}
-      >
-        <p
-          className='font-bold leading-tight'
-          style={{ fontSize: px(typeLabelFontSizePt(typeLabel)) }}
+        <div
+          className='flex items-end justify-between gap-2'
+          style={{ paddingRight: px(12) }}
         >
-          {typeLabel}
-        </p>
-        <img
-          src={packiq}
-          alt='PackIQ'
-          className='mt-1.5 object-contain'
-          style={{ height: px(28) }}
-        />
+          <img
+            src='/images/PackIQ_black.png'
+            alt='PackIQ'
+            className='object-contain object-left'
+            style={{ width: px(88), height: px(36) }}
+          />
+          {blank ? <span /> : <QrImage url={person.qrCodeUrl} size={px(72)} />}
+        </div>
       </div>
-      <PunchGuide cardWidth={cardWidth} />
-      <TrimGuide />
     </div>
   );
 }
@@ -275,91 +263,6 @@ function RailCard({
   );
 }
 
-function SignalCard({
-  person,
-  cardWidth,
-}: {
-  person: BadgePerson;
-  cardWidth: number;
-}) {
-  const color = getTypeColor(person.attendeeType);
-  const typeLabel = getTypeLabel(person.attendeeType).toUpperCase();
-  const first = person.firstName || 'Guest';
-  const packiq =
-    getPackIqVariant(person.attendeeType) === 'white'
-      ? '/images/PackIQ_white.png'
-      : '/images/PackIQ_black.png';
-  const px = (pt: number) => previewPx(pt, cardWidth);
-  const blank = isBlankBadge(person);
-
-  return (
-    <div
-      className='relative overflow-hidden text-white shadow-md'
-      style={{
-        width: cardWidth,
-        aspectRatio: '4.25 / 5.25',
-        backgroundColor: color,
-      }}
-    >
-      <div className='flex h-full flex-col px-[7.5%] pt-[12%] pb-[6%]'>
-        <ApsLogo variant='light' width={px(128)} />
-        <div className='flex flex-1 flex-col justify-center'>
-          <p
-            className='font-bold leading-none'
-            style={{ fontSize: px(firstNameFontSizePt(first) + 6) }}
-          >
-            {first}
-          </p>
-          {person.lastName ? (
-            <p className='mt-1 leading-tight' style={{ fontSize: px(15) }}>
-              {person.lastName}
-            </p>
-          ) : null}
-          {person.company ? (
-            <p
-              className='mt-2 leading-tight text-white/90'
-              style={{ fontSize: px(11) }}
-            >
-              {person.company}
-            </p>
-          ) : null}
-          <p
-            className='mt-3 font-bold tracking-[0.22em]'
-            style={{ fontSize: px(8) }}
-          >
-            {typeLabel}
-          </p>
-        </div>
-        <img
-          src={packiq}
-          alt='PackIQ'
-          className='mb-2.5 self-start object-contain'
-          style={{ height: px(30) }}
-        />
-        {blank ? null : (
-          <div className='flex items-end justify-between gap-2'>
-            <div className='bg-white p-1.5'>
-              <QrImage url={person.qrCodeUrl} size={px(62)} />
-            </div>
-            {person.tableNumber == null ? null : (
-              <div className='min-w-[3.2rem] border-[1.5px] border-white px-2.5 py-1.5 text-center'>
-                <p className='font-bold tracking-[0.18em]' style={{ fontSize: px(7) }}>
-                  TABLE
-                </p>
-                <p className='font-bold leading-none' style={{ fontSize: px(20) }}>
-                  {formatTableLabel(person.tableNumber)}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      <PunchGuide onDark cardWidth={cardWidth} />
-      <TrimGuide />
-    </div>
-  );
-}
-
 export default function BadgeCard({
   person,
   design,
@@ -372,8 +275,5 @@ export default function BadgeCard({
   if (design === 'rail') {
     return <RailCard person={person} cardWidth={width} />;
   }
-  if (design === 'signal') {
-    return <SignalCard person={person} cardWidth={width} />;
-  }
-  return <ClassicCard person={person} cardWidth={width} />;
+  return <StickerCard person={person} cardWidth={width} />;
 }

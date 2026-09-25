@@ -7,12 +7,26 @@ import {
   BADGE_DESIGNS,
   getTypeColor,
   groupBadgePeople,
+  sortBadgePeople,
   type BadgeDesign,
   type BadgePerson,
 } from '@/lib/badges';
 
 function personName(person: BadgePerson) {
   return `${person.firstName} ${person.lastName}`.trim() || person.email;
+}
+
+function matchesQuery(person: BadgePerson, q: string) {
+  const haystack = [
+    person.firstName,
+    person.lastName,
+    `${person.firstName} ${person.lastName}`,
+    person.company,
+    person.email,
+  ]
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(q);
 }
 
 export default function BadgesStudio({
@@ -22,7 +36,7 @@ export default function BadgesStudio({
   eventId: string;
   people: BadgePerson[];
 }) {
-  const [design, setDesign] = useState<BadgeDesign>('classic');
+  const [design, setDesign] = useState<BadgeDesign>('sticker');
   const [enlarged, setEnlarged] = useState<BadgePerson | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -36,7 +50,15 @@ export default function BadgesStudio({
     [people],
   );
   const selectedCount = selectedIds.size;
+  const itemLabel = design === 'sticker' ? 'sticker' : 'badge';
   const allSelected = people.length > 0 && selectedCount === people.length;
+
+  const visiblePeople = useMemo(() => {
+    const sorted = sortBadgePeople(people);
+    const q = query.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter((person) => matchesQuery(person, q));
+  }, [people, query]);
 
   const visibleGroups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -44,18 +66,7 @@ export default function BadgesStudio({
     return groups
       .map((group) => ({
         ...group,
-        people: group.people.filter((person) => {
-          const haystack = [
-            person.firstName,
-            person.lastName,
-            person.company,
-            person.email,
-            person.attendeeType,
-          ]
-            .join(' ')
-            .toLowerCase();
-          return haystack.includes(q);
-        }),
+        people: group.people.filter((person) => matchesQuery(person, q)),
       }))
       .filter((group) => group.people.length > 0);
   }, [groups, query]);
@@ -143,20 +154,23 @@ export default function BadgesStudio({
           <div className='space-y-2'>
             <h2 className='text-xl font-bold text-slate-900'>Print studio</h2>
             <p className='max-w-xl text-sm text-slate-600'>
-              Approved registrants only. Check the badges you want to print.
-              Export is a single PDF at 4.25&quot; × 5.25&quot; (4&quot; × 5&quot;
-              trim with 0.125&quot; bleed).
+              {design === 'sticker'
+                ? 'Approved registrants only. Check the stickers you want to print. Export is one page per sticker at 2 3/7″ × 3 1/2″.'
+                : 'Approved registrants only. Check the badges you want to print. Export is a single PDF at 4.25″ × 5.25″ (4″ × 5″ trim with 0.125″ bleed).'}
             </p>
             <div className='flex flex-wrap gap-2 pt-1'>
               <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
                 {selectedCount} selected
               </span>
               <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
-                {people.length} badge{people.length === 1 ? '' : 's'}
+                {people.length} {itemLabel}
+                {people.length === 1 ? '' : 's'}
               </span>
-              <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
-                {groups.length} type{groups.length === 1 ? '' : 's'}
-              </span>
+              {design === 'rail' ? (
+                <span className='rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700'>
+                  {groups.length} type{groups.length === 1 ? '' : 's'}
+                </span>
+              ) : null}
               {missingQrPeople.length > 0 ? (
                 <span className='rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800'>
                   {missingQrPeople.length} missing QR — will generate on export
@@ -227,15 +241,13 @@ export default function BadgesStudio({
                       />
                       Generating PDF…
                     </>
-                  ) : selectedCount === people.length ? (
-                    'Export PDF'
                   ) : (
-                    `Export ${selectedCount} badge${selectedCount === 1 ? '' : 's'}`
+                    `Export ${selectedCount} ${itemLabel}${selectedCount === 1 ? '' : 's'}`
                   )}
                 </button>
                 {exporting ? (
                   <p className='text-xs text-slate-500'>
-                    Building {selectedCount} badge
+                    Building {selectedCount} {itemLabel}
                     {selectedCount === 1 ? '' : 's'} with QR codes. This can take
                     a moment.
                   </p>
@@ -267,10 +279,9 @@ export default function BadgesStudio({
           />
         </div>
         <p className='mt-4 text-xs text-slate-500'>
-          Check badges to include them. Click a badge to enlarge. Dashed inner
-          box is the trim. Circle at the top is the lanyard punch zone. Table
-          numbers print only when seating is assigned. Full exports still end
-          with one blank write-in badge per attendee type.
+          {design === 'sticker'
+            ? 'Search by name, email, or company. Check stickers to include them, then export. Click a sticker to enlarge.'
+            : 'Check badges to include them. Click a badge to enlarge. Dashed inner box is the trim. Circle at the top is the lanyard punch zone. Table numbers print only when seating is assigned. Full exports still end with one blank write-in badge per attendee type.'}
         </p>
       </section>
 
@@ -282,6 +293,47 @@ export default function BadgesStudio({
             badges.
           </p>
         </section>
+      ) : design === 'sticker' ? (
+        visiblePeople.length === 0 ? (
+          <section className='rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg'>
+            <p className='font-semibold text-slate-900'>No matching stickers</p>
+            <p className='mt-1 text-sm text-slate-600'>
+              Try a different name, company, or email.
+            </p>
+          </section>
+        ) : (
+          <section className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg sm:p-8'>
+            <div className='flex flex-wrap gap-5'>
+              {visiblePeople.map((person) => {
+                const selected = selectedIds.has(person.id);
+                return (
+                  <div key={person.id} className='relative'>
+                    <label className='absolute top-2 left-2 z-10 flex cursor-pointer items-center rounded-md bg-white/95 p-1 shadow-sm'>
+                      <input
+                        type='checkbox'
+                        checked={selected}
+                        onChange={() => togglePerson(person.id)}
+                        disabled={exporting}
+                        className='h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900'
+                        aria-label={`Select ${personName(person)}`}
+                      />
+                    </label>
+                    <button
+                      type='button'
+                      onClick={() => setEnlarged(person)}
+                      className={`rounded-sm text-left transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 ${
+                        selected ? 'ring-2 ring-slate-900 ring-offset-2' : 'opacity-70'
+                      }`}
+                      aria-label={`Enlarge sticker for ${personName(person)}`}
+                    >
+                      <BadgeCard person={person} design={design} width={168} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )
       ) : visibleGroups.length === 0 ? (
         <section className='rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg'>
           <p className='font-semibold text-slate-900'>No matching badges</p>
@@ -380,7 +432,11 @@ export default function BadgesStudio({
             >
               Close
             </button>
-            <BadgeCard person={enlarged} design={design} width={420} />
+            <BadgeCard
+              person={enlarged}
+              design={design}
+              width={design === 'sticker' ? 280 : 420}
+            />
           </div>
         </div>
       ) : null}

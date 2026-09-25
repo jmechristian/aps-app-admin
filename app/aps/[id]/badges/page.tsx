@@ -18,7 +18,7 @@ export default async function BadgesPage({ params }: PageProps) {
     <CategoryPageShell
       eventId={eventId}
       title='Badges'
-      description='Generate name badges for approved registrants, grouped by attendee type.'
+      description='Print sticker badges for approved registrants. Search by name, email, or company.'
       activeCategory='badges'
     >
       <BadgesStudio eventId={eventId} people={people} />

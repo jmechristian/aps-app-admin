@@ -14,14 +14,13 @@ import {
 } from '@react-pdf/renderer';
 import {
   BADGE_PAGE,
-  CLASSIC_SPLIT,
+  STICKER_PAGE,
   firstNameFontSizePt,
   formatTableLabel,
-  getPackIqVariant,
   getTypeColor,
   getTypeLabel,
   isBlankBadge,
-  typeLabelFontSizePt,
+  stickerLockupScale,
   type BadgeDesign,
   type BadgePerson,
 } from '@/lib/badges';
@@ -34,87 +33,27 @@ Font.registerHyphenationCallback((word) => [word]);
 const PAGE_W = BADGE_PAGE.pagePt.w;
 const PAGE_H = BADGE_PAGE.pagePt.h;
 const BLEED = BADGE_PAGE.bleedPt;
-const TRIM_H = BADGE_PAGE.trimPt.h;
 const SAFE = BLEED + 9;
 const PUNCH = BLEED + 36;
-const WHITE_H = BLEED + CLASSIC_SPLIT * TRIM_H;
-const FOOTER_H = PAGE_H - WHITE_H;
+const STICKER_W = STICKER_PAGE.pagePt.w;
+const STICKER_H = STICKER_PAGE.pagePt.h;
 const RAIL_W = BLEED + 52;
 
 const styles = StyleSheet.create({
+  stickerPage: {
+    width: STICKER_W,
+    height: STICKER_H,
+    fontFamily: 'Helvetica',
+    color: '#111111',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+  },
   page: {
     width: PAGE_W,
     height: PAGE_H,
     fontFamily: 'Helvetica',
     color: '#111111',
-  },
-  classicWhite: {
-    height: WHITE_H,
-    paddingTop: PUNCH,
-    paddingHorizontal: SAFE,
-    backgroundColor: '#ffffff',
-  },
-  classicHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  classicBody: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 8,
-  },
-  classicFooter: {
-    height: FOOTER_H,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: BLEED + 10,
-    paddingHorizontal: SAFE,
-  },
-  firstName: {
-    fontFamily: 'Helvetica-Bold',
-    textAlign: 'center',
-    color: '#111111',
-    lineHeight: 1,
-  },
-  lastName: {
-    fontSize: 13,
-    marginTop: 3,
-    textAlign: 'center',
-    color: '#111111',
-    lineHeight: 1.25,
-    width: '100%',
-  },
-  company: {
-    fontSize: 11,
-    marginTop: 8,
-    textAlign: 'center',
-    color: '#1e293b',
-    lineHeight: 1.25,
-    width: '100%',
-  },
-  tableCaption: {
-    fontSize: 8,
-    marginTop: 8,
-    letterSpacing: 1.4,
-    textAlign: 'center',
-    color: '#555555',
-    fontFamily: 'Helvetica-Bold',
-  },
-  typeLabel: {
-    fontFamily: 'Helvetica-Bold',
-    color: '#ffffff',
-    textAlign: 'center',
-  },
-  qr: {
-    width: 50,
-    height: 50,
-  },
-  packiq: {
-    width: 96,
-    height: 40,
-    marginTop: 8,
   },
   rail: {
     position: 'absolute',
@@ -152,60 +91,15 @@ const styles = StyleSheet.create({
     color: '#111111',
     lineHeight: 1,
   },
-  signalPage: {
-    width: PAGE_W,
-    height: PAGE_H,
-    fontFamily: 'Helvetica',
-    paddingTop: PUNCH,
-    paddingHorizontal: SAFE,
-    paddingBottom: BLEED + 12,
-  },
-  signalFirst: {
-    fontFamily: 'Helvetica-Bold',
-    color: '#ffffff',
-    lineHeight: 1,
-  },
-  signalLast: {
-    fontSize: 15,
-    marginTop: 4,
-    color: '#ffffff',
-    lineHeight: 1.25,
-    width: '100%',
-  },
-  signalCompany: {
-    fontSize: 11,
-    marginTop: 10,
-    color: '#ffffff',
-    lineHeight: 1.25,
-    width: '100%',
-  },
-  signalType: {
-    fontSize: 8,
-    marginTop: 12,
-    letterSpacing: 2.2,
-    color: '#ffffff',
-    fontFamily: 'Helvetica-Bold',
-  },
-  qrPlate: {
-    backgroundColor: '#ffffff',
-    padding: 6,
-  },
-  tableBox: {
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 56,
-    alignItems: 'center',
-  },
 });
 
-let packIqCache: { black: string; white: string } | null = null;
 let apsLogoPathCache: Array<{
   d: string;
   fill: string;
   evenodd: boolean;
 }> | null = null;
+
+let packIqCache: { black: string; white: string } | null = null;
 
 function getPackIqSrc(variant: 'black' | 'white'): string {
   if (!packIqCache) {
@@ -305,52 +199,77 @@ function QrSlot({
   );
 }
 
-function ClassicBadge({
-  person,
-}: {
-  person: BadgePdfPerson;
-}) {
-  const color = getTypeColor(person.attendeeType);
-  const typeLabel = getTypeLabel(person.attendeeType);
+function StickerBadge({ person }: { person: BadgePdfPerson }) {
   const { first, last } = displayName(person);
-  const packiq = getPackIqSrc(getPackIqVariant(person.attendeeType));
   const blank = isBlankBadge(person);
+  const s = stickerLockupScale();
 
   return (
-    <Page size={[PAGE_W, PAGE_H]} style={styles.page}>
-      <View style={styles.classicWhite}>
-        <View style={styles.classicHeader}>
-          <ApsLogoPdf />
-          {blank ? null : (
-            <QrSlot src={person.qrDataUrl} width={50} height={50} />
-          )}
-        </View>
-        <View style={styles.classicBody}>
-          {first ? (
-            <Text
-              style={[styles.firstName, { fontSize: firstNameFontSizePt(first) }]}
-            >
-              {first}
-            </Text>
-          ) : null}
-          {last ? <Text style={styles.lastName}>{last}</Text> : null}
-          {person.company ? (
-            <Text style={styles.company}>{person.company}</Text>
-          ) : null}
-          {person.tableNumber == null ? null : (
-            <Text style={styles.tableCaption}>
-              TABLE  {formatTableLabel(person.tableNumber)}
-            </Text>
-          )}
-        </View>
+    <Page size={[STICKER_W, STICKER_H]} style={styles.stickerPage}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        {first ? (
+          <Text
+            style={{
+              fontFamily: 'Helvetica-Bold',
+              fontSize: (firstNameFontSizePt(first) + 2) * s,
+              color: '#111111',
+              lineHeight: 1,
+            }}
+          >
+            {first}
+          </Text>
+        ) : null}
+        {last ? (
+          <Text
+            style={{
+              fontFamily: 'Helvetica-Bold',
+              fontSize: 22 * s,
+              marginTop: first ? 6 * s : 0,
+              color: '#111111',
+              lineHeight: 1.25,
+            }}
+          >
+            {last}
+          </Text>
+        ) : null}
+        {person.company ? (
+          <Text
+            style={{
+              fontSize: 20 * s,
+              marginTop: 8 * s,
+              color: '#1e293b',
+              lineHeight: 1.25,
+            }}
+          >
+            {person.company}
+          </Text>
+        ) : null}
+        {person.tableNumber == null ? null : (
+          <Text
+            style={{
+              fontSize: 12 * s,
+              marginTop: 24 * s,
+              letterSpacing: 1.4 * s,
+              color: '#555555',
+              fontFamily: 'Helvetica-Bold',
+            }}
+          >
+            TABLE  {formatTableLabel(person.tableNumber)}
+          </Text>
+        )}
       </View>
-      <View style={[styles.classicFooter, { backgroundColor: color }]}>
-        <Text
-          style={[styles.typeLabel, { fontSize: typeLabelFontSizePt(typeLabel) }]}
-        >
-          {typeLabel}
-        </Text>
-        <Image src={packiq} style={styles.packiq} />
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          paddingRight: 12 * s,
+        }}
+      >
+        <Image src={getPackIqSrc('black')} style={{ width: 88 * s, height: 36 * s }} />
+        {blank ? null : (
+          <QrSlot src={person.qrDataUrl} width={72 * s} height={72 * s} />
+        )}
       </View>
     </Page>
   );
@@ -435,70 +354,6 @@ function RailBadge({ person }: { person: BadgePdfPerson }) {
   );
 }
 
-function SignalBadge({ person }: { person: BadgePdfPerson }) {
-  const color = getTypeColor(person.attendeeType);
-  const typeLabel = getTypeLabel(person.attendeeType).toUpperCase();
-  const { first, last } = displayName(person);
-  const packiq = getPackIqSrc(getPackIqVariant(person.attendeeType));
-  const blank = isBlankBadge(person);
-
-  return (
-    <Page size={[PAGE_W, PAGE_H]} style={[styles.signalPage, { backgroundColor: color }]}>
-      <ApsLogoPdf variant='light' width={128} />
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        {first ? (
-          <Text style={[styles.signalFirst, { fontSize: firstNameFontSizePt(first) + 6 }]}>
-            {first}
-          </Text>
-        ) : null}
-        {last ? <Text style={styles.signalLast}>{last}</Text> : null}
-        {person.company ? (
-          <Text style={styles.signalCompany}>{person.company}</Text>
-        ) : null}
-        <Text style={styles.signalType}>{typeLabel}</Text>
-      </View>
-      <Image src={packiq} style={{ width: 92, height: 38, marginBottom: 10 }} />
-      {blank ? null : (
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-          }}
-        >
-          <View style={styles.qrPlate}>
-            <QrSlot src={person.qrDataUrl} width={62} height={62} />
-          </View>
-          {person.tableNumber == null ? null : (
-            <View style={styles.tableBox}>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  fontSize: 7,
-                  letterSpacing: 1.6,
-                  fontFamily: 'Helvetica-Bold',
-                }}
-              >
-                TABLE
-              </Text>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  fontSize: 20,
-                  marginTop: 2,
-                  fontFamily: 'Helvetica-Bold',
-                }}
-              >
-                {formatTableLabel(person.tableNumber)}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-    </Page>
-  );
-}
-
 function BadgePage({
   person,
   design,
@@ -507,8 +362,7 @@ function BadgePage({
   design: BadgeDesign;
 }) {
   if (design === 'rail') return <RailBadge person={person} />;
-  if (design === 'signal') return <SignalBadge person={person} />;
-  return <ClassicBadge person={person} />;
+  return <StickerBadge person={person} />;
 }
 
 export function BadgeDocument({
