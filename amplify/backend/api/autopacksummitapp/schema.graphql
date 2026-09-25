@@ -22,6 +22,7 @@ enum RegistrantStatus {
   APPROVED
   REJECTED
   WAITLIST
+  ARCHIVED
 }
 
 enum SponsorType {

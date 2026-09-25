@@ -259,6 +259,7 @@ export default function RegistrantEditForm({
                 <option value='PENDING'>Pending</option>
                 <option value='APPROVED'>Approved</option>
                 <option value='REJECTED'>Rejected</option>
+                <option value='ARCHIVED'>Archived</option>
               </select>
             </label>
           </div>

@@ -63,14 +63,16 @@ export default async function ApsDetail({
     fetchRegistrantsByApsId(id),
   ]);
 
-  const orderedRegistrants = [...allRegistrants].sort((a, b) => {
-    const pendingRankA = a.status === 'PENDING' ? 0 : 1;
-    const pendingRankB = b.status === 'PENDING' ? 0 : 1;
-    if (pendingRankA !== pendingRankB) {
-      return pendingRankA - pendingRankB;
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const orderedRegistrants = allRegistrants
+    .filter((registrant) => registrant.status !== 'ARCHIVED')
+    .sort((a, b) => {
+      const pendingRankA = a.status === 'PENDING' ? 0 : 1;
+      const pendingRankB = b.status === 'PENDING' ? 0 : 1;
+      if (pendingRankA !== pendingRankB) {
+        return pendingRankA - pendingRankB;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const totalPages = Math.max(1, Math.ceil(orderedRegistrants.length / pageSize));
   const currentPage = Number.isFinite(parsedPage)

@@ -3166,6 +3166,48 @@ export async function approveRegistrant(params: {
   }
 }
 
+export async function archiveRegistrant(params: {
+  registrantId: string;
+  eventId: string;
+}): Promise<ActionState> {
+  try {
+    await requestGraphQL(UPDATE_REGISTRANT, {
+      input: {
+        id: params.registrantId,
+        status: 'ARCHIVED',
+      },
+    });
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+    return { ok: true, message: 'Registrant archived.' };
+  } catch (error) {
+    console.error('Failed to archive registrant:', error);
+    return { ok: false, message: 'Failed to archive registrant.' };
+  }
+}
+
+export async function restoreRegistrant(params: {
+  registrantId: string;
+  eventId: string;
+}): Promise<ActionState> {
+  try {
+    await requestGraphQL(UPDATE_REGISTRANT, {
+      input: {
+        id: params.registrantId,
+        status: 'PENDING',
+      },
+    });
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+    return { ok: true, message: 'Registrant restored to pending.' };
+  } catch (error) {
+    console.error('Failed to restore registrant:', error);
+    return { ok: false, message: 'Failed to restore registrant.' };
+  }
+}
+
 export async function unapproveRegistrant(params: {
   registrantId: string;
   eventId: string;

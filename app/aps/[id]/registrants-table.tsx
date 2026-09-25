@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   approveRegistrant,
-  deleteRegistrantCascade,
+  archiveRegistrant,
+  restoreRegistrant,
   sendAppAccessEmail,
   sendWelcomeEmail,
   updateRegistrantAttendeeType,
@@ -64,9 +65,11 @@ export default function RegistrantsTable({
   ] as const;
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivePage, setArchivePage] = useState(1);
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
   const [appEmailingId, setAppEmailingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
@@ -81,30 +84,52 @@ export default function RegistrantsTable({
   );
   const effectiveTotalPages = totalPages ?? computedTotalPages;
 
+  const activeRegistrants = useMemo(
+    () => allRegistrants.filter((registrant) => registrant.status !== 'ARCHIVED'),
+    [allRegistrants],
+  );
+  const archivedRegistrants = useMemo(
+    () => allRegistrants.filter((registrant) => registrant.status === 'ARCHIVED'),
+    [allRegistrants],
+  );
+
   const filteredRegistrants = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return registrants;
+    const pool = showArchived ? archivedRegistrants : activeRegistrants;
+    const query = searchQuery.trim().toLowerCase();
+
+    const matched = query
+      ? pool.filter((registrant) => {
+          const name = `${registrant.firstName || ''} ${registrant.lastName || ''}`.toLowerCase();
+          const email = registrant.email.toLowerCase();
+          const company = registrant.company?.name.toLowerCase() || '';
+          const jobTitle = registrant.jobTitle?.toLowerCase() || '';
+          const attendeeType = registrant.attendeeType.toLowerCase();
+          const status = registrant.status.toLowerCase();
+
+          return (
+            name.includes(query) ||
+            email.includes(query) ||
+            company.includes(query) ||
+            jobTitle.includes(query) ||
+            attendeeType.includes(query) ||
+            status.includes(query)
+          );
+        })
+      : pool;
+
+    if (showArchived || query) {
+      return matched;
     }
 
-    const query = searchQuery.toLowerCase();
-    return allRegistrants.filter((registrant) => {
-      const name = `${registrant.firstName || ''} ${registrant.lastName || ''}`.toLowerCase();
-      const email = registrant.email.toLowerCase();
-      const company = registrant.company?.name.toLowerCase() || '';
-      const jobTitle = registrant.jobTitle?.toLowerCase() || '';
-      const attendeeType = registrant.attendeeType.toLowerCase();
-      const status = registrant.status.toLowerCase();
-
-      return (
-        name.includes(query) ||
-        email.includes(query) ||
-        company.includes(query) ||
-        jobTitle.includes(query) ||
-        attendeeType.includes(query) ||
-        status.includes(query)
-      );
-    });
-  }, [allRegistrants, registrants, searchQuery]);
+    const visibleIds = new Set(registrants.map((registrant) => registrant.id));
+    return matched.filter((registrant) => visibleIds.has(registrant.id));
+  }, [
+    activeRegistrants,
+    archivedRegistrants,
+    registrants,
+    searchQuery,
+    showArchived,
+  ]);
 
   const sortedRegistrants = useMemo(() => {
     const items = [...filteredRegistrants];
@@ -136,6 +161,19 @@ export default function RegistrantsTable({
     return items;
   }, [filteredRegistrants, sortDirection, sortField]);
 
+  const archivePageSize = pageSize && pageSize > 0 ? pageSize : 50;
+  const archiveTotalPages = Math.max(
+    1,
+    Math.ceil(sortedRegistrants.length / archivePageSize),
+  );
+  const effectiveArchivePage = Math.min(archivePage, archiveTotalPages);
+  const visibleRegistrants = showArchived
+    ? sortedRegistrants.slice(
+        (effectiveArchivePage - 1) * archivePageSize,
+        effectiveArchivePage * archivePageSize,
+      )
+    : sortedRegistrants;
+
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -158,6 +196,8 @@ export default function RegistrantsTable({
         return 'bg-red-100 text-red-800';
       case 'PENDING':
         return 'bg-yellow-100 text-yellow-800';
+      case 'ARCHIVED':
+        return 'bg-slate-200 text-slate-700';
       default:
         return 'bg-slate-100 text-slate-800';
     }
@@ -191,31 +231,66 @@ export default function RegistrantsTable({
     return <span className='text-sm font-semibold text-red-600'>✕</span>;
   };
 
-  const handleDelete = (registrantId: string, name: string) => {
+  const handleArchiveToggle = () => {
+    setShowArchived((current) => !current);
+    setArchivePage(1);
+    setSearchQuery('');
+  };
+
+  const handleArchive = (registrantId: string, name: string) => {
     const confirmed = window.confirm(
-      `Delete ${name || 'this registrant'}? This will remove their app user and profile data.`
+      `Archive ${name || 'this registrant'}? They will be hidden from the main registrant list.`
     );
     if (!confirmed) return;
 
-    setDeletingId(registrantId);
+    setArchivingId(registrantId);
     startTransition(async () => {
       try {
-        const result = await deleteRegistrantCascade({
+        const result = await archiveRegistrant({
           registrantId,
           eventId,
         });
         if (!result.ok) {
-          window.alert(result.message || 'Failed to delete registrant.');
+          window.alert(result.message || 'Failed to archive registrant.');
         }
         router.refresh();
       } catch (error) {
         window.alert(
           error instanceof Error
             ? error.message
-            : 'Failed to delete registrant.',
+            : 'Failed to archive registrant.',
         );
       } finally {
-        setDeletingId(null);
+        setArchivingId(null);
+      }
+    });
+  };
+
+  const handleRestore = (registrantId: string, name: string) => {
+    const confirmed = window.confirm(
+      `Restore ${name || 'this registrant'} to pending?`
+    );
+    if (!confirmed) return;
+
+    setArchivingId(registrantId);
+    startTransition(async () => {
+      try {
+        const result = await restoreRegistrant({
+          registrantId,
+          eventId,
+        });
+        if (!result.ok) {
+          window.alert(result.message || 'Failed to restore registrant.');
+        }
+        router.refresh();
+      } catch (error) {
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : 'Failed to restore registrant.',
+        );
+      } finally {
+        setArchivingId(null);
       }
     });
   };
@@ -366,23 +441,52 @@ export default function RegistrantsTable({
     });
   };
 
+  const shownCount =
+    showArchived && !searchQuery.trim()
+      ? visibleRegistrants.length
+      : filteredRegistrants.length;
+
   return (
     <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-lg'>
       <div className='mb-4 flex items-center justify-between'>
         <div>
           <h2 className='flex items-center gap-2 text-xl font-bold text-slate-900'>
-            Registrants
+            {showArchived ? 'Archived registrants' : 'Registrants'}
             <span className='rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-slate-700'>
-              {allRegistrants.length}
+              {showArchived ? archivedRegistrants.length : activeRegistrants.length}
             </span>
           </h2>
           <p className='mt-1 text-sm text-slate-600'>
-            Showing {filteredRegistrants.length} registrant
-            {filteredRegistrants.length === 1 ? '' : 's'}
-            {searchQuery.trim() ? ' (filtered across all registrants)' : ''}
+            Showing {shownCount} registrant
+            {shownCount === 1 ? '' : 's'}
+            {searchQuery.trim()
+              ? showArchived
+                ? ' (filtered archived)'
+                : ' (filtered across active registrants)'
+              : ''}
           </p>
         </div>
-        <div className='w-64'>
+        <div className='flex items-center gap-3'>
+          <button
+            type='button'
+            onClick={handleArchiveToggle}
+            aria-pressed={showArchived}
+            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+              showArchived
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            Archived
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${
+                showArchived ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {archivedRegistrants.length}
+            </span>
+          </button>
+          <div className='w-64'>
           <input
             type='text'
             placeholder='Search registrants...'
@@ -390,13 +494,18 @@ export default function RegistrantsTable({
             onChange={(e) => setSearchQuery(e.target.value)}
             className='w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900'
           />
+          </div>
         </div>
       </div>
 
       {filteredRegistrants.length === 0 ? (
         <div className='py-12 text-center'>
           <p className='text-slate-500'>
-            {searchQuery ? 'No registrants match your search.' : 'No registrants found.'}
+            {searchQuery
+              ? 'No registrants match your search.'
+              : showArchived
+                ? 'No archived registrants.'
+                : 'No registrants found.'}
           </p>
         </div>
       ) : (
@@ -458,7 +567,7 @@ export default function RegistrantsTable({
               </tr>
             </thead>
             <tbody className='divide-y divide-slate-100'>
-              {sortedRegistrants.map((registrant) => {
+              {visibleRegistrants.map((registrant) => {
                 const name = `${registrant.firstName || ''} ${registrant.lastName || ''}`.trim() || 'N/A';
                 const selectedType =
                   selectedTypes[registrant.id] ?? registrant.attendeeType;
@@ -675,14 +784,29 @@ export default function RegistrantsTable({
                               ? 'Approved'
                               : 'Approve'}
                         </button>
-                        <button
-                          type='button'
-                          onClick={() => handleDelete(registrant.id, name)}
-                          disabled={isPending && deletingId === registrant.id}
-                          className='inline-flex w-24 items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60'
-                        >
-                          {isPending && deletingId === registrant.id ? 'Deleting...' : 'Delete'}
-                        </button>
+                        {showArchived ? (
+                          <button
+                            type='button'
+                            onClick={() => handleRestore(registrant.id, name)}
+                            disabled={isPending && archivingId === registrant.id}
+                            className='inline-flex w-24 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60'
+                          >
+                            {isPending && archivingId === registrant.id
+                              ? 'Restoring...'
+                              : 'Restore'}
+                          </button>
+                        ) : (
+                          <button
+                            type='button'
+                            onClick={() => handleArchive(registrant.id, name)}
+                            disabled={isPending && archivingId === registrant.id}
+                            className='inline-flex w-24 items-center justify-center rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60'
+                          >
+                            {isPending && archivingId === registrant.id
+                              ? 'Archiving...'
+                              : 'Archive'}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -693,7 +817,41 @@ export default function RegistrantsTable({
         </div>
       )}
 
-      {registrants.length > 0 && !searchQuery.trim() ? (
+      {showArchived && !searchQuery.trim() && archivedRegistrants.length > 0 ? (
+        <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <p className='text-xs text-slate-500'>
+            Page {effectiveArchivePage} of {archiveTotalPages}
+          </p>
+          <div className='flex items-center gap-2'>
+            <button
+              type='button'
+              onClick={() => setArchivePage(1)}
+              disabled={effectiveArchivePage <= 1}
+              className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
+            >
+              ← First page
+            </button>
+            <button
+              type='button'
+              onClick={() => setArchivePage(effectiveArchivePage - 1)}
+              disabled={effectiveArchivePage <= 1}
+              className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
+            >
+              ← Prev
+            </button>
+            <button
+              type='button'
+              onClick={() => setArchivePage(effectiveArchivePage + 1)}
+              disabled={effectiveArchivePage >= archiveTotalPages}
+              className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
+            >
+              Next {archivePageSize} →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {!showArchived && registrants.length > 0 && !searchQuery.trim() ? (
         <div className='mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <p className='text-xs text-slate-500'>
             Page size: {registrants.length}
