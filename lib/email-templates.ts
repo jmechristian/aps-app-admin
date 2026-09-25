@@ -5,6 +5,7 @@ import { AttendeeInfoEmail } from '@/react-email-starter/emails/attendee-info-em
 import { Tour1ConfirmedEmail } from '@/react-email-starter/emails/tour-1-confirmed-email';
 import { Tour2ConfirmedEmail } from '@/react-email-starter/emails/tour-2-confirmed-email';
 import { Tour2WaitlistEmail } from '@/react-email-starter/emails/tour-2-waitlist-email';
+import { AppGuideEmail } from '@/react-email-starter/emails/app-guide-email';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -372,6 +373,75 @@ const tour2WaitlistTemplate: EmailTemplateDefinition = {
   },
 };
 
+const appGuideTemplate: EmailTemplateDefinition = {
+  key: 'app-guide-email',
+  label: 'App guide (how to use the app)',
+  description:
+    'Linear walkthrough: download, temp-password sign-in, profile and exhibitor profile, connecting, Passport Challenge, leaderboard, live sessions, and the post-event survey.',
+  requiresTempPassword: true,
+  defaultSubject: ({ eventYear }) =>
+    `How to use the AutoPack Summit ${eventYear} app`,
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      AppGuideEmail({
+        firstName: recipient.firstName ?? '',
+        email: recipient.email,
+        tempPassword: recipient.tempPassword ?? null,
+        eventYear,
+        appStoreUrl: APP_STORE_URL,
+        playStoreUrl: PLAY_STORE_URL,
+        webAppUrl: WEB_APP_URL,
+      }),
+    );
+  },
+  renderText: ({ recipient, eventYear }) => {
+    const greetingName =
+      recipient.firstName?.trim() || 'AutoPack Summit Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      `Here is how to use the AutoPack Summit ${eventYear} app, in order.`,
+      '',
+      '1. DOWNLOAD OR OPEN THE WEB APP',
+      'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',
+      `iOS: ${APP_STORE_URL}`,
+      `Android: ${PLAY_STORE_URL}`,
+      `Web app: ${WEB_APP_URL}`,
+      '',
+      '2. SIGN IN WITH YOUR TEMPORARY PASSWORD',
+      'Use this only if you have not signed in yet and created your own password.',
+      `Email: ${recipient.email}`,
+      recipient.tempPassword
+        ? `Temporary password: ${recipient.tempPassword}`
+        : 'Temporary password unavailable — use Forgot Password in the app.',
+      '',
+      '3. SET UP YOUR PROFILE',
+      'Upload or take a profile photo and choose your area of expertise. Attendees search the Community tab by expertise. Fill out the rest of the profile. Exhibitors should also complete the exhibitor profile.',
+      '',
+      '4. CONNECT WITH OTHER ATTENDEES',
+      'Send an intro message and a contact request, or scan their personal QR code from the Hub with Capture Contact. Connecting is the fastest way to move up the leaderboard. Other attendees can scan your code from the Hub too.',
+      '',
+      '5. BROWSE EXHIBITORS AND THE PASSPORT CHALLENGE',
+      'Open exhibitor profiles, favorite them, and visit the booth to scan the passport QR code. That code is different from personal attendee QR codes. The codes to scan are at the exhibitor booths.',
+      'Scan with the Scan Exhibitor button on the Hub, or from the Passport Challenge screen (Hub module or Engage screen).',
+      '',
+      '6. LEADERBOARD',
+      'Check the leaderboard and your own score breakdown. Making contacts, using the app, and the Passport Challenge are the main ways to score big.',
+      '',
+      '7. FOLLOW THE EVENT LIVE',
+      'The Hub countdown switches to LIVE once sessions start and opens a link to follow along and interact in real time. Each session also has a play button that opens the live show.',
+      '',
+      'POST-EVENT SURVEY',
+      'This unlocks closer to the event. Fill it out, then present the confirmation screen at the registration desk for a free Automotive Packaging Summit t-shirt.',
+      '',
+      'Questions: bianca@packagingschool.com',
+      '',
+      'The AutoPack Summit Team',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
 const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [welcomeTemplate.key]: welcomeTemplate,
   [appAccessTemplate.key]: appAccessTemplate,
@@ -379,6 +449,7 @@ const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [tour1ConfirmedTemplate.key]: tour1ConfirmedTemplate,
   [tour2ConfirmedTemplate.key]: tour2ConfirmedTemplate,
   [tour2WaitlistTemplate.key]: tour2WaitlistTemplate,
+  [appGuideTemplate.key]: appGuideTemplate,
 };
 
 export function listEmailTemplates(): EmailTemplateDefinition[] {
