@@ -153,6 +153,7 @@ export default function EmailsClient() {
     useState<AddOnRequestStatusFilter[]>(['APPROVED', 'PENDING']);
   const [audienceTestEmailsText, setAudienceTestEmailsText] = useState('');
   const [useTestGroup, setUseTestGroup] = useState(false);
+  const [notLoggedInOnly, setNotLoggedInOnly] = useState(false);
   const audienceTestEmails = useMemo(
     () => parseAudienceEmails(audienceTestEmailsText),
     [audienceTestEmailsText],
@@ -352,17 +353,25 @@ export default function EmailsClient() {
               : null,
             audienceTestEmails: audienceTestEmailsText || null,
             useTestGroup,
+            notLoggedInOnly,
           });
           if (!cancelled) {
             setAudienceCount(result.count);
             setAudienceSample(result.sample);
             setAudienceMissingEmails(result.missingEmails ?? []);
           }
-        } catch {
+        } catch (e) {
           if (!cancelled) {
             setAudienceCount(null);
             setAudienceSample([]);
             setAudienceMissingEmails([]);
+            if (notLoggedInOnly) {
+              setError(
+                e instanceof Error
+                  ? e.message
+                  : 'Could not load who has logged in.',
+              );
+            }
           }
         }
       }
@@ -380,6 +389,7 @@ export default function EmailsClient() {
     audienceAddOnRequestStatuses,
     audienceTestEmailsText,
     useTestGroup,
+    notLoggedInOnly,
   ]);
 
   const previewLookupEmail = COMPLETE_EMAIL_RE.test(previewEmail.trim())
@@ -517,6 +527,12 @@ export default function EmailsClient() {
       }
     }
 
+    if (notLoggedInOnly && audienceCount == null) {
+      throw new Error(
+        'The not-logged-in audience has not loaded yet. Wait for the recipient count before scheduling.',
+      );
+    }
+
     if (useTestGroup) {
       if (!audienceTestEmails.length) {
         throw new Error('Add at least one test-group email, or uncheck Test group.');
@@ -541,6 +557,7 @@ export default function EmailsClient() {
         : null,
       audienceTestEmails: audienceTestEmailsText || null,
       useTestGroup,
+      notLoggedInOnly,
     });
     if (!created.ok) {
       setError(created.error);
@@ -751,6 +768,25 @@ export default function EmailsClient() {
 
               <div className="mt-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Login
+                </div>
+                <label className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <input
+                    type="checkbox"
+                    checked={notLoggedInOnly}
+                    onChange={(e) => setNotLoggedInOnly(e.target.checked)}
+                  />
+                  Has not logged in
+                </label>
+                <p className="mt-1 text-xs text-slate-600">
+                  Same check as the reporting dashboard: no completed sign-in
+                  and no native app session. Applied on top of the filters
+                  above, and checked again when the email sends.
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Attendee type
                 </div>
                 <div className="mt-2 flex flex-wrap gap-3">
@@ -863,6 +899,7 @@ export default function EmailsClient() {
                 </span>{' '}
                 {useTestGroup ? 'test-group recipient' : 'recipient'}
                 {audienceCount === 1 ? '' : 's'}
+                {notLoggedInOnly ? ' who have not logged in' : ''}
                 {useTestGroup ? ' will receive this send' : ' match'}
                 {audienceSample.length ? (
                   <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-xs text-slate-600">
@@ -967,6 +1004,7 @@ export default function EmailsClient() {
                           : null,
                         audienceTestEmails: audienceTestEmailsText || null,
                         useTestGroup,
+                        notLoggedInOnly,
                       });
                       if (!created.ok) {
                         throw new Error(created.error);

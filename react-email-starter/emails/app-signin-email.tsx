@@ -127,8 +127,8 @@ export const AppSigninEmail = ({
       <Tailwind>
         <Head />
         <Preview>
-          Your temporary password, app download links, and how to reset from
-          the app if sign-in does not work
+          Your temporary password and app download links for AutoPack Summit{' '}
+          {eventYear}
         </Preview>
         <Body
           style={{
@@ -276,11 +276,23 @@ export const AppSigninEmail = ({
                   ) : (
                     <Text style={{ ...bodyStyle, margin: 0 }}>
                       A temporary password wasn&apos;t on file for this account.
-                      In the app, tap <strong>Forgot Password?</strong> and
-                      reset with your registration email. Make sure to check
-                      your spam folder for the reset message.
+                      Write {BIANCA_EMAIL} and we will help you sign in.
                     </Text>
                   )}
+                  <Text
+                    style={{
+                      fontSize: '13px',
+                      color: MUTED_TEXT,
+                      margin: '14px 0 0',
+                      lineHeight: '1.55',
+                      ...font,
+                    }}
+                  >
+                    <strong style={{ color: DARK_TEXT }}>Forgot Password?</strong>{' '}
+                    does not work until you have set a permanent password. Sign
+                    in with the temporary password above first. After you create
+                    your own password, Forgot Password can be used.
+                  </Text>
                 </div>
               </div>
             </Section>
@@ -379,56 +391,6 @@ export const AppSigninEmail = ({
               >
                 Open Web App
               </StoreButton>
-            </Section>
-
-            <Section style={{ padding: '20px 32px 0' }}>
-              <div
-                style={{
-                  borderLeft: `4px solid ${APS_YELLOW}`,
-                  backgroundColor: '#fffbeb',
-                  borderRadius: '0 10px 10px 0',
-                  padding: '16px 18px',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    color: DARK_TEXT,
-                    margin: '0 0 8px',
-                    lineHeight: '1.35',
-                    ...font,
-                  }}
-                >
-                  If the temporary password does not work
-                </Text>
-                <Text
-                  style={{
-                    fontSize: '14px',
-                    color: MUTED_TEXT,
-                    margin: '0 0 8px',
-                    lineHeight: '1.6',
-                    ...font,
-                  }}
-                >
-                  Open the app and tap <strong>Forgot Password?</strong> on the
-                  sign-in screen. Enter the email on your registration, then
-                  follow the reset link to choose a new password.
-                </Text>
-                <Text
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: DARK_TEXT,
-                    margin: 0,
-                    lineHeight: '1.55',
-                    ...font,
-                  }}
-                >
-                  Make sure to check your spam folder. The reset email often
-                  lands there.
-                </Text>
-              </div>
             </Section>
 
             <Section

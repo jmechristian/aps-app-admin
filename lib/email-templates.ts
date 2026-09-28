@@ -447,7 +447,7 @@ const appSigninTemplate: EmailTemplateDefinition = {
   key: 'app-signin-email',
   label: 'App sign-in (temp password + download)',
   description:
-    'Looks up each registrant’s stored temporary password and puts it in the email, with iOS, Android, and web download links, plus how to reset from the app if that password does not work. Tells them to check spam for the reset email.',
+    'Looks up each registrant’s stored temporary password and puts it in the email, with iOS, Android, and web download links.',
   requiresTempPassword: true,
   defaultSubject: ({ eventYear }) =>
     `Your AutoPack Summit ${eventYear} temporary password and app download`,
@@ -477,17 +477,15 @@ const appSigninTemplate: EmailTemplateDefinition = {
       `Email: ${recipient.email}`,
       recipient.tempPassword
         ? `Temporary password: ${recipient.tempPassword}`
-        : 'Temporary password unavailable — use Forgot Password in the app, and check your spam folder for the reset email.',
+        : 'Temporary password unavailable — write bianca@packagingschool.com and we will help you sign in.',
+      '',
+      'Forgot Password? does not work until you have set a permanent password. Sign in with the temporary password first. After you create your own password, Forgot Password can be used.',
       '',
       'DOWNLOAD THE APP',
       'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',
       `iOS: ${APP_STORE_URL}`,
       `Android: ${PLAY_STORE_URL}`,
       `Web app: ${WEB_APP_URL}`,
-      '',
-      'IF THE TEMPORARY PASSWORD DOES NOT WORK',
-      'Open the app and tap Forgot Password? on the sign-in screen. Enter the email on your registration, then follow the reset link to choose a new password.',
-      'Make sure to check your spam folder. The reset email often lands there.',
       '',
       'Questions: bianca@packagingschool.com',
       '',

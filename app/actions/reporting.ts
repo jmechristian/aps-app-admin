@@ -268,6 +268,13 @@ function hasLoggedInOnce(status?: string | null) {
   );
 }
 
+function attendeeHasLoggedIn(
+  cognitoStatus: string | null | undefined,
+  hasNativeApp: boolean,
+) {
+  return hasLoggedInOnce(cognitoStatus) || hasNativeApp;
+}
+
 function attr(user: UserType, name: string) {
   return user.Attributes?.find((item) => item.Name === name)?.Value ?? null;
 }
@@ -453,6 +460,46 @@ async function fetchCognitoUsers(): Promise<UserType[]> {
   return users;
 }
 
+/** Registrant ids the reporting dashboard counts as logged in at least once. */
+export async function fetchLoggedInRegistrantIds(
+  eventId: string,
+): Promise<Set<string>> {
+  const [registrants, pushTokens, users] = await Promise.all([
+    fetchRegistrants(eventId),
+    fetchPushTokens().catch(() => [] as PushTokenItem[]),
+    fetchCognitoUsers(),
+  ]);
+
+  const cognitoBySub = new Map<string, UserType>();
+  const cognitoByEmail = new Map<string, UserType>();
+  for (const user of users) {
+    const sub = attr(user, 'sub');
+    const email = attr(user, 'email')?.trim().toLowerCase();
+    if (sub) cognitoBySub.set(sub, user);
+    if (email) cognitoByEmail.set(email, user);
+  }
+
+  const nativeUserIds = new Set<string>();
+  for (const token of pushTokens) {
+    if (token.userId) nativeUserIds.add(token.userId);
+  }
+
+  const loggedIn = new Set<string>();
+  for (const registrant of registrants) {
+    if (!registrant.id) continue;
+    const userId = registrant.appUser?.id ?? null;
+    const email = (registrant.email ?? '').trim().toLowerCase();
+    const cognito =
+      (userId ? cognitoBySub.get(userId) : undefined) ??
+      (email ? cognitoByEmail.get(email) : undefined);
+    const hasNative = Boolean(userId && nativeUserIds.has(userId));
+    if (attendeeHasLoggedIn(cognito?.UserStatus ?? null, hasNative)) {
+      loggedIn.add(registrant.id);
+    }
+  }
+  return loggedIn;
+}
+
 async function resolveMissingPeople(
   userIds: string[],
   known: Map<string, ReportingPerson>,
@@ -592,7 +639,7 @@ export async function fetchReportingDashboard(
         (email ? cognitoByEmail.get(email) : undefined);
       const native = userId ? nativeByUserId.get(userId) : undefined;
       const cognitoStatus = cognito?.UserStatus ?? null;
-      const loggedIn = hasLoggedInOnce(cognitoStatus) || Boolean(native);
+      const loggedIn = attendeeHasLoggedIn(cognitoStatus, Boolean(native));
 
       return {
         registrantId: registrant.id as string,

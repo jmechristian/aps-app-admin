@@ -16,6 +16,7 @@ import {
   fetchAddOnRequestsByAddOnId,
   fetchAddOnsByEventId,
 } from '@/app/actions/add-ons';
+import { fetchLoggedInRegistrantIds } from '@/app/actions/reporting';
 import {
   fetchLatestTempCredentialByRegistrantId,
   fetchRegistrantById,
@@ -362,12 +363,15 @@ function normalizeAudienceEmails(
   return result;
 }
 
+const NO_LOGIN_MARKER = '::nologin::';
+
 function encodeCampaignTemplateKey(
   templateKey: string,
   addOnIds?: string[] | null,
   requestStatuses?: AddOnRequestStatusFilter[] | null,
   testEmails?: string[] | string | null,
   useTestGroup?: boolean,
+  notLoggedInOnly?: boolean,
 ) {
   let encoded = templateKey;
   if (addOnIds?.length && !useTestGroup) {
@@ -376,6 +380,9 @@ function encodeCampaignTemplateKey(
   }
   if (useTestGroup) {
     encoded = `${encoded}::test::${normalizeAudienceEmails(testEmails).join(',')}`;
+  }
+  if (notLoggedInOnly) {
+    encoded = `${encoded}${NO_LOGIN_MARKER}`;
   }
   return encoded;
 }
@@ -386,10 +393,15 @@ function decodeCampaignTemplateKey(raw: string): {
   audienceAddOnRequestStatuses: AddOnRequestStatusFilter[] | null;
   audienceTestEmails: string[] | null;
   useTestGroup: boolean;
+  notLoggedInOnly: boolean;
 } {
   let working = raw;
   let audienceTestEmails: string[] | null = null;
   let useTestGroup = false;
+  const notLoggedInOnly = working.includes(NO_LOGIN_MARKER);
+  if (notLoggedInOnly) {
+    working = working.split(NO_LOGIN_MARKER).join('');
+  }
   const testMarker = '::test::';
   const testIdx = working.indexOf(testMarker);
   if (testIdx !== -1) {
@@ -409,6 +421,7 @@ function decodeCampaignTemplateKey(raw: string): {
       audienceAddOnRequestStatuses: null,
       audienceTestEmails: audienceTestEmails?.length ? audienceTestEmails : null,
       useTestGroup,
+      notLoggedInOnly,
     };
   }
   const templateKey = working.slice(0, idx);
@@ -430,6 +443,7 @@ function decodeCampaignTemplateKey(raw: string): {
       : null,
     audienceTestEmails: audienceTestEmails?.length ? audienceTestEmails : null,
     useTestGroup,
+    notLoggedInOnly,
   };
 }
 
@@ -485,23 +499,26 @@ async function resolveCampaignAudience(params: {
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
   audienceTestEmails?: string[] | string | null;
   useTestGroup?: boolean;
+  notLoggedInOnly?: boolean;
 }): Promise<{ matches: Registrant[]; missingEmails: string[] }> {
   const all = await fetchRegistrantsByApsId(params.eventId);
-  if (params.useTestGroup) {
-    return applyTestEmailFilter(all, params.audienceTestEmails);
-  }
+  const base = params.useTestGroup
+    ? applyTestEmailFilter(all, params.audienceTestEmails)
+    : {
+        matches: await applyAddOnAudienceFilter(
+          filterAudience(all, params.audienceStatuses, params.audienceTypes),
+          params.audienceAddOnIds,
+          params.audienceAddOnRequestStatuses,
+        ),
+        missingEmails: [] as string[],
+      };
 
-  const byRegistrant = filterAudience(
-    all,
-    params.audienceStatuses,
-    params.audienceTypes,
-  );
-  const byAddOn = await applyAddOnAudienceFilter(
-    byRegistrant,
-    params.audienceAddOnIds,
-    params.audienceAddOnRequestStatuses,
-  );
-  return { matches: byAddOn, missingEmails: [] };
+  if (!params.notLoggedInOnly) return base;
+  const loggedInIds = await fetchLoggedInRegistrantIds(params.eventId);
+  return {
+    matches: base.matches.filter((registrant) => !loggedInIds.has(registrant.id)),
+    missingEmails: base.missingEmails,
+  };
 }
 
 async function mapWithConcurrency<T, R>(
@@ -808,6 +825,7 @@ export async function previewCampaignAudience(params: {
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
   audienceTestEmails?: string[] | string | null;
   useTestGroup?: boolean;
+  notLoggedInOnly?: boolean;
 }): Promise<{
   count: number;
   sample: Array<{ id: string; email: string; name: string }>;
@@ -921,6 +939,7 @@ export async function createEmailCampaign(input: {
   audienceAddOnRequestStatuses?: AddOnRequestStatusFilter[] | null;
   audienceTestEmails?: string[] | string | null;
   useTestGroup?: boolean;
+  notLoggedInOnly?: boolean;
 }): Promise<{ ok: true; campaign: EmailCampaign } | { ok: false; error: string }> {
   try {
     const template = assertEmailTemplate(input.templateKey);
@@ -941,6 +960,7 @@ export async function createEmailCampaign(input: {
           input.audienceAddOnRequestStatuses,
           input.audienceTestEmails,
           input.useTestGroup,
+          input.notLoggedInOnly,
         ),
         subject,
         audienceStatuses: normalizeStatuses(input.audienceStatuses),
@@ -1250,6 +1270,7 @@ export async function runEmailCampaign(campaignId: string): Promise<{
     audienceAddOnRequestStatuses: decoded.audienceAddOnRequestStatuses,
     audienceTestEmails: decoded.audienceTestEmails,
     useTestGroup: decoded.useTestGroup,
+    notLoggedInOnly: decoded.notLoggedInOnly,
   });
 
   if (audience.length === 0) {
