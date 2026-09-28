@@ -324,25 +324,21 @@ async function storeTempPassword(params: {
   jwt?: string;
 }) {
   if (!params.tempPassword) return;
-  try {
-    const encrypted = encryptTempPassword(params.tempPassword);
-    await requestGraphQL(
-      CREATE_TEMP_CREDENTIAL,
-      {
-        input: {
-          apsID: params.apsID,
-          registrantId: params.registrantId,
-          email: params.email,
-          tempPasswordCiphertext: encrypted.ciphertext,
-          tempPasswordIv: encrypted.iv,
-          tempPasswordTag: encrypted.tag,
-        },
+  const encrypted = encryptTempPassword(params.tempPassword);
+  await requestGraphQL(
+    CREATE_TEMP_CREDENTIAL,
+    {
+      input: {
+        apsID: params.apsID,
+        registrantId: params.registrantId,
+        email: params.email,
+        tempPasswordCiphertext: encrypted.ciphertext,
+        tempPasswordIv: encrypted.iv,
+        tempPasswordTag: encrypted.tag,
       },
-      params.jwt ? { authMode: 'userPools', jwt: params.jwt } : undefined,
-    );
-  } catch (error) {
-    console.error('Failed to store temp password for registrant:', error);
-  }
+    },
+    params.jwt ? { authMode: 'userPools', jwt: params.jwt } : undefined,
+  );
 }
 
 const CREATE_REGISTRANT = /* GraphQL */ `
@@ -2495,6 +2491,18 @@ async function ensureRegistrantIdentityArtifacts(params: {
     jwt,
   });
 
+  // A brand-new Cognito user already has tempPassword. An existing Cognito
+  // user comes back with null — keep a previously stored password, and only
+  // issue a new one when nothing is on file.
+  let storedPassword = tempPassword;
+  if (!storedPassword) {
+    storedPassword = await resolveTempPasswordForRegistrant({
+      registrantId: registrant.id,
+      issueEvenIfNotApproved: true,
+      jwt: jwt ?? null,
+    });
+  }
+
   if (!registrant.qrCode && profileId) {
     try {
       const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
@@ -2514,7 +2522,7 @@ async function ensureRegistrantIdentityArtifacts(params: {
     }
   }
 
-  return { tempPassword, profileId };
+  return { tempPassword: storedPassword, profileId };
 }
 
 export async function updateRegistrant(
@@ -2785,9 +2793,11 @@ async function sendAppAccessEmailAndMarkSent(params: {
   try {
     const template = assertEmailTemplate('app-access-email');
     const eventYear = process.env.APS_EVENT_YEAR || '2026';
-    const cred = await fetchLatestTempCredentialByRegistrantId(
-      params.registrant.id,
-    );
+    const tempPassword = await resolveTempPasswordForRegistrant({
+      registrantId: params.registrant.id,
+      issueIfMissing: params.registrant.status === 'APPROVED',
+      jwt: params.jwt ?? null,
+    });
     const subject = template.defaultSubject({ eventYear });
     const recipient = {
       id: params.registrant.id,
@@ -2798,7 +2808,7 @@ async function sendAppAccessEmailAndMarkSent(params: {
       jobTitle: params.registrant.jobTitle,
       attendeeType: params.registrant.attendeeType,
       companyName: params.registrant.company?.name ?? null,
-      tempPassword: cred?.tempPassword ?? null,
+      tempPassword,
     };
 
     const html = await template.renderHtml({
@@ -3239,6 +3249,50 @@ export async function unapproveRegistrant(params: {
   }
 }
 
+async function queryLatestTempCredential(registrantId: string): Promise<{
+  id: string;
+  email: string;
+  tempPassword: string;
+  createdAt?: string | null;
+  expiresAt?: number | null;
+} | null> {
+  const response: {
+    apsTempCredentialsByRegistrantIdAndCreatedAt?: {
+      items?: Array<{
+        id: string;
+        email: string;
+        tempPasswordCiphertext: string;
+        tempPasswordIv: string;
+        tempPasswordTag: string;
+        createdAt?: string | null;
+        expiresAt?: number | null;
+      } | null>;
+    } | null;
+  } = await requestGraphQL(TEMP_CREDENTIALS_BY_REGISTRANT, {
+    registrantId,
+    sortDirection: 'DESC',
+    limit: 5,
+  });
+
+  const item =
+    response.apsTempCredentialsByRegistrantIdAndCreatedAt?.items?.find(
+      (row) => row?.tempPasswordCiphertext && row.tempPasswordIv && row.tempPasswordTag,
+    ) ?? null;
+  if (!item) return null;
+
+  return {
+    id: item.id,
+    email: item.email,
+    tempPassword: decryptTempPassword({
+      tempPasswordCiphertext: item.tempPasswordCiphertext,
+      tempPasswordIv: item.tempPasswordIv,
+      tempPasswordTag: item.tempPasswordTag,
+    }),
+    createdAt: item.createdAt ?? null,
+    expiresAt: item.expiresAt ?? null,
+  };
+}
+
 export async function fetchLatestTempCredentialByRegistrantId(
   registrantId: string,
 ): Promise<{
@@ -3249,39 +3303,7 @@ export async function fetchLatestTempCredentialByRegistrantId(
   expiresAt?: number | null;
 } | null> {
   try {
-    const response: {
-      apsTempCredentialsByRegistrantIdAndCreatedAt?: {
-        items?: Array<{
-          id: string;
-          email: string;
-          tempPasswordCiphertext: string;
-          tempPasswordIv: string;
-          tempPasswordTag: string;
-          createdAt?: string | null;
-          expiresAt?: number | null;
-        } | null>;
-      } | null;
-    } = await requestGraphQL(TEMP_CREDENTIALS_BY_REGISTRANT, {
-      registrantId,
-      sortDirection: 'DESC',
-      limit: 1,
-    });
-
-    const item =
-      response.apsTempCredentialsByRegistrantIdAndCreatedAt?.items?.[0] ?? null;
-    if (!item) return null;
-
-    return {
-      id: item.id,
-      email: item.email,
-      tempPassword: decryptTempPassword({
-        tempPasswordCiphertext: item.tempPasswordCiphertext,
-        tempPasswordIv: item.tempPasswordIv,
-        tempPasswordTag: item.tempPasswordTag,
-      }),
-      createdAt: item.createdAt ?? null,
-      expiresAt: item.expiresAt ?? null,
-    };
+    return await queryLatestTempCredential(registrantId);
   } catch (error) {
     console.error(
       `Failed to fetch temp credential for registrant ${registrantId}:`,
@@ -3289,6 +3311,41 @@ export async function fetchLatestTempCredentialByRegistrantId(
     );
     return null;
   }
+}
+
+/**
+ * Returns the stored temporary password. When `issueIfMissing` is set, an
+ * APPROVED registrant with no stored credential gets a new one saved before
+ * the email is rendered. Existing stored passwords are left unchanged.
+ * Lookup errors are thrown so a failed read cannot be treated as "missing"
+ * and reset someone who already has a password.
+ */
+export async function resolveTempPasswordForRegistrant(params: {
+  registrantId: string;
+  issueIfMissing?: boolean;
+  /** Approval runs before status is flipped to APPROVED. */
+  issueEvenIfNotApproved?: boolean;
+  jwt?: string | null;
+}): Promise<string | null> {
+  const existing = await queryLatestTempCredential(params.registrantId);
+  if (existing?.tempPassword) return existing.tempPassword;
+  if (!params.issueIfMissing && !params.issueEvenIfNotApproved) return null;
+
+  const registrant = await fetchRegistrantById(params.registrantId);
+  if (!registrant) {
+    throw new Error('Registrant not found.');
+  }
+  if (
+    !params.issueEvenIfNotApproved &&
+    registrant.status !== 'APPROVED'
+  ) {
+    return null;
+  }
+
+  return issueAndStoreTempPassword({
+    registrant,
+    jwt: params.jwt ?? null,
+  });
 }
 
 /**
