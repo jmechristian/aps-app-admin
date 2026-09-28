@@ -6,6 +6,7 @@ import { Tour1ConfirmedEmail } from '@/react-email-starter/emails/tour-1-confirm
 import { Tour2ConfirmedEmail } from '@/react-email-starter/emails/tour-2-confirmed-email';
 import { Tour2WaitlistEmail } from '@/react-email-starter/emails/tour-2-waitlist-email';
 import { AppGuideEmail } from '@/react-email-starter/emails/app-guide-email';
+import { AppSigninEmail } from '@/react-email-starter/emails/app-signin-email';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -442,6 +443,60 @@ const appGuideTemplate: EmailTemplateDefinition = {
   },
 };
 
+const appSigninTemplate: EmailTemplateDefinition = {
+  key: 'app-signin-email',
+  label: 'App sign-in (temp password + download)',
+  description:
+    'Looks up each registrant’s stored temporary password and puts it in the email, with iOS, Android, and web download links, plus how to reset from the app if that password does not work. Tells them to check spam for the reset email.',
+  requiresTempPassword: true,
+  defaultSubject: ({ eventYear }) =>
+    `Your AutoPack Summit ${eventYear} temporary password and app download`,
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      AppSigninEmail({
+        firstName: recipient.firstName ?? '',
+        email: recipient.email,
+        tempPassword: recipient.tempPassword ?? null,
+        eventYear,
+        appStoreUrl: APP_STORE_URL,
+        playStoreUrl: PLAY_STORE_URL,
+        webAppUrl: WEB_APP_URL,
+      }),
+    );
+  },
+  renderText: ({ recipient, eventYear }) => {
+    const greetingName =
+      recipient.firstName?.trim() || 'AutoPack Summit Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      `Here is your temporary password for the AutoPack Summit ${eventYear} app, along with the download links.`,
+      'Use it only if you have not signed in yet. If you already created your own password, keep using that one.',
+      '',
+      'YOUR SIGN-IN',
+      `Email: ${recipient.email}`,
+      recipient.tempPassword
+        ? `Temporary password: ${recipient.tempPassword}`
+        : 'Temporary password unavailable — use Forgot Password in the app, and check your spam folder for the reset email.',
+      '',
+      'DOWNLOAD THE APP',
+      'iPhone: the app is not listed in the public App Store. Do not search for it — use this install link:',
+      `iOS: ${APP_STORE_URL}`,
+      `Android: ${PLAY_STORE_URL}`,
+      `Web app: ${WEB_APP_URL}`,
+      '',
+      'IF THE TEMPORARY PASSWORD DOES NOT WORK',
+      'Open the app and tap Forgot Password? on the sign-in screen. Enter the email on your registration, then follow the reset link to choose a new password.',
+      'Make sure to check your spam folder. The reset email often lands there.',
+      '',
+      'Questions: bianca@packagingschool.com',
+      '',
+      'The AutoPack Summit Team',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
 const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [welcomeTemplate.key]: welcomeTemplate,
   [appAccessTemplate.key]: appAccessTemplate,
@@ -450,6 +505,7 @@ const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [tour2ConfirmedTemplate.key]: tour2ConfirmedTemplate,
   [tour2WaitlistTemplate.key]: tour2WaitlistTemplate,
   [appGuideTemplate.key]: appGuideTemplate,
+  [appSigninTemplate.key]: appSigninTemplate,
 };
 
 export function listEmailTemplates(): EmailTemplateDefinition[] {
