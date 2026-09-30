@@ -55,10 +55,10 @@ export const BADGE_PAGE = {
   trimPt: { w: 4 * 72, h: 5 * 72 },
 } as const;
 
-/** Sticker stock: 2 3/7" wide × 3 1/2" tall. The page is the sticker. */
+/** Sticker stock: 2 3/7" wide × 2 3/4" tall. The page is the sticker. */
 export const STICKER_PAGE = {
-  pageIn: { w: 2 + 3 / 7, h: 3.5 },
-  pagePt: { w: (2 + 3 / 7) * 72, h: 3.5 * 72 },
+  pageIn: { w: 2 + 3 / 7, h: 2.75 },
+  pagePt: { w: (2 + 3 / 7) * 72, h: 2.75 * 72 },
 } as const;
 
 export const APS_LOGO_SVG = '/images/AutoPackSummit-Color-Vector.svg';

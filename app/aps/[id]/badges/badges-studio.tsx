@@ -155,7 +155,7 @@ export default function BadgesStudio({
             <h2 className='text-xl font-bold text-slate-900'>Print studio</h2>
             <p className='max-w-xl text-sm text-slate-600'>
               {design === 'sticker'
-                ? 'Approved registrants only. Check the stickers you want to print. Export is one page per sticker at 2 3/7″ × 3 1/2″.'
+                ? 'Approved registrants only. Check the stickers you want to print. Export is one page per sticker at 2 3/7″ × 2 3/4″.'
                 : 'Approved registrants only. Check the badges you want to print. Export is a single PDF at 4.25″ × 5.25″ (4″ × 5″ trim with 0.125″ bleed).'}
             </p>
             <div className='flex flex-wrap gap-2 pt-1'>
