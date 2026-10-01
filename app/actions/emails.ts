@@ -18,10 +18,10 @@ import {
 } from '@/app/actions/add-ons';
 import { fetchLoggedInRegistrantIds } from '@/app/actions/reporting';
 import {
-  fetchLatestTempCredentialByRegistrantId,
   fetchRegistrantById,
   fetchRegistrantsByApsId,
   markRegistrantAppEmailSent,
+  resolveTempPasswordForRegistrant,
   type Registrant,
 } from '@/app/actions/registrants';
 
@@ -587,8 +587,9 @@ async function toTemplateRecipient(
       };
 
   if (opts?.includeTempPassword) {
-    const cred = await fetchLatestTempCredentialByRegistrantId(registrant.id);
-    base.tempPassword = cred?.tempPassword ?? null;
+    base.tempPassword = await resolveTempPasswordForRegistrant({
+      registrantId: registrant.id,
+    });
   }
 
   return base;

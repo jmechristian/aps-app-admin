@@ -1,11 +1,17 @@
 'use server';
 
 import {
+  AdminGetUserCommand,
   ListUsersCommand,
   CognitoIdentityProviderClient,
   type UserType,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { unstable_noStore as noStore } from 'next/cache';
 import { requestGraphQL } from '@/lib/appsync';
+import {
+  cognitoStatusHasSignedIn,
+  cognitoUserStatus,
+} from '@/lib/cognito-login-status';
 
 export type ReportingEvent = {
   id: string;
@@ -260,23 +266,91 @@ function isKnownAttendee(person: ReportingPerson): boolean {
   return true;
 }
 
-function hasLoggedInOnce(status?: string | null) {
-  return (
-    status === 'CONFIRMED' ||
-    status === 'RESET_REQUIRED' ||
-    status === 'COMPROMISED'
-  );
-}
-
-function attendeeHasLoggedIn(
-  cognitoStatus: string | null | undefined,
-  hasNativeApp: boolean,
-) {
-  return hasLoggedInOnce(cognitoStatus) || hasNativeApp;
-}
-
 function attr(user: UserType, name: string) {
   return user.Attributes?.find((item) => item.Name === name)?.Value ?? null;
+}
+
+type CognitoIndex = {
+  bySub: Map<string, UserType>;
+  byEmail: Map<string, UserType[]>;
+};
+
+function indexCognitoUsers(users: UserType[]): CognitoIndex {
+  const bySub = new Map<string, UserType>();
+  const byEmail = new Map<string, UserType[]>();
+
+  for (const user of users) {
+    const sub = attr(user, 'sub');
+    if (sub) bySub.set(sub, user);
+
+    const emails = new Set<string>();
+    const email = attr(user, 'email')?.trim().toLowerCase();
+    if (email) emails.add(email);
+    const username = user.Username?.trim().toLowerCase();
+    if (username?.includes('@')) emails.add(username);
+
+    for (const key of emails) {
+      const list = byEmail.get(key) ?? [];
+      list.push(user);
+      byEmail.set(key, list);
+    }
+  }
+
+  return { bySub, byEmail };
+}
+
+function cognitoUsersForRegistrant(
+  index: CognitoIndex,
+  userId: string | null,
+  email: string,
+): UserType[] {
+  const found = new Map<string, UserType>();
+  const add = (user?: UserType) => {
+    if (!user) return;
+    const key = user.Username || attr(user, 'sub') || '';
+    if (!key || found.has(key)) return;
+    found.set(key, user);
+  };
+
+  if (userId) add(index.bySub.get(userId));
+  if (email) {
+    for (const user of index.byEmail.get(email) ?? []) add(user);
+  }
+  return [...found.values()];
+}
+
+function loginStateForRegistrant(params: {
+  userId: string | null;
+  email: string;
+  index: CognitoIndex;
+  nativeUserIds: Set<string>;
+}): {
+  cognito: UserType | undefined;
+  hasLoggedIn: boolean;
+  cognitoStatus: string | null;
+} {
+  const matches = cognitoUsersForRegistrant(
+    params.index,
+    params.userId,
+    params.email,
+  );
+  const signedIn = matches.find((user) =>
+    cognitoStatusHasSignedIn(cognitoUserStatus(user)),
+  );
+  const cognito = signedIn ?? matches[0];
+  const ids = new Set<string>();
+  if (params.userId) ids.add(params.userId);
+  for (const user of matches) {
+    const sub = attr(user, 'sub');
+    if (sub) ids.add(sub);
+  }
+  const hasNative = [...ids].some((id) => params.nativeUserIds.has(id));
+
+  return {
+    cognito,
+    hasLoggedIn: Boolean(signedIn) || hasNative,
+    cognitoStatus: cognito ? cognitoUserStatus(cognito) : null,
+  };
 }
 
 function cognitoClient() {
@@ -460,25 +534,126 @@ async function fetchCognitoUsers(): Promise<UserType[]> {
   return users;
 }
 
+function cognitoErrorName(error: unknown): string | null {
+  return typeof error === 'object' && error && 'name' in error
+    ? String((error as { name?: unknown }).name)
+    : null;
+}
+
+/**
+ * ListUsers is eventually consistent and can keep FORCE_CHANGE_PASSWORD long
+ * after AdminGetUser (what the Cognito console shows) is CONFIRMED. Refresh
+ * anyone the list still marks as not signed in before we report or email them.
+ */
+async function refreshStaleCognitoStatuses(
+  registrants: RegistrantItem[],
+  index: CognitoIndex,
+): Promise<void> {
+  const emails = new Set<string>();
+  for (const registrant of registrants) {
+    const email = (registrant.email ?? '').trim().toLowerCase();
+    if (!email) continue;
+    const login = loginStateForRegistrant({
+      userId: registrant.appUser?.id ?? null,
+      email,
+      index,
+      nativeUserIds: new Set(),
+    });
+    if (!login.cognito || cognitoStatusHasSignedIn(login.cognitoStatus)) continue;
+    emails.add(email);
+  }
+  if (emails.size === 0) return;
+
+  const { client, userPoolId } = cognitoClient();
+  await mapPool([...emails], 5, async (email) => {
+    try {
+      const live = await readLiveCognitoUser(client, userPoolId, email);
+      if (!live?.UserStatus) return;
+      applyLiveCognitoUser(index, email, live);
+    } catch (error) {
+      console.error(`Could not refresh Cognito status for ${email}:`, error);
+    }
+  });
+}
+
+async function readLiveCognitoUser(
+  client: CognitoIdentityProviderClient,
+  userPoolId: string,
+  email: string,
+): Promise<UserType | null> {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const result = await client.send(
+        new AdminGetUserCommand({
+          UserPoolId: userPoolId,
+          Username: email,
+        }),
+      );
+      return {
+        Username: result.Username,
+        Attributes: result.UserAttributes,
+        UserCreateDate: result.UserCreateDate,
+        UserLastModifiedDate: result.UserLastModifiedDate,
+        Enabled: result.Enabled,
+        UserStatus: result.UserStatus,
+      };
+    } catch (error) {
+      const name = cognitoErrorName(error);
+      if (name === 'UserNotFoundException') return null;
+      if (name === 'TooManyRequestsException' || name === 'ThrottlingException') {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+        continue;
+      }
+      throw error;
+    }
+  }
+  return null;
+}
+
+function applyLiveCognitoUser(
+  index: CognitoIndex,
+  email: string,
+  live: UserType,
+) {
+  const liveSub = attr(live, 'sub');
+  const targets = index.byEmail.get(email) ?? [];
+  let applied = false;
+
+  for (const user of targets) {
+    const sameUser =
+      (live.Username && user.Username === live.Username) ||
+      (liveSub !== null && attr(user, 'sub') === liveSub);
+    if (!sameUser) continue;
+    user.UserStatus = live.UserStatus;
+    if (live.UserLastModifiedDate) {
+      user.UserLastModifiedDate = live.UserLastModifiedDate;
+    }
+    if (live.Attributes?.length) user.Attributes = live.Attributes;
+    if (liveSub) index.bySub.set(liveSub, user);
+    applied = true;
+  }
+
+  if (applied) return;
+
+  const list = index.byEmail.get(email) ?? [];
+  list.unshift(live);
+  index.byEmail.set(email, list);
+  if (liveSub) index.bySub.set(liveSub, live);
+}
+
 /** Registrant ids the reporting dashboard counts as logged in at least once. */
 export async function fetchLoggedInRegistrantIds(
   eventId: string,
 ): Promise<Set<string>> {
+  noStore();
   const [registrants, pushTokens, users] = await Promise.all([
     fetchRegistrants(eventId),
     fetchPushTokens().catch(() => [] as PushTokenItem[]),
     fetchCognitoUsers(),
   ]);
 
-  const cognitoBySub = new Map<string, UserType>();
-  const cognitoByEmail = new Map<string, UserType>();
-  for (const user of users) {
-    const sub = attr(user, 'sub');
-    const email = attr(user, 'email')?.trim().toLowerCase();
-    if (sub) cognitoBySub.set(sub, user);
-    if (email) cognitoByEmail.set(email, user);
-  }
-
+  const cognitoIndex = indexCognitoUsers(users);
+  await refreshStaleCognitoStatuses(registrants, cognitoIndex);
   const nativeUserIds = new Set<string>();
   for (const token of pushTokens) {
     if (token.userId) nativeUserIds.add(token.userId);
@@ -489,13 +664,13 @@ export async function fetchLoggedInRegistrantIds(
     if (!registrant.id) continue;
     const userId = registrant.appUser?.id ?? null;
     const email = (registrant.email ?? '').trim().toLowerCase();
-    const cognito =
-      (userId ? cognitoBySub.get(userId) : undefined) ??
-      (email ? cognitoByEmail.get(email) : undefined);
-    const hasNative = Boolean(userId && nativeUserIds.has(userId));
-    if (attendeeHasLoggedIn(cognito?.UserStatus ?? null, hasNative)) {
-      loggedIn.add(registrant.id);
-    }
+    const login = loginStateForRegistrant({
+      userId,
+      email,
+      index: cognitoIndex,
+      nativeUserIds,
+    });
+    if (login.hasLoggedIn) loggedIn.add(registrant.id);
   }
   return loggedIn;
 }
@@ -521,6 +696,7 @@ async function resolveMissingPeople(
 export async function fetchReportingDashboard(
   requestedEventId?: string | null,
 ): Promise<ReportingDashboard> {
+  noStore();
   const events = await fetchEvents();
   if (events.length === 0) {
     return {
@@ -601,13 +777,9 @@ export async function fetchReportingDashboard(
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
-  const cognitoBySub = new Map<string, UserType>();
-  const cognitoByEmail = new Map<string, UserType>();
-  for (const user of cognitoResult.users) {
-    const sub = attr(user, 'sub');
-    const email = attr(user, 'email')?.trim().toLowerCase();
-    if (sub) cognitoBySub.set(sub, user);
-    if (email) cognitoByEmail.set(email, user);
+  const cognitoIndex = indexCognitoUsers(cognitoResult.users);
+  if (!cognitoResult.error) {
+    await refreshStaleCognitoStatuses(registrants, cognitoIndex);
   }
 
   const nativeByUserId = new Map<
@@ -630,16 +802,25 @@ export async function fetchReportingDashboard(
     }
   }
 
+  const nativeUserIds = new Set(nativeByUserId.keys());
   const logins: LoginRow[] = registrants
     .map((registrant) => {
       const userId = registrant.appUser?.id ?? null;
       const email = (registrant.email ?? '').trim().toLowerCase();
-      const cognito =
-        (userId ? cognitoBySub.get(userId) : undefined) ??
-        (email ? cognitoByEmail.get(email) : undefined);
-      const native = userId ? nativeByUserId.get(userId) : undefined;
-      const cognitoStatus = cognito?.UserStatus ?? null;
-      const loggedIn = attendeeHasLoggedIn(cognitoStatus, Boolean(native));
+      const login = loginStateForRegistrant({
+        userId,
+        email,
+        index: cognitoIndex,
+        nativeUserIds,
+      });
+      const cognito = login.cognito;
+      const nativeIds = [
+        userId,
+        cognito ? attr(cognito, 'sub') : null,
+      ].filter((id): id is string => Boolean(id));
+      const native = nativeIds
+        .map((id) => nativeByUserId.get(id))
+        .find((item) => item);
 
       return {
         registrantId: registrant.id as string,
@@ -654,8 +835,8 @@ export async function fetchReportingDashboard(
         attendeeType: registrant.attendeeType ?? '',
         registrantStatus: registrant.status ?? '',
         hasAccount: Boolean(cognito || userId),
-        hasLoggedIn: loggedIn,
-        cognitoStatus,
+        hasLoggedIn: login.hasLoggedIn,
+        cognitoStatus: login.cognitoStatus,
         nativeApp: Boolean(native),
         nativePlatform: native?.platform ?? null,
         accountUpdatedAt: cognito?.UserLastModifiedDate

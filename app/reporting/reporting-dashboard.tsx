@@ -17,13 +17,6 @@ type ReportingDashboardProps = {
   cognitoError: string | null;
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING: 'bg-[#E4A800]/20 text-[#8A6400] ring-[#E4A800]/40',
-  ACCEPTED: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
-  DECLINED: 'bg-[#E43A00]/15 text-[#E43A00] ring-[#E43A00]/25',
-  BLOCKED: 'bg-slate-200 text-slate-700 ring-slate-300',
-};
-
 function formatDate(value?: string | null) {
   if (!value) return '—';
   const date = new Date(value);
@@ -47,27 +40,6 @@ function typeLabel(value?: string | null) {
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function RequestsIcon() {
-  return (
-    <svg viewBox='0 0 24 24' fill='none' className='h-8 w-8' aria-hidden='true'>
-      <circle cx='8' cy='8' r='3.25' stroke='currentColor' strokeWidth='1.8' />
-      <circle cx='16.5' cy='9' r='2.75' stroke='currentColor' strokeWidth='1.8' />
-      <path
-        d='M3.5 18.5c.6-3 2.6-4.7 4.5-4.7s3.9 1.7 4.5 4.7'
-        stroke='currentColor'
-        strokeWidth='1.8'
-        strokeLinecap='round'
-      />
-      <path
-        d='M13.2 18.5c.4-2.3 1.9-3.6 3.3-3.6 1.5 0 2.9 1.3 3.3 3.6'
-        stroke='currentColor'
-        strokeWidth='1.8'
-        strokeLinecap='round'
-      />
-    </svg>
-  );
 }
 
 function ScrollToTopButton() {
@@ -126,28 +98,6 @@ function LoginsIcon() {
   );
 }
 
-function PersonCell({
-  person,
-  role,
-}: {
-  person: ContactRequestRow['from'];
-  role: string;
-}) {
-  return (
-    <div className='min-w-[12rem]'>
-      <p className='text-[10px] font-bold uppercase tracking-[0.16em] text-[#0873B8]'>
-        {role}
-      </p>
-      <p className='font-semibold text-[#005892]'>{person.name}</p>
-      <p className='text-xs text-slate-600'>
-        {[person.company, typeLabel(person.attendeeType)]
-          .filter(Boolean)
-          .join(' · ') || person.email || '—'}
-      </p>
-    </div>
-  );
-}
-
 function StatCard({
   label,
   value,
@@ -188,36 +138,8 @@ export default function ReportingDashboard({
   logins,
   cognitoError,
 }: ReportingDashboardProps) {
-  const [requestQuery, setRequestQuery] = useState('');
-  const [requestStatus, setRequestStatus] = useState('ALL');
   const [loginQuery, setLoginQuery] = useState('');
   const [loginFilter, setLoginFilter] = useState('ALL');
-
-  const requestStatuses = useMemo(() => {
-    const values = new Set(contactRequests.map((row) => row.status));
-    return ['ALL', ...[...values].sort()];
-  }, [contactRequests]);
-
-  const filteredRequests = useMemo(() => {
-    const query = requestQuery.trim().toLowerCase();
-    return contactRequests.filter((row) => {
-      if (requestStatus !== 'ALL' && row.status !== requestStatus) return false;
-      if (!query) return true;
-      const haystack = [
-        row.from.name,
-        row.from.email,
-        row.from.company,
-        row.to.name,
-        row.to.email,
-        row.to.company,
-        row.status,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(query);
-    });
-  }, [contactRequests, requestQuery, requestStatus]);
 
   const filteredLogins = useMemo(() => {
     const query = loginQuery.trim().toLowerCase();
@@ -275,7 +197,7 @@ export default function ReportingDashboard({
                 Reporting
               </h1>
               <p className='mt-2 max-w-2xl text-sm leading-6 text-white/75 sm:text-base'>
-                Contact requests plus who has actually signed into the event app.
+                Contact request totals, plus who has signed into the event app.
                 Apple and Google keep named download lists in their own
                 dashboards — we can see first login and native-app opens from
                 our side.
@@ -290,6 +212,7 @@ export default function ReportingDashboard({
                 <Link
                   key={event.id}
                   href={`/reporting?eventId=${event.id}`}
+                  prefetch={false}
                   className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                     active
                       ? 'bg-[#E4A800] text-[#041c2e] shadow-lg'
@@ -303,28 +226,7 @@ export default function ReportingDashboard({
           </div>
         </header>
 
-        <nav
-          aria-label='Jump to report'
-          className='grid gap-3 sm:grid-cols-2'
-        >
-          <a
-            href='#contact-requests'
-            onClick={(event) => {
-              event.preventDefault();
-              scrollToSection('contact-requests');
-            }}
-            className='group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:border-[#E4A800]/60 hover:bg-white/15'
-          >
-            <span className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E4A800] text-[#041c2e] shadow-md transition group-hover:scale-105'>
-              <RequestsIcon />
-            </span>
-            <span>
-              <span className='block text-lg font-black'>Requests</span>
-              <span className='text-sm text-white/70'>
-                {contactRequests.length} contact requests
-              </span>
-            </span>
-          </a>
+        <nav aria-label='Jump to report' className='grid gap-3 sm:max-w-md'>
           <a
             href='#app-logins'
             onClick={(event) => {
@@ -370,96 +272,6 @@ export default function ReportingDashboard({
             hint='Have an invite, no first login yet'
             accent='red'
           />
-        </section>
-
-        <section
-          id='contact-requests'
-          className='scroll-mt-8 overflow-hidden rounded-3xl border border-white/10 bg-white text-slate-900 shadow-2xl'
-        >
-          <div className='flex flex-col gap-4 border-b border-slate-100 bg-linear-to-r from-[#005892] to-[#0873B8] px-6 py-5 text-white sm:flex-row sm:items-end sm:justify-between'>
-            <div>
-              <p className='text-xs font-bold uppercase tracking-[0.2em] text-[#E4A800]'>
-                Networking
-              </p>
-              <h2 className='text-2xl font-black'>Contact requests</h2>
-              <p className='mt-1 text-sm text-white/80'>
-                Both parties, status, and the date the request was sent.
-                Showing {filteredRequests.length} of {contactRequests.length}.
-              </p>
-            </div>
-            <div className='flex flex-col gap-2 sm:flex-row'>
-              <input
-                value={requestQuery}
-                onChange={(event) => setRequestQuery(event.target.value)}
-                placeholder='Search people, companies…'
-                className='rounded-xl border-0 bg-white/15 px-4 py-2 text-sm text-white outline-none ring-1 ring-white/20 placeholder:text-white/60 focus:bg-white/20 focus:ring-[#E4A800]'
-              />
-              <select
-                value={requestStatus}
-                onChange={(event) => setRequestStatus(event.target.value)}
-                className='rounded-xl border-0 bg-white/15 px-3 py-2 text-sm font-semibold text-white outline-none ring-1 ring-white/20 focus:ring-[#E4A800]'
-              >
-                {requestStatuses.map((status) => (
-                  <option key={status} value={status} className='text-slate-900'>
-                    {status === 'ALL' ? 'All statuses' : status}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {filteredRequests.length === 0 ? (
-            <div className='px-6 py-12 text-center text-slate-500'>
-              No contact requests match this view yet. Once attendees start
-              connecting in the app, they will land here.
-            </div>
-          ) : (
-            <div className='overflow-x-auto'>
-              <table className='min-w-full text-left text-sm'>
-                <thead className='bg-[#041c2e] text-xs font-bold uppercase tracking-[0.14em] text-[#E4A800]'>
-                  <tr>
-                    <th className='px-6 py-3'>From</th>
-                    <th className='px-6 py-3'>To</th>
-                    <th className='px-6 py-3'>Status</th>
-                    <th className='px-6 py-3'>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRequests.map((row, index) => (
-                    <tr
-                      key={row.id}
-                      className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
-                    >
-                      <td className='px-6 py-4 align-top'>
-                        <PersonCell person={row.from} role='Requester' />
-                      </td>
-                      <td className='px-6 py-4 align-top'>
-                        <PersonCell person={row.to} role='Recipient' />
-                      </td>
-                      <td className='px-6 py-4 align-top'>
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-black tracking-wide ring-1 ${
-                            STATUS_STYLES[row.status] ??
-                            'bg-slate-100 text-slate-700 ring-slate-200'
-                          }`}
-                        >
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className='px-6 py-4 align-top text-slate-700'>
-                        <p className='font-semibold'>{formatDate(row.createdAt)}</p>
-                        {row.resolvedAt ? (
-                          <p className='text-xs text-slate-500'>
-                            Updated {formatDate(row.resolvedAt)}
-                          </p>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </section>
 
         <section

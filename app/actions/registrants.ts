@@ -34,6 +34,7 @@ import { buildSesClient, getSesFromAddress, sendHtmlEmail } from '@/lib/ses';
 import { revalidatePath } from 'next/cache';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { getThinkificRegistrantSummaryByEmail } from '@/app/actions/thinkific';
+import { cognitoStatusHasSignedIn } from '@/lib/cognito-login-status';
 import { SendEmailCommand } from '@aws-sdk/client-ses';
 
 type CognitoAttr = { Name?: string; Value?: string };
@@ -239,23 +240,80 @@ async function deleteCognitoUserByEmail(email: string) {
   }
 }
 
-async function resetCognitoTempPasswordByEmail(email: string): Promise<string> {
+class CognitoTemporaryPasswordRefusedError extends Error {
+  readonly status: string;
+
+  constructor(status: string) {
+    super(
+      cognitoStatusHasSignedIn(status)
+        ? 'This person has already signed in and set a password. Their login was not changed.'
+        : `Temporary password was not reset because the Cognito status is ${status}.`,
+    );
+    this.name = 'CognitoTemporaryPasswordRefusedError';
+    this.status = status;
+  }
+}
+
+function cognitoApi() {
   const region =
     process.env.AWS_REGION ||
     process.env.AWS_DEFAULT_REGION ||
     process.env.NEXT_PUBLIC_AWS_REGION;
-
   const userPoolId =
     process.env.AWS_USER_POOLS_ID || process.env.NEXT_PUBLIC_AWS_USER_POOLS_ID;
   if (!userPoolId) {
     throw new Error('Missing Cognito user pool id (AWS_USER_POOLS_ID)');
   }
-
   if (!region) {
     throw new Error('Missing AWS region (AWS_REGION)');
   }
+  return {
+    client: new CognitoIdentityProviderClient({ region }),
+    userPoolId,
+  };
+}
 
-  const client = new CognitoIdentityProviderClient({ region });
+function cognitoErrorName(error: unknown): string | null {
+  return typeof error === 'object' && error && 'name' in error
+    ? String((error as { name?: unknown }).name)
+    : null;
+}
+
+/** Live status. ListUsers can still say FORCE_CHANGE_PASSWORD after this is CONFIRMED. */
+async function readCognitoUserByEmail(email: string): Promise<
+  { found: false } | { found: true; status: string | null }
+> {
+  const { client, userPoolId } = cognitoApi();
+  try {
+    const existing = await client.send(
+      new AdminGetUserCommand({
+        UserPoolId: userPoolId,
+        Username: email.trim().toLowerCase(),
+      }),
+    );
+    return { found: true, status: existing.UserStatus ?? null };
+  } catch (error) {
+    if (cognitoErrorName(error) === 'UserNotFoundException') {
+      return { found: false };
+    }
+    throw error;
+  }
+}
+
+async function resetCognitoTempPasswordByEmail(email: string): Promise<string> {
+  const cognito = await readCognitoUserByEmail(email);
+  if (!cognito.found) {
+    const missing = new Error('User does not exist.');
+    missing.name = 'UserNotFoundException';
+    throw missing;
+  }
+
+  // Permanent:false puts a CONFIRMED user back into FORCE_CHANGE_PASSWORD.
+  if (cognito.status !== 'FORCE_CHANGE_PASSWORD') {
+    throw new CognitoTemporaryPasswordRefusedError(cognito.status ?? 'UNKNOWN');
+  }
+
+  const { client, userPoolId } = cognitoApi();
   const username = email.trim().toLowerCase();
   const tempPassword = generateTempPassword();
 
@@ -3314,11 +3372,11 @@ export async function fetchLatestTempCredentialByRegistrantId(
 }
 
 /**
- * Returns the stored temporary password. When `issueIfMissing` is set, an
- * APPROVED registrant with no stored credential gets a new one saved before
- * the email is rendered. Existing stored passwords are left unchanged.
- * Lookup errors are thrown so a failed read cannot be treated as "missing"
- * and reset someone who already has a password.
+ * Returns a temporary password only while Cognito still requires a password
+ * change. Confirmed accounts are left alone, including when ListUsers is stale.
+ * When `issueIfMissing` is set, an APPROVED registrant still on
+ * FORCE_CHANGE_PASSWORD with no stored credential gets a new one saved.
+ * Lookup errors are thrown so a failed read cannot be treated as "missing".
  */
 export async function resolveTempPasswordForRegistrant(params: {
   registrantId: string;
@@ -3328,10 +3386,20 @@ export async function resolveTempPasswordForRegistrant(params: {
   jwt?: string | null;
 }): Promise<string | null> {
   const existing = await queryLatestTempCredential(params.registrantId);
-  if (existing?.tempPassword) return existing.tempPassword;
-  if (!params.issueIfMissing && !params.issueEvenIfNotApproved) return null;
+  if (!existing?.tempPassword && !params.issueIfMissing && !params.issueEvenIfNotApproved) {
+    return null;
+  }
 
   const registrant = await fetchRegistrantById(params.registrantId);
+  const email = (registrant?.email || existing?.email || '').trim();
+  if (email) {
+    const cognito = await readCognitoUserByEmail(email);
+    if (cognito.found && cognito.status !== 'FORCE_CHANGE_PASSWORD') {
+      return null;
+    }
+  }
+
+  if (existing?.tempPassword) return existing.tempPassword;
   if (!registrant) {
     throw new Error('Registrant not found.');
   }
@@ -3342,10 +3410,15 @@ export async function resolveTempPasswordForRegistrant(params: {
     return null;
   }
 
-  return issueAndStoreTempPassword({
-    registrant,
-    jwt: params.jwt ?? null,
-  });
+  try {
+    return await issueAndStoreTempPassword({
+      registrant,
+      jwt: params.jwt ?? null,
+    });
+  } catch (error) {
+    if (error instanceof CognitoTemporaryPasswordRefusedError) return null;
+    throw error;
+  }
 }
 
 /**
@@ -3426,6 +3499,13 @@ export async function regenerateRegistrantTempPassword(params: {
       tempPassword,
     };
   } catch (error) {
+    if (error instanceof CognitoTemporaryPasswordRefusedError) {
+      return {
+        ok: false,
+        message: error.message,
+        tempPassword: null,
+      };
+    }
     console.error('Failed to regenerate registrant temp password:', error);
     return {
       ok: false,
@@ -3450,6 +3530,7 @@ export async function regenerateApprovedTempPasswords(params: {
   message: string;
   total: number;
   succeeded: number;
+  skipped: number;
   failed: number;
   errors: Array<{ registrantId: string; email: string; error: string }>;
 }> {
@@ -3463,12 +3544,14 @@ export async function regenerateApprovedTempPasswords(params: {
         message: 'No APPROVED registrants found for this event.',
         total: 0,
         succeeded: 0,
+        skipped: 0,
         failed: 0,
         errors: [],
       };
     }
 
     let succeeded = 0;
+    let skipped = 0;
     let failed = 0;
     const errors: Array<{
       registrantId: string;
@@ -3500,6 +3583,10 @@ export async function regenerateApprovedTempPasswords(params: {
           });
           succeeded += 1;
         } catch (error) {
+          if (error instanceof CognitoTemporaryPasswordRefusedError) {
+            skipped += 1;
+            continue;
+          }
           failed += 1;
           errors.push({
             registrantId: row.id,
@@ -3526,11 +3613,12 @@ export async function regenerateApprovedTempPasswords(params: {
 
     return {
       ok: failed === 0,
-      message: `Reset ${succeeded} of ${approved.length} APPROVED temp passwords.${
+      message: `Reset ${succeeded} of ${approved.length} APPROVED temp passwords. Skipped ${skipped} who are not waiting on a temporary password.${
         failed ? ` ${failed} failed.` : ''
       } Cognito does not send emails for this reset.`,
       total: approved.length,
       succeeded,
+      skipped,
       failed,
       errors,
     };
@@ -3541,6 +3629,7 @@ export async function regenerateApprovedTempPasswords(params: {
       message: 'Failed to bulk regenerate temporary passwords.',
       total: 0,
       succeeded: 0,
+      skipped: 0,
       failed: 0,
       errors: [],
     };

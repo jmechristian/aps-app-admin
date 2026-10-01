@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 import { fetchReportingDashboard } from '@/app/actions/reporting';
 import ReportingDashboard from './reporting-dashboard';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 export const maxDuration = 120;
 
 export default async function ReportingPage({
@@ -10,6 +14,8 @@ export default async function ReportingPage({
 }: {
   searchParams?: Promise<{ eventId?: string | string[] }>;
 }) {
+  noStore();
+  await connection();
   const sp = searchParams ? await searchParams : undefined;
   const incoming = Array.isArray(sp?.eventId) ? sp.eventId[0] : sp?.eventId;
 
