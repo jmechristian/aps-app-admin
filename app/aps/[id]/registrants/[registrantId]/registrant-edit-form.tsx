@@ -10,6 +10,7 @@ import StorageImage from '@/app/components/storage-image';
 import CompanyPicker from '../../company-picker';
 import InvoicePreview from './invoice-preview';
 import {
+  ensureRegistrantAppProfile,
   updateAppUserProfile,
   updateRegistrantCompanyAssignment,
   updateRegistrantInfo,
@@ -65,6 +66,11 @@ export default function RegistrantEditForm({
     updateRegistrantInfo,
     initialState,
   );
+  const [creatingProfile, setCreatingProfile] = useState(false);
+  const [profileCreateMessage, setProfileCreateMessage] = useState<string | null>(
+    null,
+  );
+  const [profileCreateOk, setProfileCreateOk] = useState(false);
   const [selectedCompanyIdOverride, setSelectedCompanyIdOverride] = useState<
     string | null
   >(null);
@@ -89,6 +95,27 @@ export default function RegistrantEditForm({
   ]);
 
   const profile = registrant.appUser?.profile ?? null;
+
+  async function handleCreateAppProfile() {
+    setCreatingProfile(true);
+    setProfileCreateMessage(null);
+    try {
+      const result = await ensureRegistrantAppProfile({
+        registrantId: registrant.id,
+        eventId,
+      });
+      setProfileCreateOk(result.ok);
+      setProfileCreateMessage(result.message);
+      if (result.ok) router.refresh();
+    } catch (error) {
+      setProfileCreateOk(false);
+      setProfileCreateMessage(
+        error instanceof Error ? error.message : 'Failed to create the app profile.',
+      );
+    } finally {
+      setCreatingProfile(false);
+    }
+  }
   const [profilePicture, setProfilePicture] = useState(
     profile?.profilePicture ?? ''
   );
@@ -536,9 +563,29 @@ export default function RegistrantEditForm({
         </div>
 
         {!profile ? (
-          <p className='text-sm text-slate-600'>
-            No app user profile is attached to this registrant.
-          </p>
+          <div className='space-y-3'>
+            <p className='text-sm text-slate-600'>
+              No app user profile is attached to this registrant, so they will
+              not show up in the community.
+            </p>
+            <button
+              type='button'
+              onClick={handleCreateAppProfile}
+              disabled={creatingProfile}
+              className='inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60'
+            >
+              {creatingProfile ? 'Creating profile...' : 'Create app profile'}
+            </button>
+            {profileCreateMessage ? (
+              <p
+                className={`text-sm ${
+                  profileCreateOk ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {profileCreateMessage}
+              </p>
+            ) : null}
+          </div>
         ) : (
           <form action={profileAction} className='space-y-6'>
             <input type='hidden' name='profileId' value={profile.id} />

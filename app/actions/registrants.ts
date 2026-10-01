@@ -465,6 +465,30 @@ const CREATE_APP_USER_PROFILE = /* GraphQL */ `
   }
 `;
 
+const GET_APP_USER_FOR_PROFILE = /* GraphQL */ `
+  query GetApsAppUserForProfile($id: ID!) {
+    getApsAppUser(id: $id) {
+      id
+      registrantId
+      profileId
+      profile {
+        id
+      }
+    }
+  }
+`;
+
+const PROFILES_BY_USER_ID = /* GraphQL */ `
+  query ApsAppUserProfilesByUserId($userId: ID!, $limit: Int) {
+    apsAppUserProfilesByUserId(userId: $userId, limit: $limit) {
+      items {
+        id
+        userId
+      }
+    }
+  }
+`;
+
 const CREATE_TEMP_CREDENTIAL = /* GraphQL */ `
   mutation CreateApsTempCredential($input: CreateApsTempCredentialInput!) {
     createApsTempCredential(input: $input) {
@@ -1602,112 +1626,30 @@ export async function createRegistrant(
     }
   }
 
-  // Create ApsAppUser for this registrant (strict; required for bidirectional querying)
-  const appUserResult = await requestGraphQL<{
-    createApsAppUser?: { id: string; registrantId: string };
-  }>(
-    CREATE_APP_USER,
-    {
-      input: {
-        id: appUserId,
-        registrantId,
-      },
-    },
+  const linkedUser = await ensureAppUserLinked({
+    appUserId,
+    registrantId,
     authOpts,
-  );
-
-  if (!appUserResult.createApsAppUser?.id) {
-    throw new Error('Failed to create ApsAppUser for registrant');
-  }
-
-  // Link registrant -> appUser (strict; required for registrant.appUser resolver)
-  const linkRegistrantResult = await requestGraphQL<{
-    updateApsRegistrant?: { id: string; appUserId?: string | null };
-  }>(
-    UPDATE_REGISTRANT,
-    {
-      input: {
-        id: registrantId,
-        appUserId,
-      },
-    },
+  });
+  const profile = await ensureAppProfileLinked({
+    appUserId,
+    existingProfileId: linkedUser.profileId,
+    firstName: input.firstName,
+    lastName: input.lastName,
+    email: input.email,
+    phone: input.phone,
+    company: await companyNameForRegistrant(input.companyId, authOpts),
+    jobTitle: input.jobTitle,
+    attendeeType: input.attendeeType,
+    location: profileLocationFromBilling([
+      input.billingAddressCity,
+      input.billingAddressState,
+      input.billingAddressZip,
+    ]),
     authOpts,
-  );
+  });
 
-  if (!linkRegistrantResult.updateApsRegistrant?.id) {
-    throw new Error('Failed to attach appUserId to registrant');
-  }
-
-  // Create ApsAppUserProfile with matching data from registrant (strict; required for user.profile resolver)
-  // Get company name if companyId is provided
-  let companyNameForProfile: string | null = null;
-  if (input.companyId) {
-    try {
-      const companyResult = await requestGraphQL<{
-        getAPSCompany?: { name: string };
-      }>(GET_COMPANY, { id: input.companyId }, authOpts);
-      companyNameForProfile = companyResult.getAPSCompany?.name || null;
-    } catch (error) {
-      console.warn('Failed to fetch company name for profile:', error);
-    }
-  }
-
-  const locationParts = [
-    input.billingAddressCity,
-    input.billingAddressState,
-    input.billingAddressZip,
-  ]
-    .map((value) => (typeof value === 'string' ? value.trim() : ''))
-    .filter(Boolean);
-  const profileLocation =
-    locationParts.length > 0 ? locationParts.join(', ') : null;
-
-  const profileResult = await requestGraphQL<{
-    createApsAppUserProfile?: { id: string; userId: string };
-  }>(
-    CREATE_APP_USER_PROFILE,
-    {
-      input: {
-        userId: appUserId,
-        firstName: input.firstName || null,
-        lastName: input.lastName || null,
-        email: input.email,
-        phone: input.phone || null,
-        company: companyNameForProfile || null,
-        jobTitle: input.jobTitle || null,
-        attendeeType: input.attendeeType || null,
-        location: profileLocation,
-        // Other fields will be filled in by the user later
-      },
-    },
-    authOpts,
-  );
-
-  if (!profileResult.createApsAppUserProfile?.id) {
-    throw new Error('Failed to create ApsAppUserProfile for app user');
-  }
-
-  const profileId = profileResult.createApsAppUserProfile.id;
-
-  // Link appUser -> profile (strict; required for appUser.profile resolver)
-  const linkUserResult = await requestGraphQL<{
-    updateApsAppUser?: { id: string; profileId?: string | null };
-  }>(
-    UPDATE_APP_USER,
-    {
-      input: {
-        id: appUserId,
-        profileId,
-      },
-    },
-    authOpts,
-  );
-
-  if (!linkUserResult.updateApsAppUser?.id) {
-    throw new Error('Failed to attach profileId to app user');
-  }
-
-  if (input.attendeeType === 'SPEAKER') {
+  if (profile.created && input.attendeeType === 'SPEAKER') {
     try {
       const { createSpeakerFromRegistrantId } =
         await import('@/app/actions/speakers');
@@ -2401,6 +2343,193 @@ async function deleteIds(
   }
 }
 
+type GraphAuth = { authMode: 'userPools'; jwt: string } | undefined;
+
+function isConditionalRequestFailure(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /conditional request failed/i.test(message);
+}
+
+/**
+ * Creates the app user for this Cognito sub, or reuses the existing row when
+ * Dynamo rejects the create because that id is already taken.
+ */
+async function ensureAppUserLinked(params: {
+  appUserId: string;
+  registrantId: string;
+  authOpts: GraphAuth;
+}): Promise<{ profileId: string | null }> {
+  let profileId: string | null = null;
+
+  try {
+    const created = await requestGraphQL<{
+      createApsAppUser?: { id: string; registrantId: string };
+    }>(
+      CREATE_APP_USER,
+      {
+        input: {
+          id: params.appUserId,
+          registrantId: params.registrantId,
+        },
+      },
+      params.authOpts,
+    );
+    if (!created.createApsAppUser?.id) {
+      throw new Error('Failed to create ApsAppUser for registrant');
+    }
+  } catch (error) {
+    if (!isConditionalRequestFailure(error)) throw error;
+
+    const existing = await requestGraphQL<{
+      getApsAppUser?: {
+        id: string;
+        registrantId?: string | null;
+        profileId?: string | null;
+        profile?: { id?: string | null } | null;
+      } | null;
+    }>(GET_APP_USER_FOR_PROFILE, { id: params.appUserId }, params.authOpts);
+
+    if (!existing.getApsAppUser?.id) throw error;
+
+    profileId =
+      existing.getApsAppUser.profile?.id ??
+      existing.getApsAppUser.profileId ??
+      null;
+
+    if (existing.getApsAppUser.registrantId !== params.registrantId) {
+      await requestGraphQL(
+        UPDATE_APP_USER,
+        {
+          input: {
+            id: params.appUserId,
+            registrantId: params.registrantId,
+          },
+        },
+        params.authOpts,
+      );
+    }
+  }
+
+  const linked = await requestGraphQL<{
+    updateApsRegistrant?: { id: string; appUserId?: string | null };
+  }>(
+    UPDATE_REGISTRANT,
+    {
+      input: {
+        id: params.registrantId,
+        appUserId: params.appUserId,
+      },
+    },
+    params.authOpts,
+  );
+  if (!linked.updateApsRegistrant?.id) {
+    throw new Error('Failed to attach appUserId to registrant');
+  }
+
+  return { profileId };
+}
+
+async function ensureAppProfileLinked(params: {
+  appUserId: string;
+  existingProfileId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  company?: string | null;
+  jobTitle?: string | null;
+  attendeeType?: string | null;
+  location?: string | null;
+  authOpts: GraphAuth;
+}): Promise<{ id: string; created: boolean }> {
+  let profileId = params.existingProfileId ?? null;
+  let created = false;
+
+  if (!profileId) {
+    const listed = await requestGraphQL<{
+      apsAppUserProfilesByUserId?: {
+        items?: Array<{ id?: string | null } | null> | null;
+      } | null;
+    }>(
+      PROFILES_BY_USER_ID,
+      { userId: params.appUserId, limit: 5 },
+      params.authOpts,
+    );
+    profileId =
+      listed.apsAppUserProfilesByUserId?.items?.find((item) => item?.id)?.id ??
+      null;
+  }
+
+  if (!profileId) {
+    created = true;
+    const profileResult = await requestGraphQL<{
+      createApsAppUserProfile?: { id: string; userId: string };
+    }>(
+      CREATE_APP_USER_PROFILE,
+      {
+        input: {
+          userId: params.appUserId,
+          firstName: params.firstName || null,
+          lastName: params.lastName || null,
+          email: params.email,
+          phone: params.phone || null,
+          company: params.company || null,
+          jobTitle: params.jobTitle || null,
+          attendeeType: params.attendeeType || null,
+          location: params.location || null,
+        },
+      },
+      params.authOpts,
+    );
+    profileId = profileResult.createApsAppUserProfile?.id ?? null;
+  }
+
+  if (!profileId) {
+    throw new Error('Failed to create ApsAppUserProfile for app user');
+  }
+
+  const linked = await requestGraphQL<{
+    updateApsAppUser?: { id: string; profileId?: string | null };
+  }>(
+    UPDATE_APP_USER,
+    {
+      input: {
+        id: params.appUserId,
+        profileId,
+      },
+    },
+    params.authOpts,
+  );
+  if (!linked.updateApsAppUser?.id) {
+    throw new Error('Failed to attach profileId to app user');
+  }
+
+  return { id: profileId, created };
+}
+
+async function companyNameForRegistrant(
+  companyId: string | null | undefined,
+  authOpts: GraphAuth,
+): Promise<string | null> {
+  if (!companyId) return null;
+  try {
+    const companyResult = await requestGraphQL<{
+      getAPSCompany?: { name: string };
+    }>(GET_COMPANY, { id: companyId }, authOpts);
+    return companyResult.getAPSCompany?.name || null;
+  } catch (error) {
+    console.warn('Failed to fetch company name for profile:', error);
+    return null;
+  }
+}
+
+function profileLocationFromBilling(parts: Array<string | null | undefined>) {
+  const locationParts = parts
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean);
+  return locationParts.length > 0 ? locationParts.join(', ') : null;
+}
+
 async function ensureRegistrantIdentityArtifacts(params: {
   registrant: RegistrantDetail;
   jwt?: string;
@@ -2426,112 +2555,33 @@ async function ensureRegistrantIdentityArtifacts(params: {
   }
 
   const appUserId = registrant.appUser?.id ?? cognitoSub;
+  const linkedUser = await ensureAppUserLinked({
+    appUserId,
+    registrantId: registrant.id,
+    authOpts,
+  });
 
-  if (!registrant.appUser?.id) {
-    const appUserResult = await requestGraphQL<{
-      createApsAppUser?: { id: string; registrantId: string };
-    }>(
-      CREATE_APP_USER,
-      {
-        input: {
-          id: appUserId,
-          registrantId: registrant.id,
-        },
-      },
-      authOpts,
-    );
-
-    if (!appUserResult.createApsAppUser?.id) {
-      throw new Error('Failed to create ApsAppUser for registrant');
-    }
-
-    const linkRegistrantResult = await requestGraphQL<{
-      updateApsRegistrant?: { id: string; appUserId?: string | null };
-    }>(
-      UPDATE_REGISTRANT,
-      {
-        input: {
-          id: registrant.id,
-          appUserId,
-        },
-      },
-      authOpts,
-    );
-
-    if (!linkRegistrantResult.updateApsRegistrant?.id) {
-      throw new Error('Failed to attach appUserId to registrant');
-    }
-  }
-
-  let profileId = registrant.appUser?.profile?.id ?? null;
+  let profileId = registrant.appUser?.profile?.id ?? linkedUser.profileId ?? null;
 
   if (!profileId) {
-    let companyNameForProfile: string | null = null;
-    if (registrant.companyId) {
-      try {
-        const companyResult = await requestGraphQL<{
-          getAPSCompany?: { name: string };
-        }>(GET_COMPANY, { id: registrant.companyId }, authOpts);
-        companyNameForProfile = companyResult.getAPSCompany?.name || null;
-      } catch (error) {
-        console.warn('Failed to fetch company name for profile:', error);
-      }
-    }
-
-    const locationParts = [
-      registrant.billingAddressCity,
-      registrant.billingAddressState,
-      registrant.billingAddressZip,
-    ]
-      .map((value) => (typeof value === 'string' ? value.trim() : ''))
-      .filter(Boolean);
-    const profileLocation =
-      locationParts.length > 0 ? locationParts.join(', ') : null;
-
-    const profileResult = await requestGraphQL<{
-      createApsAppUserProfile?: { id: string; userId: string };
-    }>(
-      CREATE_APP_USER_PROFILE,
-      {
-        input: {
-          userId: appUserId,
-          firstName: registrant.firstName || null,
-          lastName: registrant.lastName || null,
-          email: registrant.email,
-          phone: registrant.phone || null,
-          company: companyNameForProfile || null,
-          jobTitle: registrant.jobTitle || null,
-          attendeeType: registrant.attendeeType || null,
-          location: profileLocation,
-        },
-      },
+    const profile = await ensureAppProfileLinked({
+      appUserId,
+      firstName: registrant.firstName,
+      lastName: registrant.lastName,
+      email: registrant.email,
+      phone: registrant.phone,
+      company: await companyNameForRegistrant(registrant.companyId, authOpts),
+      jobTitle: registrant.jobTitle,
+      attendeeType: registrant.attendeeType,
+      location: profileLocationFromBilling([
+        registrant.billingAddressCity,
+        registrant.billingAddressState,
+        registrant.billingAddressZip,
+      ]),
       authOpts,
-    );
-
-    if (!profileResult.createApsAppUserProfile?.id) {
-      throw new Error('Failed to create ApsAppUserProfile for app user');
-    }
-
-    profileId = profileResult.createApsAppUserProfile.id;
-
-    const linkUserResult = await requestGraphQL<{
-      updateApsAppUser?: { id: string; profileId?: string | null };
-    }>(
-      UPDATE_APP_USER,
-      {
-        input: {
-          id: appUserId,
-          profileId,
-        },
-      },
-      authOpts,
-    );
-
-    if (!linkUserResult.updateApsAppUser?.id) {
-      throw new Error('Failed to attach profileId to app user');
-    }
-
-    if (registrant.attendeeType === 'SPEAKER') {
+    });
+    profileId = profile.id;
+    if (profile.created && registrant.attendeeType === 'SPEAKER') {
       const { createSpeakerFromRegistrantId } =
         await import('@/app/actions/speakers');
       await createSpeakerFromRegistrantId({
@@ -2581,6 +2631,84 @@ async function ensureRegistrantIdentityArtifacts(params: {
   }
 
   return { tempPassword: storedPassword, profileId };
+}
+
+/** Creates the missing app user and community profile without changing login. */
+export async function ensureRegistrantAppProfile(params: {
+  registrantId: string;
+  eventId: string;
+  jwt?: string | null;
+}): Promise<ActionState> {
+  try {
+    const registrant = await fetchRegistrantById(params.registrantId);
+    if (!registrant) {
+      return { ok: false, message: 'Registrant not found.' };
+    }
+
+    const authOpts: GraphAuth = params.jwt
+      ? { authMode: 'userPools', jwt: params.jwt }
+      : undefined;
+    const { sub: cognitoSub } = await ensureCognitoUserForRegistrantEmail(
+      registrant.email,
+    );
+    const appUserId = registrant.appUser?.id ?? cognitoSub;
+    const linkedUser = await ensureAppUserLinked({
+      appUserId,
+      registrantId: registrant.id,
+      authOpts,
+    });
+    const profile = await ensureAppProfileLinked({
+      appUserId,
+      existingProfileId:
+        registrant.appUser?.profile?.id ?? linkedUser.profileId,
+      firstName: registrant.firstName,
+      lastName: registrant.lastName,
+      email: registrant.email,
+      phone: registrant.phone,
+      company: await companyNameForRegistrant(registrant.companyId, authOpts),
+      jobTitle: registrant.jobTitle,
+      attendeeType: registrant.attendeeType,
+      location: profileLocationFromBilling([
+        registrant.billingAddressCity,
+        registrant.billingAddressState,
+        registrant.billingAddressZip,
+      ]),
+      authOpts,
+    });
+
+    if (!registrant.qrCode) {
+      try {
+        const { generateAndUploadQRCode } = await import('@/lib/qrcode-storage');
+        const qrCodeUrl = await generateAndUploadQRCode(registrant.id);
+        await requestGraphQL(
+          UPDATE_REGISTRANT,
+          { input: { id: registrant.id, qrCode: qrCodeUrl } },
+          authOpts,
+        );
+      } catch (error) {
+        console.error('Failed to generate QR code while creating app profile:', error);
+      }
+    }
+
+    revalidatePath(`/aps/${params.eventId}`);
+    revalidatePath(`/aps/${params.eventId}/registrants/${params.registrantId}`);
+
+    return {
+      ok: true,
+      message: profile.created
+        ? 'App profile created. This registrant will show up in the community after the app refreshes.'
+        : 'App profile is already linked.',
+    };
+  } catch (error) {
+    console.error('Failed to ensure registrant app profile:', error);
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Failed to create the app profile.',
+    };
+  }
 }
 
 export async function updateRegistrant(
