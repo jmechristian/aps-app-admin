@@ -42,6 +42,14 @@ const NAV_LINKS = [
     match: (pathname: string) =>
       pathname === '/reporting' || pathname.startsWith('/reporting'),
   },
+  {
+    href: '/feedback',
+    label: 'Feedback',
+    match: (pathname: string) =>
+      pathname === '/feedback' ||
+      pathname.startsWith('/feedback/') ||
+      pathname.endsWith('/feedback'),
+  },
 ] as const;
 
 export default function Providers({ children }: { children: React.ReactNode }) {
