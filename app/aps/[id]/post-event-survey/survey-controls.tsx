@@ -124,15 +124,23 @@ export function SurveyCompletions({
             Reset a row if someone needs to submit again. That deletes their answers.
           </p>
         </div>
-        <input
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setPage(1);
-          }}
-          placeholder='Search name, company, or email'
-          className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md sm:max-w-xs'
-        />
+        <div className='flex w-full flex-col gap-3 sm:max-w-md sm:flex-row sm:items-center'>
+          <input
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
+            placeholder='Search name, company, or email'
+            className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md'
+          />
+          <a
+            href={`/aps/${eventId}/post-event-survey/export.csv`}
+            className='inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+          >
+            Export CSV
+          </a>
+        </div>
       </div>
       {error ? <p className='mt-4 text-sm font-semibold text-red-700'>{error}</p> : null}
       {filtered.length ? (
