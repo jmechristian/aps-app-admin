@@ -136,7 +136,7 @@ export default async function RegistrantProfile({ params }: PageProps) {
   return (
     <div className='min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100 px-6 py-12 text-slate-900'>
       <main className='page-container flex flex-col gap-8'>
-        <header className='flex items-center justify-between gap-4'>
+        <header className='flex flex-wrap items-start justify-between gap-4'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
               Registrant Profile
@@ -149,12 +149,20 @@ export default async function RegistrantProfile({ params }: PageProps) {
               <span>Profile ID: {registrant.appUser?.profile?.id ?? '—'}</span>
             </div>
           </div>
-          <Link
-            href={`/aps/${eventId}`}
-            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-          >
-            ← Back to event
-          </Link>
+          <div className='flex flex-wrap items-center justify-end gap-3'>
+            <a
+              href={`/aps/${eventId}/registrants/${registrant.id}/contacts.csv`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              Export contacts
+            </a>
+            <Link
+              href={`/aps/${eventId}`}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+            >
+              ← Back to event
+            </Link>
+          </div>
         </header>
 
         <RegistrantEditForm
