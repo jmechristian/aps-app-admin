@@ -1,6 +1,7 @@
 import CategoryPageShell from '../category-page-shell';
 import { fetchPostEventSurveyAdmin } from '@/app/actions/post-event-survey';
 import { SurveyCompletions, SurveyLockControl } from './survey-controls';
+import SurveySummary from './survey-summary';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -17,6 +18,8 @@ export default async function PostEventSurveyPage({ params }: PageProps) {
       description='Unlock the in-app survey, review who finished, and reset a completion if someone needs to submit again.'
       activeCategory='post-event-survey'
     >
+      <SurveySummary eventId={eventId} />
+
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
         <h2 className='text-xl font-bold text-slate-900'>Survey lock</h2>
         <p className='mt-2 text-sm text-slate-600'>

@@ -67,6 +67,8 @@ export function SurveyLockControl({
   );
 }
 
+const PAGE_SIZE = 10;
+
 export function SurveyCompletions({
   eventId,
   rows,
@@ -76,6 +78,7 @@ export function SurveyCompletions({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,6 +91,11 @@ export function SurveyCompletions({
         .some((value) => String(value).toLowerCase().includes(q)),
     );
   }, [query, rows]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const visible = filtered.slice(start, start + PAGE_SIZE);
 
   const reset = (row: PostEventSurveyCompletion) => {
     const confirmed = window.confirm(
@@ -118,19 +126,29 @@ export function SurveyCompletions({
         </div>
         <input
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPage(1);
+          }}
           placeholder='Search name, company, or email'
           className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:shadow-md sm:max-w-xs'
         />
       </div>
       {error ? <p className='mt-4 text-sm font-semibold text-red-700'>{error}</p> : null}
-      <div className='mt-6 flex flex-col gap-3'>
-        {!filtered.length ? (
+      {filtered.length ? (
+        <p className='mt-4 text-sm text-slate-600'>
+          {`Showing ${start + 1}–${start + visible.length} of ${filtered.length}${
+            query.trim() ? ' matches' : ''
+          }`}
+        </p>
+      ) : null}
+      <div className='mt-4 flex flex-col gap-3'>
+        {!visible.length ? (
           <p className='text-sm text-slate-600'>
             {rows.length ? 'No matches.' : 'No one has submitted yet.'}
           </p>
         ) : (
-          filtered.map((row) => (
+          visible.map((row) => (
             <article
               key={row.id}
               className='rounded-2xl border border-slate-200 bg-slate-50/70 p-4'
@@ -232,6 +250,29 @@ export function SurveyCompletions({
           ))
         )}
       </div>
+      {pageCount > 1 ? (
+        <div className='mt-6 flex items-center justify-between gap-3'>
+          <button
+            type='button'
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            disabled={currentPage === 1}
+            className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm disabled:cursor-not-allowed disabled:opacity-50'
+          >
+            Previous
+          </button>
+          <p className='text-sm font-semibold text-slate-600'>
+            Page {currentPage} of {pageCount}
+          </p>
+          <button
+            type='button'
+            onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
+            disabled={currentPage === pageCount}
+            className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm disabled:cursor-not-allowed disabled:opacity-50'
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }
