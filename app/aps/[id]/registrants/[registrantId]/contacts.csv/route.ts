@@ -40,6 +40,16 @@ type ContactRequestItem = {
   eventId?: string | null;
 };
 
+type ContactRequestPage = {
+  items?: Array<ContactRequestItem | null> | null;
+  nextToken?: string | null;
+};
+
+type ContactRequestResponse = {
+  apsContactRequestsByUserAIdAndCreatedAt?: ContactRequestPage | null;
+  apsContactRequestsByUserBIdAndCreatedAt?: ContactRequestPage | null;
+};
+
 const GET_REGISTRANT_APP_USER = /* GraphQL */ `
   query GetRegistrantAppUser($id: ID!) {
     getApsRegistrant(id: $id) {
@@ -137,16 +147,12 @@ async function listAcceptedRequests(
   const items: ContactRequestItem[] = [];
   let nextToken: string | null | undefined = null;
   do {
-    const page = await requestGraphQL<{
-      [key: string]: {
-        items?: Array<ContactRequestItem | null> | null;
-        nextToken?: string | null;
-      } | null;
-    }>(
-      query,
-      { ...variables, limit: 200, nextToken: nextToken || undefined },
-      { authMode: 'userPools' },
-    );
+    const page: ContactRequestResponse =
+      await requestGraphQL<ContactRequestResponse>(
+        query,
+        { ...variables, limit: 200, nextToken: nextToken || undefined },
+        { authMode: 'userPools' },
+      );
     const connection = page[connectionName];
     for (const item of connection?.items ?? []) {
       if (item) items.push(item);
@@ -196,7 +202,7 @@ export async function GET(
     for (const request of [...asUserA, ...asUserB]) {
       if ((request.status ?? '').toUpperCase() !== 'ACCEPTED') continue;
       if (request.eventId && request.eventId !== eventId) continue;
-      const otherId =
+      const otherId: string | null | undefined =
         request.userAId === userId ? request.userBId : request.userAId;
       if (otherId && otherId !== userId) otherUserIds.add(otherId);
     }
