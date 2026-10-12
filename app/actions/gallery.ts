@@ -84,7 +84,7 @@ async function eventYear(eventId: string): Promise<string> {
   return year;
 }
 
-export function galleryPrefixForYear(year: string) {
+function galleryPrefixForYear(year: string) {
   return `public/${year}/`;
 }
 

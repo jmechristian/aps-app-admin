@@ -31,9 +31,10 @@ export default function DeleteGalleryPhotoButton({
           router.refresh();
         });
       }}
-      className='inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60'
+      aria-label={`Delete ${filename}`}
+      className='absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-sm font-semibold leading-none text-white shadow-sm transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-60'
     >
-      {isPending ? 'Deleting...' : 'Delete'}
+      {isPending ? '…' : '×'}
     </button>
   );
 }

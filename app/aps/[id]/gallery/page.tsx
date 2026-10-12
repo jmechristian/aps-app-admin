@@ -82,36 +82,28 @@ export default async function GalleryPage({ params, searchParams }: PageProps) {
                 key={photo.key}
                 className='flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50'
               >
-                <a
-                  href={photo.url}
-                  target='_blank'
-                  rel='noreferrer'
-                  className='block aspect-square bg-slate-200'
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.url}
-                    alt={photo.filename}
-                    className='h-full w-full object-cover'
-                  />
-                </a>
-                <div className='flex flex-1 flex-col gap-3 p-3'>
-                  <div className='min-w-0'>
-                    <p className='text-xs font-semibold uppercase tracking-[0.14em] text-slate-500'>
-                      {photo.number}
-                    </p>
-                    <p
-                      className='mt-1 truncate text-xs font-medium text-slate-800'
-                      title={photo.filename}
-                    >
-                      {photo.filename}
-                    </p>
-                  </div>
+                <div className='relative'>
+                  <a
+                    href={photo.url}
+                    target='_blank'
+                    rel='noreferrer'
+                    className='block aspect-square bg-slate-200'
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.url}
+                      alt={photo.filename}
+                      className='h-full w-full object-cover'
+                    />
+                  </a>
                   <DeleteGalleryPhotoButton
                     eventId={eventId}
                     objectKey={photo.key}
                     filename={photo.filename}
                   />
+                  <p className='absolute bottom-2 left-2 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white'>
+                    {photo.number}
+                  </p>
                 </div>
               </li>
             ))}
