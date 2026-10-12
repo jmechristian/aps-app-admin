@@ -1058,6 +1058,13 @@ export type ThinkificProgressSyncResult = {
   message?: string | null,
 };
 
+export type CertificateLaunchResult = {
+  __typename: "CertificateLaunchResult",
+  url: string,
+  createdUser: boolean,
+  thinkificUserId?: number | null,
+};
+
 export type AdminCreateRegistrantInput = {
   apsID?: string | null,
   firstName: string,
@@ -5889,6 +5896,18 @@ export type SyncMyThinkificProgressMutation = {
     updated: boolean,
     syncedAt: string,
     message?: string | null,
+  } | null,
+};
+
+export type LaunchCertificateOfCompletionMutationVariables = {
+};
+
+export type LaunchCertificateOfCompletionMutation = {
+  launchCertificateOfCompletion?:  {
+    __typename: "CertificateLaunchResult",
+    url: string,
+    createdUser: boolean,
+    thinkificUserId?: number | null,
   } | null,
 };
 

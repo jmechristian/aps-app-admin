@@ -147,6 +147,12 @@ type DeleteMyAccountResult {
   message: String
 }
 
+type CertificateLaunchResult {
+  url: String!
+  createdUser: Boolean!
+  thinkificUserId: Int
+}
+
 type Mutation {
   sendModeratedDmMessage(input: SendModeratedDmMessageInput!): ApsDmMessage
     @function(name: "apsPushFanout-${env}")
@@ -154,6 +160,9 @@ type Mutation {
   syncMyThinkificProgress(
     input: SyncThinkificProgressInput
   ): ThinkificProgressSyncResult
+    @function(name: "apsPushFanout-${env}")
+    @aws_cognito_user_pools
+  launchCertificateOfCompletion: CertificateLaunchResult
     @function(name: "apsPushFanout-${env}")
     @aws_cognito_user_pools
   adminCreateRegistrant(

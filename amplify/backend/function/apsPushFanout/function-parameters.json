@@ -18,6 +18,10 @@
       "environmentVariableName": "THINKIFIC_API_KEY"
     },
     {
+      "cloudFormationParameterName": "thinkificSsoSecret",
+      "environmentVariableName": "THINKIFIC_SSO_SECRET"
+    },
+    {
       "cloudFormationParameterName": "thinkificSubdomain",
       "environmentVariableName": "THINKIFIC_SUBDOMAIN"
     },

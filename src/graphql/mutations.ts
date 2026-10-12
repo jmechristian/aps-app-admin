@@ -61,6 +61,18 @@ export const syncMyThinkificProgress = /* GraphQL */ `mutation SyncMyThinkificPr
   APITypes.SyncMyThinkificProgressMutationVariables,
   APITypes.SyncMyThinkificProgressMutation
 >;
+export const launchCertificateOfCompletion = /* GraphQL */ `mutation LaunchCertificateOfCompletion {
+  launchCertificateOfCompletion {
+    url
+    createdUser
+    thinkificUserId
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.LaunchCertificateOfCompletionMutationVariables,
+  APITypes.LaunchCertificateOfCompletionMutation
+>;
 export const adminCreateRegistrant = /* GraphQL */ `mutation AdminCreateRegistrant($input: AdminCreateRegistrantInput!) {
   adminCreateRegistrant(input: $input) {
     id

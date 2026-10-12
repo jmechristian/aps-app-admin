@@ -46,6 +46,11 @@
       "NoEcho": true,
       "Default": ""
     },
+    "thinkificSsoSecret": {
+      "Type": "String",
+      "NoEcho": true,
+      "Default": ""
+    },
     "thinkificSubdomain": {
       "Type": "String",
       "Default": ""
@@ -140,6 +145,9 @@
             },
             "THINKIFIC_API_KEY": {
               "Ref": "thinkificApiKey"
+            },
+            "THINKIFIC_SSO_SECRET": {
+              "Ref": "thinkificSsoSecret"
             },
             "THINKIFIC_SUBDOMAIN": {
               "Ref": "thinkificSubdomain"

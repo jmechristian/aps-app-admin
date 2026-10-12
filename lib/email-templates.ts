@@ -7,6 +7,7 @@ import { Tour2ConfirmedEmail } from '@/react-email-starter/emails/tour-2-confirm
 import { Tour2WaitlistEmail } from '@/react-email-starter/emails/tour-2-waitlist-email';
 import { AppGuideEmail } from '@/react-email-starter/emails/app-guide-email';
 import { AppSigninEmail } from '@/react-email-starter/emails/app-signin-email';
+import { ThankYouEmail } from '@/react-email-starter/emails/thank-you-email';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -495,6 +496,63 @@ const appSigninTemplate: EmailTemplateDefinition = {
   },
 };
 
+const thankYouTemplate: EmailTemplateDefinition = {
+  key: 'thank-you-email',
+  label: 'Thank you (post-event)',
+  description:
+    'Thank-you for connections made, 2027 save-the-date (Monday–Wednesday, October 18–20, Hyatt Regency Greenville), thank-you video, and a Media module to relive the summit: photos now, presentations coming soon, and the Certificate of Completion.',
+  defaultSubject: ({ eventYear }) =>
+    `Thank you for joining AutoPack Summit ${eventYear}`,
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      ThankYouEmail({
+        firstName: recipient.firstName ?? '',
+        eventYear,
+      }),
+    );
+  },
+  renderText: ({ recipient, eventYear }) => {
+    const greetingName =
+      recipient.firstName?.trim() || 'AutoPack Summit Attendee';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      `Thank you for joining us for the ${eventYear} Automotive Packaging Summit. The introductions on the show floor, the conversations between sessions, and the people you will follow up with are what this summit is for.`,
+      '',
+      'THANK YOU VIDEO',
+      'Watch a short thank-you from the team:',
+      'https://www.youtube.com/watch?v=7yDlnQcywng',
+      '',
+      'SAVE THE DATE — AUTOPACK SUMMIT 2027',
+      'Monday–Wednesday, October 18–20, 2027',
+      'Monday, October 18',
+      'Tuesday, October 19',
+      'Wednesday, October 20',
+      'Hyatt Regency, Greenville, South Carolina',
+      'Next year runs Monday through Wednesday. Plan travel with that schedule in mind.',
+      '',
+      'MEDIA — RELIVE THE SUMMIT',
+      'https://packagingschool.com/events/aps-2026',
+      '',
+      'PHOTOS — now',
+      'From the floor, ready to browse.',
+      '',
+      'PRESENTATIONS — coming soon',
+      'Video of the presentations is on the way.',
+      '',
+      'CERTIFICATE OF COMPLETION — free',
+      'Attendees who meet the participation requirements receive a 2026 Certificate of Attendance for professional development, reimbursement, or continuing education.',
+      '',
+      'Until next year in Greenville.',
+      '',
+      'Questions: bianca@packagingschool.com',
+      '',
+      'The AutoPack Summit Team',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
+};
+
 const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [welcomeTemplate.key]: welcomeTemplate,
   [appAccessTemplate.key]: appAccessTemplate,
@@ -504,6 +562,7 @@ const TEMPLATES: Record<string, EmailTemplateDefinition> = {
   [tour2WaitlistTemplate.key]: tour2WaitlistTemplate,
   [appGuideTemplate.key]: appGuideTemplate,
   [appSigninTemplate.key]: appSigninTemplate,
+  [thankYouTemplate.key]: thankYouTemplate,
 };
 
 export function listEmailTemplates(): EmailTemplateDefinition[] {

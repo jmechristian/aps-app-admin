@@ -72,7 +72,11 @@ const THINKIFIC_ENROLLMENTS_URL =
   process.env.THINKIFIC_ENROLLMENTS_URL ||
   'https://api.thinkific.com/api/public/v1/enrollments';
 const THINKIFIC_API_KEY = process.env.THINKIFIC_API_KEY || '';
+const THINKIFIC_SSO_SECRET = process.env.THINKIFIC_SSO_SECRET || '';
 const THINKIFIC_SUBDOMAIN = process.env.THINKIFIC_SUBDOMAIN || '';
+const THINKIFIC_SSO_URL = 'https://packagingschool.com/api/sso/v2/sso/jwt';
+const DEFAULT_CERTIFICATE_URL =
+  'https://packagingschool.com/enroll/3901872?price_id=4873642';
 const APC_TOTAL_COURSES = Number(process.env.APC_TOTAL_COURSES || '10') || 10;
 function resolveExhibitorQrBucket() {
   const candidates = [
@@ -750,13 +754,34 @@ const GET_CURRENT_APP_USER = /* GraphQL */ `
       registrant {
         id
         email
+        firstName
+        lastName
+        jobTitle
+        company {
+          name
+        }
       }
       profile {
         id
         email
+        firstName
+        lastName
+        company
+        jobTitle
+        bio
         thinkificId
         apcProgress
       }
+    }
+  }
+`;
+
+const GET_CERTIFICATE_GATE = /* GraphQL */ `
+  query GetCertificateGate($id: ID!) {
+    getAPS(id: $id) {
+      id
+      certificateOfCompletionOpen
+      certificateOfCompletionUrl
     }
   }
 `;
@@ -790,7 +815,9 @@ async function readErrorBody(res) {
   }
 }
 
-async function fetchThinkificWithAuth(url, mode = 'auto') {
+async function fetchThinkificWithAuth(url, mode = 'auto', options = {}) {
+  const method = options.method || 'GET';
+  const hasBody = options.body != null;
   const primaryHeaders = {
     'X-Auth-API-Key': THINKIFIC_API_KEY,
     'X-Auth-Subdomain': THINKIFIC_SUBDOMAIN,
@@ -799,20 +826,31 @@ async function fetchThinkificWithAuth(url, mode = 'auto') {
     Authorization: `Bearer ${THINKIFIC_API_KEY}`,
     'X-Auth-Subdomain': THINKIFIC_SUBDOMAIN,
   };
+  if (hasBody) {
+    primaryHeaders['Content-Type'] = 'application/json';
+    fallbackHeaders['Content-Type'] = 'application/json';
+  }
+
+  const send = (headers) =>
+    fetch(url, {
+      method,
+      headers,
+      body: hasBody ? JSON.stringify(options.body) : undefined,
+    });
 
   if (mode === 'header') {
-    const res = await fetch(url, { headers: primaryHeaders });
+    const res = await send(primaryHeaders);
     return { res, mode: 'header' };
   }
   if (mode === 'bearer') {
-    const res = await fetch(url, { headers: fallbackHeaders });
+    const res = await send(fallbackHeaders);
     return { res, mode: 'bearer' };
   }
 
-  const firstTry = await fetch(url, { headers: primaryHeaders });
+  const firstTry = await send(primaryHeaders);
   if (firstTry.status !== 401) return { res: firstTry, mode: 'header' };
 
-  const secondTry = await fetch(url, { headers: fallbackHeaders });
+  const secondTry = await send(fallbackHeaders);
   return { res: secondTry, mode: 'bearer' };
 }
 
@@ -1013,6 +1051,194 @@ async function handleSyncMyThinkificProgress(event) {
     updated: changed,
     syncedAt: now,
     message: changed ? 'Profile progress synced' : 'Profile progress unchanged',
+  };
+}
+
+function pickText(...values) {
+  for (const value of values) {
+    const text = String(value ?? '').trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+function thinkificUsersEndpoint() {
+  const fallback = 'https://api.thinkific.com/api/public/v1/users';
+  try {
+    const url = new URL(THINKIFIC_ENROLLMENTS_URL);
+    url.pathname = url.pathname.replace(/\/enrollments\/?$/i, '/users');
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return fallback;
+  }
+}
+
+function isThinkificEmailTaken(status, detail) {
+  if (status !== 422 && status !== 409) return false;
+  return /email/i.test(detail) && /taken|exists|already/i.test(detail);
+}
+
+function certificateReturnUrl(savedUrl) {
+  const candidate = pickText(savedUrl) || DEFAULT_CERTIFICATE_URL;
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error('Certificate page must be an https://packagingschool.com link.');
+  }
+  const host = parsed.hostname.toLowerCase();
+  const allowed = host === 'packagingschool.com' || host.endsWith('.packagingschool.com');
+  if (parsed.protocol !== 'https:' || !allowed) {
+    throw new Error('Certificate page must be an https://packagingschool.com link.');
+  }
+  return parsed.toString();
+}
+
+function signThinkificSsoJwt(payload) {
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const header = encode({ alg: 'HS256', typ: 'JWT' });
+  const body = encode(payload);
+  const data = `${header}.${body}`;
+  const signature = crypto.createHmac('sha256', THINKIFIC_SSO_SECRET).update(data).digest('base64url');
+  return `${data}.${signature}`;
+}
+
+function buildThinkificSsoUrl({ firstName, lastName, email, company, returnTo }) {
+  const payload = {
+    first_name: firstName,
+    last_name: lastName,
+    email,
+    iat: Math.floor(Date.now() / 1000),
+  };
+  if (company) payload.company = company;
+  const url = new URL(THINKIFIC_SSO_URL);
+  url.searchParams.set('jwt', signThinkificSsoJwt(payload));
+  url.searchParams.set('return_to', returnTo);
+  return url.toString();
+}
+
+async function findThinkificUserByEmail(email) {
+  if (!THINKIFIC_API_KEY || !THINKIFIC_SUBDOMAIN) {
+    throw new Error('Thinkific credentials are missing in environment variables');
+  }
+  const url = new URL(thinkificUsersEndpoint());
+  url.searchParams.set('query[email]', email);
+  url.searchParams.set('limit', '25');
+  const { res } = await fetchThinkificWithAuth(url.toString(), 'auto');
+  if (!res.ok) {
+    const detail = await readErrorBody(res);
+    throw new Error(`Thinkific user lookup failed (${res.status}): ${detail}`);
+  }
+  const data = await res.json();
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return (
+    items.find((item) => String(item?.email || '').trim().toLowerCase() === email) || null
+  );
+}
+
+async function createThinkificUser(fields) {
+  const body = {
+    first_name: fields.firstName,
+    last_name: fields.lastName,
+    email: fields.email,
+    send_welcome_email: false,
+  };
+  if (fields.company) body.company = fields.company;
+  if (fields.headline) body.headline = fields.headline;
+  if (fields.bio) body.bio = fields.bio;
+
+  const { res } = await fetchThinkificWithAuth(thinkificUsersEndpoint(), 'auto', {
+    method: 'POST',
+    body,
+  });
+  if (!res.ok) {
+    const detail = await readErrorBody(res);
+    const error = new Error(`Thinkific user create failed (${res.status}): ${detail}`);
+    error.emailTaken = isThinkificEmailTaken(res.status, detail);
+    throw error;
+  }
+  const data = await res.json();
+  return data?.user || data;
+}
+
+async function handleLaunchCertificateOfCompletion(event) {
+  const userSub = getIdentitySub(event);
+  if (!userSub) throw new Error('Unauthorized');
+  if (!THINKIFIC_SSO_SECRET) {
+    throw new Error(
+      'Thinkific SSO is not configured. Add the SSO signing secret before opening the certificate.'
+    );
+  }
+  if (!THINKIFIC_API_KEY || !THINKIFIC_SUBDOMAIN) {
+    throw new Error('Thinkific credentials are missing in environment variables');
+  }
+
+  const eventId = String(APS_EVENT_ID || '').trim();
+  if (!eventId) throw new Error('APS_EVENT_ID is required');
+
+  const gateData = await appsyncRequest(GET_CERTIFICATE_GATE, { id: eventId });
+  if (!gateData?.getAPS?.certificateOfCompletionOpen) {
+    throw new Error('The certificate is not open yet.');
+  }
+
+  const appUserData = await appsyncRequest(GET_CURRENT_APP_USER, { id: userSub });
+  const appUser = appUserData?.getApsAppUser;
+  const profile = appUser?.profile;
+  const registrant = appUser?.registrant;
+  if (!profile?.id) throw new Error('Profile not found for current user');
+
+  const email = pickText(profile.email, registrant?.email).toLowerCase();
+  const firstName = pickText(profile.firstName, registrant?.firstName);
+  const lastName = pickText(profile.lastName, registrant?.lastName);
+  const company = pickText(profile.company, registrant?.company?.name);
+  const headline = pickText(profile.jobTitle, registrant?.jobTitle);
+  const bio = pickText(profile.bio);
+  if (!email) {
+    throw new Error('Add an email to your profile before opening the certificate.');
+  }
+  if (!firstName || !lastName) {
+    throw new Error('Add your first and last name to your profile before opening the certificate.');
+  }
+
+  const returnTo = certificateReturnUrl(gateData.getAPS.certificateOfCompletionUrl);
+
+  let createdUser = false;
+  let thinkificUser = await findThinkificUserByEmail(email);
+  if (!thinkificUser) {
+    try {
+      thinkificUser = await createThinkificUser({
+        firstName,
+        lastName,
+        email,
+        company,
+        headline,
+        bio,
+      });
+      createdUser = true;
+    } catch (error) {
+      if (!error?.emailTaken) throw error;
+      thinkificUser = await findThinkificUserByEmail(email);
+      if (!thinkificUser) throw error;
+    }
+  }
+
+  const parsedThinkificId = Number(thinkificUser?.id);
+  const thinkificUserId = Number.isFinite(parsedThinkificId) ? parsedThinkificId : null;
+  if (thinkificUserId != null && profile.thinkificId !== thinkificUserId) {
+    await appsyncRequest(UPDATE_PROFILE_PROGRESS, {
+      input: {
+        id: profile.id,
+        thinkificId: thinkificUserId,
+      },
+    });
+  }
+
+  return {
+    url: buildThinkificSsoUrl({ firstName, lastName, email, company, returnTo }),
+    createdUser,
+    thinkificUserId,
   };
 }
 
@@ -2053,6 +2279,10 @@ exports.handler = async (event) => {
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'syncMyThinkificProgress') {
     return handleSyncMyThinkificProgress(event);
+  }
+
+  if (event?.typeName === 'Mutation' && event?.fieldName === 'launchCertificateOfCompletion') {
+    return handleLaunchCertificateOfCompletion(event);
   }
 
   if (event?.typeName === 'Mutation' && event?.fieldName === 'sendModeratedDmMessage') {
