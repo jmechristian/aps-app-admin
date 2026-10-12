@@ -1,11 +1,16 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
+const DEFAULT_FROM_NAME = 'Automotive Packaging Summit';
+const DEFAULT_FROM_EMAIL = 'bianca@packagingschool.com';
+
 export function getSesFromAddress() {
-  return (
+  const configured =
     process.env.APS_WELCOME_EMAIL_FROM ||
     process.env.APS_EMAIL_FROM ||
-    'info@packagingschool.com'
-  );
+    DEFAULT_FROM_EMAIL;
+
+  if (configured.includes('<')) return configured;
+  return `"${DEFAULT_FROM_NAME}" <${configured}>`;
 }
 
 export function buildSesClient(): SESClient {
