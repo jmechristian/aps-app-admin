@@ -1,61 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
-type CategoryKey =
-  | 'exhibitors'
-  | 'sponsors'
-  | 'speakers'
-  | 'agenda'
-  | 'companies'
-  | 'add-ons'
-  | 'passport'
-  | 'post-event-survey'
-  | 'feedback'
-  | 'certificate'
-  | 'gallery'
-  | 'seating'
-  | 'badges';
-
-const CATEGORY_LABELS: Record<CategoryKey, string> = {
-  companies: 'Companies',
-  exhibitors: 'Exhibitors',
-  sponsors: 'Sponsors',
-  speakers: 'Speakers',
-  agenda: 'Agenda',
-  'add-ons': 'Add-Ons',
-  passport: 'Passport',
-  'post-event-survey': 'Post-Event Survey',
-  feedback: 'Feedback',
-  certificate: 'Certificate',
-  gallery: 'Gallery',
-  seating: 'Seating Chart',
-  badges: 'Badges',
-};
-
-function CategoryNavLink({
-  eventId,
-  category,
-  activeCategory,
-}: {
-  eventId: string;
-  category: CategoryKey;
-  activeCategory: CategoryKey;
-}) {
-  const isActive = category === activeCategory;
-
-  return (
-    <Link
-      href={`/aps/${eventId}/${category}`}
-      className={
-        isActive
-          ? 'inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-          : 'inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
-      }
-    >
-      {CATEGORY_LABELS[category]}
-    </Link>
-  );
-}
+import EventSectionNav, { type EventSectionSlug } from './event-section-nav';
 
 export default function CategoryPageShell({
   eventId,
@@ -67,7 +12,7 @@ export default function CategoryPageShell({
   eventId: string;
   title: string;
   description: string;
-  activeCategory: CategoryKey;
+  activeCategory: EventSectionSlug;
   children: ReactNode;
 }) {
   return (
@@ -89,78 +34,16 @@ export default function CategoryPageShell({
           </Link>
         </header>
 
-        <nav className='flex flex-wrap gap-3'>
-          <CategoryNavLink
+        <div className='rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'>
+          <EventSectionNav
             eventId={eventId}
-            category='companies'
-            activeCategory={activeCategory}
+            tone='light'
+            activeSlug={activeCategory}
           />
-          <CategoryNavLink
-            eventId={eventId}
-            category='exhibitors'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='sponsors'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='speakers'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='agenda'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='add-ons'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='passport'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='post-event-survey'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='feedback'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='certificate'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='gallery'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='seating'
-            activeCategory={activeCategory}
-          />
-          <CategoryNavLink
-            eventId={eventId}
-            category='badges'
-            activeCategory={activeCategory}
-          />
-        </nav>
+        </div>
 
         {children}
       </main>
     </div>
   );
 }
-
-

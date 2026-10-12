@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import EventSectionNav from './event-section-nav';
 import { requestGraphQL } from '@/lib/appsync';
 import CreateRegistrantButton from './create-registrant-button';
 import RegistrantLookup from './registrant-lookup';
@@ -281,101 +282,9 @@ function ApsDetailClient({
               </span>
             </div>
             <p className='text-sm text-white/80'>
-              Continue managing this APS from the overview page—edit details,
-              add codes, or remove the event entirely.
+              Jump to a section of this event.
             </p>
-            <div className='mt-2 flex flex-col gap-3'>
-              <Link
-                href={`/aps/${eventId}/companies`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
-              >
-                Companies
-              </Link>
-              <Link
-                href={`/aps/${eventId}/exhibitors`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Exhibitors
-              </Link>
-              <Link
-                href={`/aps/${eventId}/sponsors`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Sponsors
-              </Link>
-              <Link
-                href={`/aps/${eventId}/speakers`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Speakers
-              </Link>
-              <Link
-                href={`/aps/${eventId}/agenda`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Agenda
-              </Link>
-              <Link
-                href={`/aps/${eventId}/codes`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Codes
-              </Link>
-              <Link
-                href={`/aps/${eventId}/add-ons`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Add-Ons
-              </Link>
-              <Link
-                href={`/aps/${eventId}/thinkific`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Thinkific
-              </Link>
-              <Link
-                href={`/aps/${eventId}/passport`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Passport
-              </Link>
-              <Link
-                href={`/aps/${eventId}/certificate`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Certificate
-              </Link>
-              <Link
-                href={`/aps/${eventId}/gallery`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Gallery
-              </Link>
-              <Link
-                href={`/aps/${eventId}/feedback`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Feedback
-              </Link>
-              <Link
-                href={`/aps/${eventId}/post-event-survey`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Post-Event Survey
-              </Link>
-              <Link
-                href={`/aps/${eventId}/seating`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Seating Chart
-              </Link>
-              <Link
-                href={`/aps/${eventId}/badges`}
-                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80'
-              >
-                Badges
-              </Link>
-            </div>
+            <EventSectionNav eventId={eventId} tone='dark' />
           </div>
         </section>
 
