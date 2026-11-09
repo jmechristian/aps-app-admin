@@ -123,13 +123,13 @@ function ApsDetailClient({
         <header className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-2'>
             <p className='text-sm font-semibold uppercase tracking-[0.2em] text-slate-500'>
-              APS Detail
+              Event
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>
-              Event {aps.year}
+              {aps.year}
             </h1>
             <p className='text-slate-600'>
-              Review the core properties for this APS event.
+              Review the core properties for this event.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-3'>
@@ -169,7 +169,7 @@ function ApsDetailClient({
                   Primary
                 </p>
                 <h2 className='text-2xl font-bold text-slate-900'>
-                  APS #{aps.year}
+                  {aps.year}
                 </h2>
               </div>
               <span className='rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white'>
@@ -186,7 +186,7 @@ function ApsDetailClient({
             >
               <input type='hidden' name='id' value={aps.id} />
               <label className='flex flex-col gap-2 text-sm font-semibold text-slate-700'>
-                Year
+                Title
                 <input
                   name='year'
                   defaultValue={aps.year}
@@ -268,7 +268,7 @@ function ApsDetailClient({
                   type='submit'
                   className='inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
                 >
-                  Save APS details
+                  Save details
                 </button>
               </div>
             </form>

@@ -4,6 +4,7 @@ import CategoryPageShell from '../category-page-shell';
 import { listGalleryPhotos } from '@/app/actions/gallery';
 import { requestGraphQL } from '@/lib/appsync';
 import DeleteGalleryPhotoButton from './delete-gallery-photo-button';
+import { isYearLabel } from '@/lib/event-label';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,12 +64,14 @@ export default async function GalleryPage({ params, searchParams }: PageProps) {
               change this page makes.
             </p>
           </div>
-          <a
-            href={`https://packagingschool.com/events/aps-${gallery.year}`}
-            className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
-          >
-            View media page
-          </a>
+          {isYearLabel(gallery.year) ? (
+            <a
+              href={`https://packagingschool.com/events/aps-${gallery.year}`}
+              className='inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md'
+            >
+              View media page
+            </a>
+          ) : null}
         </div>
 
         {pagePhotos.length === 0 ? (

@@ -50,7 +50,7 @@ export default async function ReportingPage({
         <main className='page-container rounded-3xl border border-white/10 bg-white/5 p-8'>
           <h1 className='text-3xl font-black'>Reporting</h1>
           <p className='mt-2 text-white/75'>
-            Create an APS event first, then this dashboard can score contact
+            Create an event first, then this dashboard can score contact
             requests and app logins.
           </p>
           <Link

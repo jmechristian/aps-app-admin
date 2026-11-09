@@ -14,6 +14,7 @@ import {
 } from '@/lib/announcements';
 import { isHtmlBodyEmpty, stripDangerousHtml } from '@/lib/html-text';
 import WysiwygEditor from '@/app/components/wysiwyg-editor';
+import { compareEventLabels } from '@/lib/event-label';
 
 type APS = { id: string; year: string };
 
@@ -237,7 +238,7 @@ export default function AnnouncementsClient() {
             id: x.id,
             year: x.year,
           }))
-          .sort((a: APS, b: APS) => Number(b.year) - Number(a.year));
+          .sort((a: APS, b: APS) => compareEventLabels(a.year, b.year));
         if (!cancelled) {
           setEvents(ev);
           if (!eventId && ev.length) {

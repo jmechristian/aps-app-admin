@@ -27,7 +27,7 @@ export default async function CompanyDetailPage({ params }: PageProps) {
     <CategoryPageShell
       eventId={eventId}
       title='Edit Company'
-      description='Update APS company details for this event.'
+      description='Update company details for this event.'
       activeCategory='companies'
     >
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>

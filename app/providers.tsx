@@ -166,7 +166,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
         <div className="page-container flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-4">
-            <div className="text-sm font-semibold text-slate-800">APS Admin</div>
+            <div className="text-sm font-semibold text-slate-800">Admin</div>
             <nav className="hidden items-center gap-3 text-xs font-semibold text-slate-600 md:flex">
               {NAV_LINKS.map((link) => {
                 const active = link.match(pathname || '');

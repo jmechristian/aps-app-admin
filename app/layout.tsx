@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "APS Admin",
-  description: "APS Admin",
+  title: "Admin",
+  description: "Event admin",
 };
 
 export default function RootLayout({

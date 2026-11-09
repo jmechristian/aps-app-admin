@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createAps, updateAps } from './actions/aps';
 import { requestGraphQL } from '@/lib/appsync';
+import { compareEventLabels } from '@/lib/event-label';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,9 @@ async function fetchEvents(): Promise<APS[]> {
     listAPS?: { items?: APS[] | null } | null;
   }>(LIST_APS, { limit: 50 });
 
-  return data.listAPS?.items?.filter(Boolean) ?? [];
+  return (data.listAPS?.items?.filter(Boolean) ?? []).sort((a, b) =>
+    compareEventLabels(a.year, b.year),
+  );
 }
 
 export default async function Home() {
@@ -74,10 +77,10 @@ export default async function Home() {
               Admin
             </p>
             <h1 className='text-4xl font-bold text-slate-900 sm:text-5xl'>
-              APS Events
+              Events
             </h1>
             <p className='text-slate-600'>
-              Create, review, and manage summit events with quick actions.
+              Create, review, and manage events with quick actions.
             </p>
           </div>
         </header>
@@ -89,7 +92,7 @@ export default async function Home() {
                 Create new event
               </h2>
               <p className='text-sm text-slate-600'>
-                Add a new APS record with a year label.
+                Add an event with a title.
               </p>
             </div>
           </div>
@@ -99,10 +102,10 @@ export default async function Home() {
             className='mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner sm:grid-cols-[1.2fr_auto]'
           >
             <label className='flex flex-col gap-2 text-sm font-medium text-slate-700'>
-              Year
+              Title
               <input
                 name='year'
-                placeholder='2025'
+                placeholder='2026 or Spring Forum'
                 required
                 className='w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none ring-0 transition focus:border-slate-400 focus:shadow-md'
               />
@@ -130,7 +133,7 @@ export default async function Home() {
 
           {events.length === 0 ? (
             <div className='rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-600 shadow-sm'>
-              No events yet. Create your first APS event above.
+              No events yet. Create your first event above.
             </div>
           ) : (
             <div className='grid gap-4 lg:grid-cols-2'>
@@ -144,7 +147,7 @@ export default async function Home() {
                     <div className='flex items-start justify-between gap-3'>
                       <div>
                         <p className='text-xs font-semibold uppercase tracking-[0.2em] text-slate-500'>
-                          Year
+                          Title
                         </p>
                         <h3 className='text-2xl font-bold text-slate-900'>
                           {event.year}
@@ -178,7 +181,7 @@ export default async function Home() {
                         >
                           <input type='hidden' name='id' value={event.id} />
                           <label className='flex flex-col gap-1 text-xs font-semibold text-slate-700'>
-                            Year
+                            Title
                             <input
                               name='year'
                               defaultValue={event.year}

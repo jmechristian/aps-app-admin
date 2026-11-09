@@ -17,7 +17,7 @@ export default async function BoardPage() {
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>Board</h1>
             <p className='text-slate-600'>
-              Manage APS board members globally (not tied to a specific event).
+              Manage board members globally (not tied to a specific event).
             </p>
           </div>
           <Link

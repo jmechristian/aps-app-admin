@@ -12,6 +12,7 @@ import {
   galleryPhotoNumber,
   isGalleryJpeg,
 } from '@/lib/gallery-sort';
+import { isYearLabel } from '@/lib/event-label';
 
 export type GalleryPhoto = {
   key: string;
@@ -73,19 +74,19 @@ const GET_APS_YEAR = /* GraphQL */ `
   }
 `;
 
-async function eventYear(eventId: string): Promise<string> {
+async function eventLabel(eventId: string): Promise<string> {
   const data = await requestGraphQL<{
     getAPS?: { year?: string | null } | null;
   }>(GET_APS_YEAR, { id: eventId });
-  const year = data.getAPS?.year?.trim() ?? '';
-  if (!/^\d{4}$/.test(year)) {
-    throw new Error('This event does not have a 4-digit year.');
-  }
-  return year;
+  const label = data.getAPS?.year?.trim() ?? '';
+  if (!label) throw new Error('This event does not have a title.');
+  return label;
 }
 
-function galleryPrefixForYear(year: string) {
-  return `public/${year}/`;
+function galleryPrefixForEvent(eventId: string, label: string) {
+  // Existing summit photos live at public/2026/. Leave that path alone.
+  if (isYearLabel(label)) return `public/${label}/`;
+  return `public/events/${eventId}/`;
 }
 
 function publicObjectUrl(bucket: string, region: string, key: string) {
@@ -98,8 +99,8 @@ export async function listGalleryPhotos(eventId: string): Promise<{
   prefix: string;
   photos: GalleryPhoto[];
 }> {
-  const year = await eventYear(eventId);
-  const prefix = galleryPrefixForYear(year);
+  const year = await eventLabel(eventId);
+  const prefix = galleryPrefixForEvent(eventId, year);
   const { bucket, region } = getBucketConfig();
   const client = new S3Client({ region });
 
@@ -143,8 +144,8 @@ export async function deleteGalleryPhoto(input: {
   const key = input.key.trim();
   if (!eventId || !key) throw new Error('Missing photo.');
 
-  const year = await eventYear(eventId);
-  const prefix = galleryPrefixForYear(year);
+  const year = await eventLabel(eventId);
+  const prefix = galleryPrefixForEvent(eventId, year);
   if (!key.startsWith(prefix) || key.includes('..') || !isGalleryJpeg(key)) {
     throw new Error('That file is not a gallery photo for this event.');
   }

@@ -69,8 +69,7 @@ export default function CreateSpeakerModal({
           <div>
             <h2 className='text-2xl font-bold text-slate-900'>Create Speaker</h2>
             <p className='mt-1 text-sm text-slate-600'>
-              Choose a registrant (person) to create an{' '}
-              <span className='font-semibold'>APSSpeaker</span>.
+              Choose a registrant to create a speaker.
             </p>
           </div>
           <button

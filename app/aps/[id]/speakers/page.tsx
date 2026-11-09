@@ -31,7 +31,7 @@ export default async function SpeakersPage({ params }: PageProps) {
     <CategoryPageShell
       eventId={eventId}
       title='Speakers'
-      description='Speakers are backed by APSSpeaker records for this event.'
+      description='Speakers for this event.'
       activeCategory='speakers'
     >
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
@@ -60,7 +60,7 @@ export default async function SpeakersPage({ params }: PageProps) {
 
         {speakerProfiles.length === 0 ? (
           <div className='mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700'>
-            No APSSpeaker records found yet.
+            No speakers yet.
           </div>
         ) : (
           <div className='mt-6 overflow-hidden rounded-2xl border border-slate-200'>

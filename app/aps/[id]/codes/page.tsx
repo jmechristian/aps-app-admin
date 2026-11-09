@@ -52,7 +52,7 @@ export default async function CodesPage({ params }: PageProps) {
               Event Management
             </p>
             <h1 className='text-4xl font-bold text-slate-900'>
-              Codes for APS {aps.year}
+              Codes for {aps.year}
             </h1>
             <p className='text-slate-600'>
               Create, edit, and remove discount codes for this event.

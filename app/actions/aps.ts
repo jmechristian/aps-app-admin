@@ -229,7 +229,7 @@ export async function fetchCodeRegistrationsByCode(
 export async function createAps(formData: FormData) {
   try {
     const year = formData.get("year")?.toString().trim();
-    if (!year) throw new Error("Year is required");
+    if (!year) throw new Error("Title is required");
     const input = { year, ...buildInput(formData) };
     await requestGraphQL(CREATE_APS, { input });
     revalidatePath("/");
@@ -242,9 +242,9 @@ export async function createAps(formData: FormData) {
 export async function updateAps(formData: FormData) {
   try {
     const id = formData.get("id")?.toString();
-    if (!id) throw new Error("Missing APS id");
+    if (!id) throw new Error("Missing event id");
     const year = formData.get("year")?.toString().trim();
-    if (!year) throw new Error("Year is required");
+    if (!year) throw new Error("Title is required");
     const input = { id, year, ...buildInput(formData) };
     await requestGraphQL(UPDATE_APS, { input });
     revalidatePath("/");

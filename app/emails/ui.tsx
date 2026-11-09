@@ -21,6 +21,7 @@ import {
   type RegistrantTypeFilter,
   type AddOnRequestStatusFilter,
 } from '@/app/actions/emails';
+import { compareEventLabels } from '@/lib/event-label';
 
 type APS = { id: string; year: string };
 
@@ -271,7 +272,7 @@ export default function EmailsClient() {
         const ev = (data.listAPS?.items ?? [])
           .filter(Boolean)
           .map((x) => ({ id: x!.id, year: x!.year }))
-          .sort((a, b) => Number(b.year) - Number(a.year));
+          .sort((a, b) => compareEventLabels(a.year, b.year));
         setEvents(ev);
         if (!eventId && ev.length) {
           const preferred = ev.find((e) => e.year === '2026') ?? ev[0];

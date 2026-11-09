@@ -24,7 +24,7 @@ export default async function CompaniesPage({ params }: PageProps) {
     <CategoryPageShell
       eventId={eventId}
       title='Companies'
-      description='Create and manage APS companies for this event.'
+      description='Create and manage companies for this event.'
       activeCategory='companies'
     >
       <section className='rounded-3xl border border-slate-200 bg-white p-8 shadow-lg'>
