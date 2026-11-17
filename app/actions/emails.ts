@@ -641,7 +641,7 @@ async function resolveTemplateSubject(params: {
   eventId: string;
   subject?: string;
 }) {
-  const template = assertEmailTemplate(params.templateKey);
+  const template = assertEmailTemplate(params.templateKey, params.eventId);
   const eventYear = await getEventYear(params.eventId);
   const subject =
     stripTestSubjectPrefix(params.subject ?? '') ||
@@ -695,8 +695,8 @@ async function resolveRecipientForPreview(params: {
   };
 }
 
-export async function getEmailTemplateOptions() {
-  return listEmailTemplates().map((t) => ({
+export async function getEmailTemplateOptions(eventId: string) {
+  return listEmailTemplates(eventId).map((t) => ({
     key: t.key,
     label: t.label,
     description: t.description ?? null,
@@ -943,7 +943,7 @@ export async function createEmailCampaign(input: {
   notLoggedInOnly?: boolean;
 }): Promise<{ ok: true; campaign: EmailCampaign } | { ok: false; error: string }> {
   try {
-    const template = assertEmailTemplate(input.templateKey);
+    const template = assertEmailTemplate(input.templateKey, input.eventId);
     const eventYear = await getEventYear(input.eventId);
     const subject =
       stripTestSubjectPrefix(input.subject ?? '') ||
@@ -999,7 +999,9 @@ export async function updateEmailCampaign(input: {
     throw new Error('Only draft or cancelled campaigns can be edited');
   }
 
-  if (input.templateKey) assertEmailTemplate(input.templateKey);
+  if (input.templateKey) {
+    assertEmailTemplate(input.templateKey, existing.eventId);
+  }
 
   const data = await requestGraphQL<{
     updateApsEmailCampaign?: EmailCampaign | null;
@@ -1258,7 +1260,7 @@ export async function runEmailCampaign(campaignId: string): Promise<{
   }
 
   const decoded = decodeCampaignTemplateKey(campaign.templateKey);
-  const template = assertEmailTemplate(decoded.templateKey);
+  const template = assertEmailTemplate(decoded.templateKey, campaign.eventId);
   const eventYear = await getEventYear(campaign.eventId);
   const subject =
     stripTestSubjectPrefix(campaign.subject) ||

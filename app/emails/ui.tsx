@@ -21,7 +21,7 @@ import {
   type RegistrantTypeFilter,
   type AddOnRequestStatusFilter,
 } from '@/app/actions/emails';
-import { compareEventLabels } from '@/lib/event-label';
+import { APS_EVENT_ID, compareEventLabels } from '@/lib/event-label';
 
 type APS = { id: string; year: string };
 
@@ -137,11 +137,12 @@ export default function EmailsClient() {
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(false);
+  const [eventLoading, setEventLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const [name, setName] = useState('');
-  const [templateKey, setTemplateKey] = useState('welcome-email');
+  const [templateKey, setTemplateKey] = useState('');
   const [subject, setSubject] = useState('');
   const [audienceStatuses, setAudienceStatuses] = useState<
     RegistrantStatusFilter[]
@@ -250,21 +251,13 @@ export default function EmailsClient() {
     let cancelled = false;
     async function loadBootstrap() {
       try {
-        const [templateOptions, eventsRes] = await Promise.all([
-          getEmailTemplateOptions(),
-          client.graphql({
-            query: LIST_APS,
-            variables: { limit: 50 },
-            authMode: 'apiKey',
-          }),
-        ]);
+        const eventsRes = await client.graphql({
+          query: LIST_APS,
+          variables: { limit: 50 },
+          authMode: 'apiKey',
+        });
 
         if (cancelled) return;
-
-        setTemplates(templateOptions);
-        if (templateOptions[0] && !templateKey) {
-          setTemplateKey(templateOptions[0].key);
-        }
 
         const data = getGraphQLData<{
           listAPS?: { items?: Array<APS | null> | null };
@@ -275,7 +268,11 @@ export default function EmailsClient() {
           .sort((a, b) => compareEventLabels(a.year, b.year));
         setEvents(ev);
         if (!eventId && ev.length) {
-          const preferred = ev.find((e) => e.year === '2026') ?? ev[0];
+          const preferred =
+            ev.find((e) => e.id === APS_EVENT_ID) ??
+            ev.find((e) => e.year === '2026') ??
+            ev[0];
+          setEventLoading(true);
           setEventId(preferred.id);
         }
       } catch (e) {
@@ -288,8 +285,62 @@ export default function EmailsClient() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!eventId) {
+      setTemplates([]);
+      setTemplateKey('');
+      setCampaigns([]);
+      setEventLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setEventLoading(true);
+    setSelectedCampaignId(null);
+    setSends([]);
+    setPreviewHtml('');
+    setPreviewError(null);
+    setAudienceCount(null);
+    setAudienceSample([]);
+    setAudienceMissingEmails([]);
+    setStatusMessage(null);
+
+    void (async () => {
+      try {
+        const [options, rows] = await Promise.all([
+          getEmailTemplateOptions(eventId),
+          listCampaignsByEventId(eventId),
+        ]);
+        if (cancelled) return;
+        setTemplates(options);
+        setTemplateKey(
+          options.some((template) => template.key === templateKey)
+            ? templateKey
+            : (options[0]?.key ?? ''),
+        );
+        setSubject('');
+        setCampaigns(rows);
+        setError(null);
+      } catch (e) {
+        if (!cancelled) {
+          setTemplates([]);
+          setTemplateKey('');
+          setCampaigns([]);
+          setError(e instanceof Error ? e.message : 'Failed to load event');
+        }
+      } finally {
+        if (!cancelled) setEventLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // templateKey is only read to keep the same template when it exists on the next event.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
 
   async function refreshCampaigns(selectedEventId: string) {
     if (!selectedEventId) return;
@@ -306,11 +357,7 @@ export default function EmailsClient() {
   }
 
   useEffect(() => {
-    void refreshCampaigns(eventId);
-    setSelectedCampaignId(null);
-    setSends([]);
     setAudienceAddOnIds([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
   useEffect(() => {
@@ -630,7 +677,13 @@ export default function EmailsClient() {
             <select
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
               value={eventId}
-              onChange={(e) => setEventId(e.target.value)}
+              onChange={(e) => {
+                const nextEventId = e.target.value;
+                if (nextEventId === eventId) return;
+                setEventLoading(true);
+                setEventId(nextEventId);
+              }}
+              aria-busy={eventLoading}
             >
               {events.map((e) => (
                 <option key={e.id} value={e.id}>
@@ -638,17 +691,36 @@ export default function EmailsClient() {
                 </option>
               ))}
             </select>
+            {eventLoading ? (
+              <span className="text-sm font-semibold text-slate-500">
+                Loading…
+              </span>
+            ) : null}
             <button
               type="button"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50"
               onClick={() => void refreshCampaigns(eventId)}
-              disabled={!eventId || loading}
+              disabled={!eventId || loading || eventLoading}
             >
               Refresh
             </button>
           </div>
         </header>
 
+        {eventLoading ? (
+          <section
+            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg"
+            aria-live="polite"
+          >
+            <p className="text-sm font-semibold text-slate-800">
+              Loading {eventLabel}…
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Templates and campaigns are updating for this event.
+            </p>
+          </section>
+        ) : (
+        <>
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
@@ -692,6 +764,11 @@ export default function EmailsClient() {
               <span className="text-sm font-semibold text-slate-700">
                 Template
               </span>
+              {templates.length === 0 ? (
+                <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  No email templates for this event yet.
+                </p>
+              ) : (
               <select
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-slate-400"
                 value={templateKey}
@@ -706,6 +783,7 @@ export default function EmailsClient() {
                   </option>
                 ))}
               </select>
+              )}
               {selectedTemplate?.description ? (
                 <span className="mt-1 block text-xs text-slate-500">
                   {selectedTemplate.description}
@@ -976,7 +1054,7 @@ export default function EmailsClient() {
             <div className="flex flex-wrap items-center justify-end gap-3">
               <button
                 type="button"
-                disabled={loading || !eventId}
+                disabled={loading || !eventId || !templateKey}
                 className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60"
                 onClick={() => {
                   if (!eventId) return;
@@ -1028,7 +1106,7 @@ export default function EmailsClient() {
               </button>
               <button
                 type="submit"
-                disabled={loading || !eventId}
+                disabled={loading || !eventId || !templateKey}
                 className={`rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg disabled:opacity-60 ${
                   scheduleEnabled
                     ? 'bg-slate-900'
@@ -1392,6 +1470,8 @@ export default function EmailsClient() {
             </ul>
           )}
         </section>
+        </>
+        )}
 
         {selectedCampaignId ? (
           <div

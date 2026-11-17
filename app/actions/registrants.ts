@@ -29,7 +29,7 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider';
 import { render } from '@react-email/render';
 import { WelcomeEmail } from '@/react-email-starter/emails/welcome-email';
-import { assertEmailTemplate } from '@/lib/email-templates';
+import { assertEmailTemplate, getEmailTemplate } from '@/lib/email-templates';
 import { buildSesClient, getSesFromAddress, sendHtmlEmail } from '@/lib/ses';
 import { revalidatePath } from 'next/cache';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
@@ -49,7 +49,16 @@ async function sendWelcomeEmailAndMarkSent(params: {
   registrant: RegistrantDetail;
   eventId: string;
   jwt?: string | null;
-}): Promise<{ ok: boolean; message: string }> {
+}): Promise<{ ok: boolean; message: string; skipped?: boolean }> {
+  const welcome = getEmailTemplate('welcome-email');
+  if (!welcome?.eventIds.includes(params.eventId)) {
+    return {
+      ok: false,
+      skipped: true,
+      message: 'No welcome email for this event.',
+    };
+  }
+
   try {
     const fromAddress = getSesFromAddress();
     const apsYear = process.env.APS_EVENT_YEAR || '2026';
@@ -2976,8 +2985,12 @@ async function sendAppAccessEmailAndMarkSent(params: {
   eventId: string;
   jwt?: string | null;
 }): Promise<{ ok: boolean; message: string }> {
+  if (!getEmailTemplate('app-access-email')?.eventIds.includes(params.eventId)) {
+    return { ok: false, message: 'No app access email for this event.' };
+  }
+
   try {
-    const template = assertEmailTemplate('app-access-email');
+    const template = assertEmailTemplate('app-access-email', params.eventId);
     const eventYear = process.env.APS_EVENT_YEAR || '2026';
     const tempPassword = await resolveTempPasswordForRegistrant({
       registrantId: params.registrant.id,
@@ -3349,7 +3362,9 @@ export async function approveRegistrant(params: {
       ok: true,
       message: welcomeResult.ok
         ? 'Registrant approved and welcome email sent.'
-        : 'Registrant approved, but welcome email failed to send.',
+        : welcomeResult.skipped
+          ? 'Registrant approved.'
+          : 'Registrant approved, but welcome email failed to send.',
       tempPassword,
     };
   } catch (error) {

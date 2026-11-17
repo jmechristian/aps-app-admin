@@ -8,6 +8,8 @@ import { Tour2WaitlistEmail } from '@/react-email-starter/emails/tour-2-waitlist
 import { AppGuideEmail } from '@/react-email-starter/emails/app-guide-email';
 import { AppSigninEmail } from '@/react-email-starter/emails/app-signin-email';
 import { ThankYouEmail } from '@/react-email-starter/emails/thank-you-email';
+import { PresentationsEmail } from '@/react-email-starter/emails/presentations-email';
+import { APS_EVENT_ID } from '@/lib/event-label';
 
 export type EmailTemplateRecipient = {
   id: string;
@@ -38,12 +40,16 @@ export type EmailTemplateDefinition = {
   key: string;
   label: string;
   description?: string;
+  /** Events that can send this template. Campaigns stay keyed by event id. */
+  eventIds: string[];
   /** When true, send pipeline loads latest stored temp credential. */
   requiresTempPassword?: boolean;
   defaultSubject: (ctx: { eventYear: string }) => string;
   renderHtml: (ctx: EmailTemplateContext) => Promise<string>;
   renderText?: (ctx: EmailTemplateContext) => string;
 };
+
+type EmailTemplateBody = Omit<EmailTemplateDefinition, 'eventIds'>;
 
 const APP_STORE_URL =
   process.env.APS_APP_STORE_URL ||
@@ -54,7 +60,7 @@ const PLAY_STORE_URL =
 const WEB_APP_URL =
   process.env.APS_WEB_APP_URL || 'https://autopacksummit.expo.app/';
 
-const welcomeTemplate: EmailTemplateDefinition = {
+const welcomeTemplate: EmailTemplateBody = {
   key: 'welcome-email',
   label: 'Welcome email',
   description: 'Existing APS welcome / dashboard email sent on approval.',
@@ -89,7 +95,7 @@ const welcomeTemplate: EmailTemplateDefinition = {
     `Welcome to Automotive Packaging Summit ${eventYear}. View your dashboard: https://www.autopacksummit.com/registrants/${recipient.id}`,
 };
 
-const appAccessTemplate: EmailTemplateDefinition = {
+const appAccessTemplate: EmailTemplateBody = {
   key: 'app-access-email',
   label: 'App access + temp password',
   description:
@@ -131,7 +137,7 @@ const appAccessTemplate: EmailTemplateDefinition = {
   },
 };
 
-const attendeeInfoTemplate: EmailTemplateDefinition = {
+const attendeeInfoTemplate: EmailTemplateBody = {
   key: 'attendee-info-email',
   label: 'Attendee info (pre-event)',
   description:
@@ -217,7 +223,7 @@ const attendeeInfoTemplate: EmailTemplateDefinition = {
   },
 };
 
-const tour1ConfirmedTemplate: EmailTemplateDefinition = {
+const tour1ConfirmedTemplate: EmailTemplateBody = {
   key: 'tour-1-confirmed-email',
   label: 'Tour 1 confirmed (CU-ICAR)',
   description:
@@ -271,7 +277,7 @@ const tour1ConfirmedTemplate: EmailTemplateDefinition = {
   },
 };
 
-const tour2ConfirmedTemplate: EmailTemplateDefinition = {
+const tour2ConfirmedTemplate: EmailTemplateBody = {
   key: 'tour-2-confirmed-email',
   label: 'Tour 2 confirmed (Clemson Packaging Science)',
   description:
@@ -336,7 +342,7 @@ const tour2ConfirmedTemplate: EmailTemplateDefinition = {
   },
 };
 
-const tour2WaitlistTemplate: EmailTemplateDefinition = {
+const tour2WaitlistTemplate: EmailTemplateBody = {
   key: 'tour-2-waitlist-email',
   label: 'Tour 2 waitlist (Clemson Packaging Science)',
   description:
@@ -375,7 +381,7 @@ const tour2WaitlistTemplate: EmailTemplateDefinition = {
   },
 };
 
-const appGuideTemplate: EmailTemplateDefinition = {
+const appGuideTemplate: EmailTemplateBody = {
   key: 'app-guide-email',
   label: 'App guide (how to use the app)',
   description:
@@ -444,7 +450,7 @@ const appGuideTemplate: EmailTemplateDefinition = {
   },
 };
 
-const appSigninTemplate: EmailTemplateDefinition = {
+const appSigninTemplate: EmailTemplateBody = {
   key: 'app-signin-email',
   label: 'App sign-in (temp password + download)',
   description:
@@ -496,7 +502,7 @@ const appSigninTemplate: EmailTemplateDefinition = {
   },
 };
 
-const thankYouTemplate: EmailTemplateDefinition = {
+const thankYouTemplate: EmailTemplateBody = {
   key: 'thank-you-email',
   label: 'Thank you (post-event)',
   description:
@@ -553,20 +559,78 @@ const thankYouTemplate: EmailTemplateDefinition = {
   },
 };
 
-const TEMPLATES: Record<string, EmailTemplateDefinition> = {
-  [welcomeTemplate.key]: welcomeTemplate,
-  [appAccessTemplate.key]: appAccessTemplate,
-  [attendeeInfoTemplate.key]: attendeeInfoTemplate,
-  [tour1ConfirmedTemplate.key]: tour1ConfirmedTemplate,
-  [tour2ConfirmedTemplate.key]: tour2ConfirmedTemplate,
-  [tour2WaitlistTemplate.key]: tour2WaitlistTemplate,
-  [appGuideTemplate.key]: appGuideTemplate,
-  [appSigninTemplate.key]: appSigninTemplate,
-  [thankYouTemplate.key]: thankYouTemplate,
+const presentationsTemplate: EmailTemplateBody = {
+  key: 'presentations-email',
+  label: 'Presentations are here',
+  description:
+    'Post-event note that conference presentations are in the media library, with the attendance certificate link.',
+  defaultSubject: () => 'AutoPack Summit Presentations are Here!',
+  renderHtml: async ({ recipient, eventYear }) => {
+    return render(
+      PresentationsEmail({
+        firstName: recipient.firstName ?? '',
+        eventYear,
+      }),
+    );
+  },
+  renderText: ({ recipient, eventYear }) => {
+    const greetingName =
+      recipient.firstName?.trim() || 'AutoPack Summit Attendee';
+    const yearLabel = /^\d{4}$/.test(eventYear) ? eventYear : '2026';
+    return [
+      `Dear ${greetingName},`,
+      '',
+      "We're excited to announce that presentations from the conference are available in our Media Library on the Automotive Packaging Summit website for all registered attendees. Whether you're looking to revisit a session or catch up on one you missed, the content is now at your fingertips.",
+      '',
+      'To access the presentations, use the email address you used to register for the event.',
+      '',
+      'VIEW PRESENTATIONS',
+      'https://packagingschool.com/events/aps-2026#presentations',
+      '',
+      `This is also a great opportunity to complete the free AutoPack Summit Certificate of Completion module and receive your ${yearLabel} Certificate of Attendance for professional development, reimbursement, or continuing education.`,
+      '',
+      'Attendance Certificate',
+      'https://packagingschool.com/events/aps-2026#certificate',
+      '',
+      "Thank you for being part of this year's summit. We look forward to seeing you at APS 2027!",
+      '',
+      'Questions: bianca@packagingschool.com',
+      '',
+      'The AutoPack Summit Team',
+      'https://www.autopacksummit.com',
+    ].join('\n');
+  },
 };
 
-export function listEmailTemplates(): EmailTemplateDefinition[] {
-  return Object.values(TEMPLATES);
+function ownedBy(
+  eventIds: string[],
+  templates: EmailTemplateBody[],
+): Record<string, EmailTemplateDefinition> {
+  return Object.fromEntries(
+    templates.map((template) => [template.key, { ...template, eventIds }]),
+  );
+}
+
+const TEMPLATES: Record<string, EmailTemplateDefinition> = ownedBy(
+  [APS_EVENT_ID],
+  [
+    welcomeTemplate,
+    appAccessTemplate,
+    attendeeInfoTemplate,
+    tour1ConfirmedTemplate,
+    tour2ConfirmedTemplate,
+    tour2WaitlistTemplate,
+    appGuideTemplate,
+    appSigninTemplate,
+    thankYouTemplate,
+    presentationsTemplate,
+  ],
+);
+
+export function listEmailTemplates(eventId?: string): EmailTemplateDefinition[] {
+  const templates = Object.values(TEMPLATES);
+  if (!eventId) return templates;
+  return templates.filter((template) => template.eventIds.includes(eventId));
 }
 
 export function getEmailTemplate(
@@ -575,10 +639,16 @@ export function getEmailTemplate(
   return TEMPLATES[key];
 }
 
-export function assertEmailTemplate(key: string): EmailTemplateDefinition {
+export function assertEmailTemplate(
+  key: string,
+  eventId?: string,
+): EmailTemplateDefinition {
   const template = getEmailTemplate(key);
   if (!template) {
     throw new Error(`Unknown email template: ${key}`);
+  }
+  if (eventId && !template.eventIds.includes(eventId)) {
+    throw new Error('That email template is not available for this event.');
   }
   return template;
 }

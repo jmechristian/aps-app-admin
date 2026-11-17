@@ -1,3 +1,8 @@
+/** Automotive Packaging Summit. Email templates for that event use this id. */
+export const APS_EVENT_ID =
+  process.env.APS_EVENT_ID?.trim() ||
+  'd00b35f5-c45b-42eb-b306-fa3dfeee0251';
+
 /** Label stored on the existing APS.year string. Event id remains the key. */
 export function isYearLabel(value: string) {
   return /^\d{4}$/.test(value.trim());
