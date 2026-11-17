@@ -126,10 +126,28 @@ export const PresentationsEmail = ({
                 you're looking to revisit a session or catch up on one you
                 missed, the content is now at your fingertips.
               </Text>
-              <Text style={bodyStyle}>
-                To access the presentations, use the email address you used to
-                register for the event.
-              </Text>
+              <div
+                style={{
+                  backgroundColor: '#FFF6DE',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  margin: '0 0 16px',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    color: DARK_TEXT,
+                    margin: 0,
+                    lineHeight: '1.5',
+                    ...font,
+                  }}
+                >
+                  To access the presentations, use the email address you used
+                  to register for the event.
+                </Text>
+              </div>
             </Section>
 
             <Section style={{ padding: '8px 32px 0' }}>
